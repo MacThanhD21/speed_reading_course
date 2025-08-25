@@ -1,0 +1,25 @@
+# Cursor Rules for Website Speed Reading Project
+
+## Code Style
+- Use English for all code, comments, and variable names
+- Use Vietnamese for user-facing text and UI elements
+- Follow React best practices and functional components
+- Use Tailwind CSS for styling
+- Implement responsive design for mobile and desktop
+
+## Component Structure
+- Keep components focused and single-purpose
+- Use proper prop validation
+- Implement proper error handling
+- Use motion animations for smooth user experience
+
+## File Organization
+- Keep related components in the components folder
+- Use descriptive file names
+- Maintain consistent import/export patterns
+
+## Performance
+- Optimize images and videos
+- Implement lazy loading where appropriate
+- Minimize bundle size
+- Use proper caching strategies
