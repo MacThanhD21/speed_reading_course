@@ -1,262 +1,175 @@
-// Reading Tips Service - Generate personalized reading tips based on content
-import geminiService from './geminiService.js';
+import geminiService from './geminiService';
 
 class ReadingTipsService {
   constructor() {
-    this.cache = new Map(); // Cache tips to avoid repeated API calls
+    this.geminiService = geminiService;
   }
 
-  // Generate reading tips based on content and reading progress
-  async generateReadingTips(content, readingProgress = {}) {
-    const { isReading, currentWPM, wordsRead, elapsedTime } = readingProgress;
-    
-    // Create cache key based on content and progress
-    const cacheKey = this.createCacheKey(content, readingProgress);
-    
-    // Check cache first
-    if (this.cache.has(cacheKey)) {
-      console.log('Returning cached reading tips');
-      return this.cache.get(cacheKey);
-    }
-
+  // Tạo câu hỏi 5W1H cho phần học tập
+  async generate5W1HQuestions(content) {
     try {
-      const prompt = this.createReadingTipsPrompt(content, readingProgress);
-      const response = await geminiService.generateContent(prompt, {
+      console.log('Generating 5W1H questions for learning...');
+      
+      const prompt = this.create5W1HPrompt(content);
+      const response = await this.geminiService.generateContent(prompt, {
         temperature: 0.7,
-        maxOutputTokens: 1000
+        maxOutputTokens: 1500
       });
-
-      const tips = this.parseTipsResponse(response);
       
-      // Cache the result
-      this.cache.set(cacheKey, tips);
+      const questions = this.parse5W1HResponse(response);
+      console.log('Generated 5W1H questions:', questions);
       
-      return tips;
+      return questions;
     } catch (error) {
-      console.error('Error generating reading tips:', error);
-      return this.getFallbackTips(readingProgress);
+      console.error('Error generating 5W1H questions:', error);
+      // Fallback to local generation
+      return this.generateLocal5W1HQuestions(content);
     }
   }
 
-  // Create prompt for reading tips generation
-  createReadingTipsPrompt(content, readingProgress) {
-    const { isReading, currentWPM, wordsRead, elapsedTime } = readingProgress;
-    const contentText = content?.content || content;
-    const title = content?.title || 'Bài viết';
+  // Tạo prompt cho 5W1H questions
+  create5W1HPrompt(content) {
+    const title = content.title || 'Bài viết';
+    const textContent = content.content || content;
     
-    // Determine reading phase
-    let phase = 'preparation';
-    if (isReading && wordsRead === 0) {
-      phase = 'starting';
-    } else if (isReading && wordsRead > 0) {
-      phase = 'in_progress';
-    } else if (!isReading && wordsRead > 0) {
-      phase = 'completed';
-    }
+    return `Bạn là một giáo viên chuyên nghiệp người Việt Nam. Hãy tạo các câu hỏi học tập theo phương pháp 5W1H bằng TIẾNG VIỆT dựa trên nội dung sau:
 
-    return `Bạn là một chuyên gia giáo dục và tâm lý học chuyên về kỹ năng đọc hiệu quả. Dựa trên thông tin sau, hãy tạo ra 3-4 mẹo đọc hiệu quả phù hợp và cá nhân hóa:
+**Tiêu đề:** ${title}
 
-THÔNG TIN BÀI ĐỌC:
-- Tiêu đề: ${title}
-- Nội dung: ${contentText.substring(0, 2000)}...
-- Giai đoạn đọc: ${phase}
-- Tốc độ hiện tại: ${currentWPM || 0} từ/phút
-- Số từ đã đọc: ${wordsRead || 0}
-- Thời gian đã đọc: ${elapsedTime || 0} giây
+**Nội dung:**
+${textContent}
 
-YÊU CẦU:
-1. Tạo 3-4 mẹo đọc hiệu quả phù hợp với giai đoạn hiện tại
-2. Mẹo phải cụ thể và có thể áp dụng ngay
-3. Phù hợp với nội dung bài đọc
-4. Ngắn gọn, dễ hiểu (mỗi mẹo 1-2 câu)
-5. Khuyến khích và tích cực
+**Yêu cầu:**
+1. Tạo 6-8 câu hỏi học tập theo phương pháp 5W1H bằng TIẾNG VIỆT
+2. Mỗi câu hỏi phải liên quan trực tiếp đến nội dung bài viết
+3. Câu hỏi phải giúp người đọc hiểu sâu hơn về chủ đề
+4. Sử dụng từ ngữ tiếng Việt tự nhiên và dễ hiểu
+5. Trả về dưới dạng JSON array với format:
+[
+  {
+    "question": "Câu hỏi bằng tiếng Việt",
+    "type": "what|who|when|where|why|how",
+    "hint": "Gợi ý ngắn gọn bằng tiếng Việt",
+    "learningPoint": "Điểm học tập quan trọng bằng tiếng Việt"
+  }
+]
 
-Trả về định dạng JSON:
-{
-  "tips": [
-    {
-      "id": 1,
-      "title": "Tiêu đề mẹo",
-      "description": "Mô tả chi tiết mẹo",
-      "icon": "emoji_icon"
-    }
-  ]
-}
-
-Lưu ý:
-- Sử dụng tiếng Việt
-- Mẹo phải phù hợp với giai đoạn đọc hiện tại
-- Tập trung vào cải thiện hiệu quả đọc
-- Không quá dài, dễ nhớ và áp dụng`;
+**QUAN TRỌNG:** 
+- TẤT CẢ câu hỏi, gợi ý và điểm học tập phải bằng TIẾNG VIỆT
+- Không sử dụng tiếng Anh trong câu hỏi
+- Chỉ trả về JSON array, không có text thêm.`;
   }
 
-  // Parse tips response from AI
-  parseTipsResponse(response) {
+  // Parse response từ API
+  parse5W1HResponse(response) {
     try {
-      const jsonData = geminiService.parseJSONResponse(response);
-      if (jsonData && jsonData.tips) {
-        return jsonData.tips;
+      // Tìm JSON trong response
+      const jsonMatch = response.match(/\[[\s\S]*\]/);
+      if (jsonMatch) {
+        const questions = JSON.parse(jsonMatch[0]);
+        return questions.filter(q => q.question && q.type);
       }
       
-      // Fallback parsing if JSON parsing fails
-      return this.parseTipsFromText(response);
+      // Fallback parsing
+      const lines = response.split('\n').filter(line => line.trim());
+      const questions = [];
+      
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (line.includes('?') && line.length > 10) {
+          const type = this.detectQuestionType(line);
+          questions.push({
+            question: line.replace(/^\d+\.\s*/, '').trim(),
+            type: type,
+            hint: this.generateHint(type),
+            learningPoint: this.generateLearningPoint(line)
+          });
+        }
+      }
+      
+      return questions.slice(0, 8); // Giới hạn 8 câu hỏi
     } catch (error) {
-      console.error('Error parsing tips response:', error);
-      return this.getFallbackTips();
+      console.error('Error parsing 5W1H response:', error);
+      return [];
     }
   }
 
-  // Fallback parsing from plain text
-  parseTipsFromText(text) {
-    const tips = [];
-    const lines = text.split('\n').filter(line => line.trim());
+  // Detect loại câu hỏi
+  detectQuestionType(question) {
+    const lowerQuestion = question.toLowerCase();
     
-    let currentTip = null;
-    let tipCount = 0;
+    if (lowerQuestion.includes('gì') || lowerQuestion.includes('what')) return 'what';
+    if (lowerQuestion.includes('ai') || lowerQuestion.includes('who')) return 'who';
+    if (lowerQuestion.includes('khi nào') || lowerQuestion.includes('when')) return 'when';
+    if (lowerQuestion.includes('ở đâu') || lowerQuestion.includes('where')) return 'where';
+    if (lowerQuestion.includes('tại sao') || lowerQuestion.includes('why')) return 'why';
+    if (lowerQuestion.includes('như thế nào') || lowerQuestion.includes('how')) return 'how';
     
-    for (const line of lines) {
-      const trimmedLine = line.trim();
+    return 'what'; // Default
+  }
+
+  // Generate hint
+  generateHint(type) {
+    const hints = {
+      what: 'Tìm hiểu về khái niệm, định nghĩa hoặc sự kiện chính',
+      who: 'Xác định các nhân vật, tổ chức hoặc đối tượng liên quan',
+      when: 'Tìm hiểu về thời gian, giai đoạn hoặc thời điểm quan trọng',
+      where: 'Xác định địa điểm, vùng miền hoặc không gian liên quan',
+      why: 'Tìm hiểu nguyên nhân, lý do hoặc mục đích',
+      how: 'Tìm hiểu về quy trình, phương pháp hoặc cách thức'
+    };
+    return hints[type] || 'Tìm hiểu sâu hơn về chủ đề này';
+  }
+
+  // Generate learning point
+  generateLearningPoint(question) {
+    return 'Đây là điểm kiến thức quan trọng giúp bạn hiểu sâu hơn về chủ đề';
+  }
+
+  // Fallback: Generate local 5W1H questions
+  generateLocal5W1HQuestions(content) {
+    const textContent = content.content || content;
+    const sentences = textContent.split(/[.!?]+/).filter(s => s.trim().length > 20);
+    
+    const questions = [];
+    const questionTypes = ['what', 'who', 'when', 'where', 'why', 'how'];
+    
+    // Generate questions based on content
+    sentences.slice(0, 6).forEach((sentence, index) => {
+      const type = questionTypes[index % questionTypes.length];
+      const question = this.generateQuestionFromSentence(sentence, type);
       
-      // Look for numbered tips or bullet points
-      if (trimmedLine.match(/^\d+[\.\)]\s/) || trimmedLine.startsWith('•') || trimmedLine.startsWith('-')) {
-        if (currentTip) {
-          tips.push(currentTip);
-        }
-        
-        tipCount++;
-        const content = trimmedLine.replace(/^\d+[\.\)]\s/, '').replace(/^[•\-]\s/, '');
-        
-        currentTip = {
-          id: tipCount,
-          title: content.substring(0, 50) + (content.length > 50 ? '...' : ''),
-          description: content,
-          icon: this.getRandomIcon()
-        };
-      } else if (currentTip && trimmedLine) {
-        // Add to current tip description
-        currentTip.description += ' ' + trimmedLine;
+      if (question) {
+        questions.push({
+          question: question,
+          type: type,
+          hint: this.generateHint(type),
+          learningPoint: this.generateLearningPoint(question)
+        });
       }
-    }
+    });
     
-    if (currentTip) {
-      tips.push(currentTip);
-    }
+    return questions;
+  }
+
+  // Generate question from sentence
+  generateQuestionFromSentence(sentence, type) {
+    const words = sentence.trim().split(' ');
+    if (words.length < 5) return null;
     
-    return tips.length > 0 ? tips : this.getFallbackTips();
-  }
-
-  // Get fallback tips when API fails
-  getFallbackTips(readingProgress = {}) {
-    const { isReading, currentWPM, wordsRead } = readingProgress;
+    const typeQuestions = {
+      what: `Nội dung chính của đoạn này là gì?`,
+      who: `Ai là đối tượng được đề cập trong đoạn này?`,
+      when: `Khi nào sự kiện này xảy ra?`,
+      where: `Địa điểm nào được đề cập trong đoạn này?`,
+      why: `Tại sao điều này lại quan trọng?`,
+      how: `Cách thức này hoạt động như thế nào?`
+    };
     
-    if (!isReading) {
-      return [
-        {
-          id: 1,
-          title: "Chuẩn bị tâm lý",
-          description: "Hãy thư giãn và tập trung trước khi bắt đầu đọc",
-          icon: "🧘"
-        },
-        {
-          id: 2,
-          title: "Đọc với tốc độ thoải mái",
-          description: "Đừng vội vàng, hãy đọc ở tốc độ bạn cảm thấy thoải mái",
-          icon: "🐌"
-        },
-        {
-          id: 3,
-          title: "Tập trung vào nội dung",
-          description: "Loại bỏ các yếu tố gây phân tán và tập trung vào bài đọc",
-          icon: "🎯"
-        },
-        {
-          id: 4,
-          title: "Nhấn 'Hoàn thành' khi xong",
-          description: "Đánh dấu hoàn thành khi bạn đã đọc và hiểu nội dung",
-          icon: "✅"
-        }
-      ];
-    }
-    
-    if (currentWPM < 100) {
-      return [
-        {
-          id: 1,
-          title: "Tăng tốc độ từ từ",
-          description: "Hãy thử đọc nhanh hơn một chút nhưng vẫn đảm bảo hiểu nội dung",
-          icon: "⚡"
-        },
-        {
-          id: 2,
-          title: "Sử dụng mắt hiệu quả",
-          description: "Di chuyển mắt theo dòng chữ một cách mượt mà",
-          icon: "👁️"
-        },
-        {
-          id: 3,
-          title: "Đọc theo cụm từ",
-          description: "Thay vì đọc từng từ, hãy đọc theo cụm từ có nghĩa",
-          icon: "📝"
-        }
-      ];
-    }
-    
-    return [
-      {
-        id: 1,
-        title: "Duy trì tốc độ",
-        description: "Bạn đang đọc ở tốc độ tốt, hãy duy trì nhịp độ này",
-        icon: "👍"
-      },
-      {
-        id: 2,
-        title: "Kiểm tra hiểu biết",
-        description: "Thỉnh thoảng dừng lại để kiểm tra xem bạn có hiểu nội dung không",
-        icon: "🤔"
-      },
-      {
-        id: 3,
-        title: "Ghi nhớ ý chính",
-        description: "Cố gắng ghi nhớ các ý chính của bài viết",
-        icon: "🧠"
-      }
-    ];
-  }
-
-  // Get random icon for tips
-  getRandomIcon() {
-    const icons = ['📚', '🎯', '⚡', '🧠', '👁️', '📝', '✅', '🎉', '💡', '🌟'];
-    return icons[Math.floor(Math.random() * icons.length)];
-  }
-
-  // Create cache key
-  createCacheKey(content, readingProgress) {
-    const contentHash = this.hashContent(content);
-    const progressHash = this.hashProgress(readingProgress);
-    return `${contentHash}_${progressHash}`;
-  }
-
-  // Hash content for caching
-  hashContent(content) {
-    const text = content?.content || content || '';
-    return text.substring(0, 100).replace(/\s+/g, '_');
-  }
-
-  // Hash progress for caching
-  hashProgress(progress) {
-    const { isReading, currentWPM, wordsRead } = progress;
-    return `${isReading ? 'reading' : 'not_reading'}_${Math.floor(currentWPM / 50) * 50}_${Math.floor(wordsRead / 100) * 100}`;
-  }
-
-  // Clear cache
-  clearCache() {
-    this.cache.clear();
-  }
-
-  // Get cache size
-  getCacheSize() {
-    return this.cache.size;
+    return typeQuestions[type];
   }
 }
 
-export default new ReadingTipsService();
+// Export singleton instance
+export const readingTipsService = new ReadingTipsService();
+export default readingTipsService;

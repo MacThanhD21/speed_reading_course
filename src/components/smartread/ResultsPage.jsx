@@ -10,6 +10,9 @@ const ResultsPage = () => {
   const readingData = JSON.parse(sessionStorage.getItem('smartread-reading-data') || 'null');
   const quizData = JSON.parse(sessionStorage.getItem('smartread-quiz-data') || 'null');
 
+  console.log('ResultsPage - readingData:', readingData);
+  console.log('ResultsPage - quizData:', quizData);
+
   const handleRestart = () => {
     // Clear all sessionStorage data
     sessionStorage.removeItem('smartread-content');

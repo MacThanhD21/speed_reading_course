@@ -6,7 +6,6 @@ import {
   FaPlus, 
   FaPalette, 
   FaEye, 
-  FaHighlighter, 
   FaTimes, 
   FaGraduationCap 
 } from 'react-icons/fa';
@@ -90,7 +89,7 @@ const ReadingSettingsPanel = ({
         }`}
       >
         <div className={`backdrop-blur-sm border rounded-2xl shadow-2xl p-6 w-[520px] max-w-[95vw] transition-all duration-300 ${
-          readingSettings.theme === 'dark' 
+          readingSettings.theme === 'dark' || readingSettings.theme === 'focus' 
             ? 'bg-gray-800/95 border-gray-700' 
             : 'bg-white/95 border-gray-200'
         }`}>
@@ -102,17 +101,17 @@ const ReadingSettingsPanel = ({
               </div>
               <div>
                 <h3 className={`font-bold text-lg ${
-                  readingSettings.theme === 'dark' ? 'text-gray-100' : 'text-gray-800'
+                  readingSettings.theme === 'dark' || readingSettings.theme === 'focus' ? 'text-gray-100' : 'text-gray-800'
                 }`}>Công cụ đọc</h3>
                 <p className={`text-xs ${
-                  readingSettings.theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+                  readingSettings.theme === 'dark' || readingSettings.theme === 'focus' ? 'text-gray-400' : 'text-gray-500'
                 }`}>Tùy chỉnh trải nghiệm đọc</p>
               </div>
             </div>
             <button
               onClick={onToggleSettingsPanel}
               className={`w-8 h-8 flex items-center justify-center rounded-full transition-all duration-200 hover:scale-110 ${
-                readingSettings.theme === 'dark' 
+                readingSettings.theme === 'dark' || readingSettings.theme === 'focus' 
                   ? 'bg-gray-700 hover:bg-gray-600 text-gray-300' 
                   : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
               }`}
@@ -126,15 +125,15 @@ const ReadingSettingsPanel = ({
           <div className="space-y-6">
             {/* Typography Section */}
             <div className={`rounded-xl p-4 transition-all duration-300 ${
-              readingSettings.theme === 'dark' 
+              readingSettings.theme === 'dark' || readingSettings.theme === 'focus' 
                 ? 'bg-gradient-to-r from-gray-700 to-gray-600' 
                 : 'bg-gradient-to-r from-blue-50 to-purple-50'
             }`}>
               <h4 className={`font-semibold mb-4 flex items-center ${
-                readingSettings.theme === 'dark' ? 'text-gray-200' : 'text-gray-700'
+                readingSettings.theme === 'dark' || readingSettings.theme === 'focus' ? 'text-gray-200' : 'text-gray-700'
               }`}>
                 <FaFont className={`mr-2 ${
-                  readingSettings.theme === 'dark' ? 'text-blue-400' : 'text-blue-500'
+                  readingSettings.theme === 'dark' || readingSettings.theme === 'focus' ? 'text-blue-400' : 'text-blue-500'
                 }`} />
                 Typography
               </h4>
@@ -143,16 +142,16 @@ const ReadingSettingsPanel = ({
                 {/* Font Size */}
                 <div className="space-y-2">
                   <label className={`text-sm font-medium ${
-                    readingSettings.theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
+                    readingSettings.theme === 'dark' || readingSettings.theme === 'focus' ? 'text-gray-300' : 'text-gray-600'
                   }`}>Font Size</label>
                   <div className={`flex items-center space-x-2 rounded-lg p-2 shadow-sm ${
-                    readingSettings.theme === 'dark' ? 'bg-gray-600' : 'bg-white'
+                    readingSettings.theme === 'dark' || readingSettings.theme === 'focus' ? 'bg-gray-600' : 'bg-white'
                   }`}>
                     <button
                       onClick={onDecreaseFontSize}
                       disabled={getCurrentFontSizeIndex() === 0}
                       className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-200 ${
-                        readingSettings.theme === 'dark' 
+                        readingSettings.theme === 'dark' || readingSettings.theme === 'focus' 
                           ? 'bg-gray-500 hover:bg-gray-400 text-gray-200' 
                           : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
                       } disabled:opacity-50 disabled:cursor-not-allowed`}
@@ -162,7 +161,7 @@ const ReadingSettingsPanel = ({
                     </button>
                     
                     <div className={`flex-1 px-3 py-2 text-center font-bold rounded-lg border ${
-                      readingSettings.theme === 'dark' 
+                      readingSettings.theme === 'dark' || readingSettings.theme === 'focus' 
                         ? 'bg-gray-700 text-gray-100 border-gray-600' 
                         : 'bg-white text-gray-800 border-gray-300'
                     }`}>
@@ -173,7 +172,7 @@ const ReadingSettingsPanel = ({
                       onClick={onIncreaseFontSize}
                       disabled={getCurrentFontSizeIndex() === fontSizeOptions.length - 1}
                       className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-200 ${
-                        readingSettings.theme === 'dark' 
+                        readingSettings.theme === 'dark' || readingSettings.theme === 'focus' 
                           ? 'bg-gray-500 hover:bg-gray-400 text-gray-200' 
                           : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
                       } disabled:opacity-50 disabled:cursor-not-allowed`}
@@ -187,13 +186,13 @@ const ReadingSettingsPanel = ({
                 {/* Font Family */}
                 <div className="space-y-2">
                   <label className={`text-sm font-medium ${
-                    readingSettings.theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
+                    readingSettings.theme === 'dark' || readingSettings.theme === 'focus' ? 'text-gray-300' : 'text-gray-600'
                   }`}>Font Family</label>
                   <select
                     value={readingSettings.fontFamily}
                     onChange={(e) => onChangeFontFamily(e.target.value)}
                     className={`w-full text-sm border rounded-lg px-3 py-2 transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                      readingSettings.theme === 'dark' 
+                      readingSettings.theme === 'dark' || readingSettings.theme === 'focus' 
                         ? 'bg-gray-600 border-gray-500 text-gray-100 hover:bg-gray-500' 
                         : 'bg-white border-gray-300 text-gray-800 hover:bg-gray-50'
                     }`}
@@ -210,15 +209,15 @@ const ReadingSettingsPanel = ({
 
             {/* Text Formatting Section */}
             <div className={`rounded-xl p-4 transition-all duration-300 ${
-              readingSettings.theme === 'dark' 
+              readingSettings.theme === 'dark' || readingSettings.theme === 'focus' 
                 ? 'bg-gradient-to-r from-gray-700 to-gray-600' 
                 : 'bg-gradient-to-r from-green-50 to-teal-50'
             }`}>
               <h4 className={`font-semibold mb-4 flex items-center ${
-                readingSettings.theme === 'dark' ? 'text-gray-200' : 'text-gray-700'
+                readingSettings.theme === 'dark' || readingSettings.theme === 'focus' ? 'text-gray-200' : 'text-gray-700'
               }`}>
-                <FaHighlighter className={`mr-2 ${
-                  readingSettings.theme === 'dark' ? 'text-green-400' : 'text-green-500'
+                <FaPalette className={`mr-2 ${
+                  readingSettings.theme === 'dark' || readingSettings.theme === 'focus' ? 'text-green-400' : 'text-green-500'
                 }`} />
                 Text Formatting
               </h4>
@@ -230,7 +229,7 @@ const ReadingSettingsPanel = ({
                   className={`w-12 h-12 flex items-center justify-center rounded-xl transition-all duration-200 transform hover:scale-105 ${
                     readingSettings.textFormatting.bold 
                       ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/30' 
-                      : readingSettings.theme === 'dark'
+                      : readingSettings.theme === 'dark' || readingSettings.theme === 'focus'
                         ? 'bg-gray-600 text-gray-300 hover:bg-gray-500 border border-gray-500 shadow-sm'
                         : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200 shadow-sm'
                   }`}
@@ -245,7 +244,7 @@ const ReadingSettingsPanel = ({
                   className={`w-12 h-12 flex items-center justify-center rounded-xl transition-all duration-200 transform hover:scale-105 ${
                     readingSettings.textFormatting.italic 
                       ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/30' 
-                      : readingSettings.theme === 'dark'
+                      : readingSettings.theme === 'dark' || readingSettings.theme === 'focus'
                         ? 'bg-gray-600 text-gray-300 hover:bg-gray-500 border border-gray-500 shadow-sm'
                         : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200 shadow-sm'
                   }`}
@@ -260,7 +259,7 @@ const ReadingSettingsPanel = ({
                   className={`w-12 h-12 flex items-center justify-center rounded-xl transition-all duration-200 transform hover:scale-105 ${
                     readingSettings.textFormatting.underline 
                       ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/30' 
-                      : readingSettings.theme === 'dark'
+                      : readingSettings.theme === 'dark' || readingSettings.theme === 'focus'
                         ? 'bg-gray-600 text-gray-300 hover:bg-gray-500 border border-gray-500 shadow-sm'
                         : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200 shadow-sm'
                   }`}
@@ -275,28 +274,28 @@ const ReadingSettingsPanel = ({
                   className={`w-12 h-12 flex items-center justify-center rounded-xl transition-all duration-200 transform hover:scale-105 ${
                     readingSettings.textFormatting.highlight 
                       ? 'bg-yellow-500 text-white shadow-lg shadow-yellow-500/30' 
-                      : readingSettings.theme === 'dark'
+                      : readingSettings.theme === 'dark' || readingSettings.theme === 'focus'
                         ? 'bg-gray-600 text-gray-300 hover:bg-gray-500 border border-gray-500 shadow-sm'
                         : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200 shadow-sm'
                   }`}
-                  title="Highlight"
+                  title="Màu chữ"
                 >
-                  <FaHighlighter className="text-lg" />
+                  <FaPalette className="text-lg" />
                 </button>
               </div>
             </div>
 
             {/* Theme Section */}
             <div className={`rounded-xl p-4 transition-all duration-300 ${
-              readingSettings.theme === 'dark' 
+              readingSettings.theme === 'dark' || readingSettings.theme === 'focus' 
                 ? 'bg-gradient-to-r from-gray-700 to-gray-600' 
                 : 'bg-gradient-to-r from-purple-50 to-pink-50'
             }`}>
               <h4 className={`font-semibold mb-4 flex items-center ${
-                readingSettings.theme === 'dark' ? 'text-gray-200' : 'text-gray-700'
+                readingSettings.theme === 'dark' || readingSettings.theme === 'focus' ? 'text-gray-200' : 'text-gray-700'
               }`}>
                 <FaPalette className={`mr-2 ${
-                  readingSettings.theme === 'dark' ? 'text-purple-400' : 'text-purple-500'
+                  readingSettings.theme === 'dark' || readingSettings.theme === 'focus' ? 'text-purple-400' : 'text-purple-500'
                 }`} />
                 Theme
               </h4>
@@ -309,7 +308,7 @@ const ReadingSettingsPanel = ({
                     className={`px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 transform hover:scale-105 ${
                       readingSettings.theme === option.value
                         ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg shadow-blue-500/30'
-                        : readingSettings.theme === 'dark'
+                        : readingSettings.theme === 'dark' || readingSettings.theme === 'focus'
                           ? 'bg-gray-600 text-gray-300 hover:bg-gray-500 border border-gray-500 shadow-sm'
                           : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200 shadow-sm'
                     }`}
@@ -322,7 +321,7 @@ const ReadingSettingsPanel = ({
 
             {/* Controls Section */}
             <div className={`rounded-xl p-4 transition-all duration-300 ${
-              readingSettings.theme === 'dark' 
+              readingSettings.theme === 'dark' || readingSettings.theme === 'focus' 
                 ? 'bg-gradient-to-r from-gray-700 to-gray-600' 
                 : 'bg-gradient-to-r from-gray-50 to-slate-50'
             }`}>
@@ -330,17 +329,17 @@ const ReadingSettingsPanel = ({
                 {/* Reading Mode */}
                 <div className="flex items-center space-x-3">
                   <FaEye className={`text-lg ${
-                    readingSettings.theme === 'dark' ? 'text-blue-400' : 'text-blue-500'
+                    readingSettings.theme === 'dark' || readingSettings.theme === 'focus' ? 'text-blue-400' : 'text-blue-500'
                   }`} />
                   <span className={`text-sm font-medium ${
-                    readingSettings.theme === 'dark' ? 'text-gray-200' : 'text-gray-700'
+                    readingSettings.theme === 'dark' || readingSettings.theme === 'focus' ? 'text-gray-200' : 'text-gray-700'
                   }`}>Chế độ tập trung</span>
                   <button
                     onClick={onToggleReadingMode}
                     className={`relative w-12 h-6 rounded-full transition-all duration-200 ${
                       readingSettings.readingMode 
                         ? 'bg-gradient-to-r from-blue-500 to-purple-500' 
-                        : readingSettings.theme === 'dark'
+                        : readingSettings.theme === 'dark' || readingSettings.theme === 'focus'
                           ? 'bg-gray-500'
                           : 'bg-gray-300'
                     }`}
@@ -364,7 +363,7 @@ const ReadingSettingsPanel = ({
                   <button
                     onClick={onResetSettings}
                     className={`flex items-center px-4 py-2 rounded-xl transition-all duration-200 transform hover:scale-105 ${
-                      readingSettings.theme === 'dark'
+                      readingSettings.theme === 'dark' || readingSettings.theme === 'focus'
                         ? 'bg-gray-600 hover:bg-gray-500 text-gray-200 border border-gray-500 shadow-sm'
                         : 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 shadow-sm'
                     }`}

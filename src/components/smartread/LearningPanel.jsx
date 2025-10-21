@@ -6,8 +6,9 @@ import {
 } from 'react-icons/fa';
 import stepByStepAnalysisService from '../../services/stepByStepAnalysisService';
 import readingTipsService from '../../services/readingTipsService';
+import { readingTipsService as fiveWOneHService } from '../../services/readingTipsService';
 
-const LearningPanel = ({ title, content, isVisible, onClose, readingProgress = 'start', readingData = {} }) => {
+const LearningPanel = ({ title, content, isVisible, onClose, readingProgress = 'start', readingData = {}, fiveWOneHQuestions = [], isLoading5W1H = false }) => {
   // State for different phases
   const [conceptsData, setConceptsData] = useState(null);
   const [fiveWOneHData, setFiveWOneHData] = useState(null);
@@ -43,8 +44,11 @@ const LearningPanel = ({ title, content, isVisible, onClose, readingProgress = '
         loadConcepts();
       }
       
-      // Load other data based on reading progress
-      if ((readingProgress === 'finished_reading' || readingProgress === 'in_progress') && !fiveWOneHData) {
+      // Use 5W1H questions from props if available
+      if (fiveWOneHQuestions.length > 0) {
+        setFiveWOneHData({ fiveWoneH: fiveWOneHQuestions });
+        setActiveTab('fiveWoneH');
+      } else if ((readingProgress === 'finished_reading' || readingProgress === 'in_progress') && !fiveWOneHData) {
         loadFiveWOneH();
       }
       
@@ -56,7 +60,7 @@ const LearningPanel = ({ title, content, isVisible, onClose, readingProgress = '
         loadShortPrompts();
       }
     }
-  }, [isVisible, content, readingProgress, readingData]);
+  }, [isVisible, content, readingProgress, readingData, fiveWOneHQuestions]);
 
   // Load reading tips
   const loadReadingTips = async () => {
@@ -114,8 +118,8 @@ const LearningPanel = ({ title, content, isVisible, onClose, readingProgress = '
   const loadFiveWOneH = async () => {
     setIsLoadingFiveWOneH(true);
     try {
-      const data = await stepByStepAnalysisService.getFiveWOneH(title, content);
-      setFiveWOneHData(data);
+      const questions = await fiveWOneHService.generate5W1HQuestions(content);
+      setFiveWOneHData({ fiveWoneH: questions });
       // Tự động chuyển sang tab 5W1H khi load xong
       setActiveTab('fiveWoneH');
     } catch (error) {
@@ -250,8 +254,8 @@ const LearningPanel = ({ title, content, isVisible, onClose, readingProgress = '
       id: 'fiveWoneH', 
       label: '5W1H', 
       icon: FaQuestionCircle, 
-      isLoading: isLoadingFiveWOneH,
-      isAvailable: !!fiveWOneHData || readingProgress === 'finished_reading' || readingProgress === 'in_progress'
+      isLoading: isLoading5W1H || isLoadingFiveWOneH,
+      isAvailable: !!fiveWOneHData || fiveWOneHQuestions.length > 0 || readingProgress === 'finished_reading' || readingProgress === 'in_progress'
     },
     { 
       id: 'mcq', 
@@ -522,7 +526,7 @@ const LearningPanel = ({ title, content, isVisible, onClose, readingProgress = '
         );
 
       case 'fiveWoneH':
-        if (isLoadingFiveWOneH) {
+        if (isLoading5W1H || isLoadingFiveWOneH) {
           return (
             <div className="flex items-center justify-center h-64">
               <div className="text-center">

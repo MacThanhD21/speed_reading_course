@@ -30,6 +30,9 @@ export const useReadingState = (content) => {
 
   // Calculate words visible in viewport based on scroll position
   const calculateWordsRead = useCallback(() => {
+    // Only calculate words read when actually reading
+    if (!isReading) return 0;
+    
     const viewportHeight = window.innerHeight;
     const scrollTop = window.pageYOffset;
     const documentHeight = document.body.scrollHeight;
@@ -66,7 +69,7 @@ export const useReadingState = (content) => {
     });
     
     return Math.max(0, Math.min(estimatedWordsRead, totalWords));
-  }, [getTotalWordCount]);
+  }, [getTotalWordCount, isReading]);
 
   // Update WPM calculation
   const updateWPM = useCallback(() => {
@@ -77,6 +80,8 @@ export const useReadingState = (content) => {
     
     if (elapsed > 0) {
       const currentWordsRead = calculateWordsRead();
+      
+      // Always update words read
       setWordsRead(currentWordsRead);
       
       // Calculate WPM based on actual reading time
@@ -84,10 +89,17 @@ export const useReadingState = (content) => {
       setCurrentWPM(isNaN(instantWPM) ? 0 : instantWPM);
       
       // Apply exponential moving average for smoothing
-      const alpha = 0.3; // Increased alpha for more responsive updates
+      const alpha = 0.3; // Balanced alpha for responsive but smooth updates
       const newSmoothedWPM = alpha * instantWPM + (1 - alpha) * lastSmoothedWPMRef.current;
       lastSmoothedWPMRef.current = isNaN(newSmoothedWPM) ? 0 : newSmoothedWPM;
       setSmoothedWPM(Math.round(isNaN(newSmoothedWPM) ? 0 : newSmoothedWPM));
+      
+      console.log('WPM Update:', {
+        currentWordsRead,
+        elapsed: elapsed.toFixed(2),
+        instantWPM: instantWPM.toFixed(1),
+        smoothedWPM: Math.round(newSmoothedWPM)
+      });
     }
   }, [isReading, isPaused, startTime, calculateWordsRead]);
 
@@ -110,10 +122,10 @@ export const useReadingState = (content) => {
     };
   }, [isReading, isPaused]);
 
-  // Update WPM every 400ms
+  // Update WPM every 1 second for better responsiveness
   useEffect(() => {
     if (isReading && !isPaused) {
-      const wpmInterval = setInterval(updateWPM, 400);
+      const wpmInterval = setInterval(updateWPM, 1000);
       return () => clearInterval(wpmInterval);
     }
   }, [isReading, isPaused, updateWPM]);
@@ -253,7 +265,7 @@ export const useReadingState = (content) => {
 // Hook for reading settings management
 export const useReadingSettings = () => {
   const [readingSettings, setReadingSettings] = useState({
-    fontSize: 16,
+    fontSize: 20,
     lineHeight: 'leading-relaxed',
     fontFamily: 'inter',
     theme: 'light',
@@ -287,7 +299,8 @@ export const useReadingSettings = () => {
   const themeOptions = useMemo(() => [
     { value: 'light', label: 'Sáng', bg: 'bg-white', text: 'text-gray-800', card: 'bg-white' },
     { value: 'dark', label: 'Tối', bg: 'bg-gray-900', text: 'text-gray-100', card: 'bg-gray-800' },
-    { value: 'sepia', label: 'Sepia', bg: 'bg-amber-50', text: 'text-amber-900', card: 'bg-amber-100' }
+    { value: 'sepia', label: 'Sepia', bg: 'bg-amber-50', text: 'text-amber-900', card: 'bg-amber-100' },
+    { value: 'focus', label: 'Tập trung', bg: 'bg-slate-900', text: 'text-slate-100', card: 'bg-slate-800' }
   ], []);
 
   // Helper functions
@@ -323,10 +336,15 @@ export const useReadingSettings = () => {
   }, []);
 
   const changeTheme = useCallback((theme) => {
-    setReadingSettings(prev => ({
-      ...prev,
-      theme: theme
-    }));
+    setReadingSettings(prev => {
+      // Only update if theme actually changed
+      if (prev.theme === theme) return prev;
+      
+      return {
+        ...prev,
+        theme: theme
+      };
+    });
   }, []);
 
   const toggleReadingMode = useCallback(() => {
@@ -391,7 +409,7 @@ export const useReadingSettings = () => {
     return fontOption ? fontOption.class : 'font-sans';
   }, [fontFamilyOptions, readingSettings.fontFamily]);
 
-  const getTextFormattingClasses = useCallback(() => {
+  const getTextFormattingClasses = useMemo(() => {
     const classes = [];
     if (readingSettings.textFormatting.bold) classes.push('font-bold');
     if (readingSettings.textFormatting.italic) classes.push('italic');
@@ -399,20 +417,15 @@ export const useReadingSettings = () => {
     return classes.join(' ');
   }, [readingSettings.textFormatting]);
 
-  const getHighlightStyle = useCallback(() => {
-    if (readingSettings.textFormatting.highlight) {
-      return {
-        backgroundColor: readingSettings.textFormatting.highlightColor,
-        padding: '2px 4px',
-        borderRadius: '3px'
-      };
-    }
+  const getHighlightStyle = useMemo(() => {
+    // Không áp dụng highlight style cho toàn bộ văn bản nữa
+    // Chức năng highlight đã được thay thế bằng color mode
     return {};
   }, [readingSettings.textFormatting]);
 
   const resetSettings = useCallback(() => {
     setReadingSettings({
-      fontSize: 16,
+      fontSize: 20,
       fontFamily: 'inter',
       theme: 'light',
       textFormatting: {

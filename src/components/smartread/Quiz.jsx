@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FaSpinner, FaCheck, FaTimes } from 'react-icons/fa';
-import questionGenerationService from '../../services/questionGenerationService';
+import { quizGenerationService } from '../../services/quizGenerationService';
 
 const Quiz = ({ content, readingData, onFinishQuiz }) => {
   const [questions, setQuestions] = useState([]);
@@ -19,34 +19,34 @@ const Quiz = ({ content, readingData, onFinishQuiz }) => {
 
   const generateQuestions = async () => {
     setIsGenerating(true);
-    setGenerationStatus('Đang tạo câu hỏi với AI...');
+    setGenerationStatus('Đang tạo bài quiz kiểm tra kiến thức...');
     
     try {
-      console.log('Starting question generation...');
+      console.log('Starting quiz generation...');
       
       // Try AI generation first with timeout
-      const aiQuestionsPromise = questionGenerationService.generateQuestions(content);
+      const aiQuestionsPromise = quizGenerationService.generateQuizQuestions(content);
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('AI generation timeout')), 15000)
+        setTimeout(() => reject(new Error('AI generation timeout')), 20000)
       );
       
       const aiQuestions = await Promise.race([aiQuestionsPromise, timeoutPromise]);
       
       if (aiQuestions && aiQuestions.length > 0) {
-        console.log('Using AI-generated questions:', aiQuestions.length);
+        console.log('Using AI-generated quiz questions:', aiQuestions.length);
         setQuestions(aiQuestions);
         setIsUsingAI(true);
-        setGenerationStatus('Tạo câu hỏi thành công!');
+        setGenerationStatus('Tạo bài quiz thành công!');
       } else {
         console.log('AI generation failed, falling back to local generation...');
         setGenerationStatus('Đang tạo câu hỏi từ nội dung...');
         const localQuestions = generateQuestionsFromContent(content);
         setQuestions(localQuestions);
         setIsUsingAI(false);
-        setGenerationStatus('Tạo câu hỏi thành công!');
+        setGenerationStatus('Tạo bài quiz thành công!');
       }
     } catch (error) {
-      console.error('Error generating questions:', error);
+      console.error('Error generating quiz questions:', error);
       
       // Show user-friendly error message
       if (error.message.includes('429') || error.message.includes('Too Many Requests')) {
@@ -63,7 +63,7 @@ const Quiz = ({ content, readingData, onFinishQuiz }) => {
       const localQuestions = generateQuestionsFromContent(content);
       setQuestions(localQuestions);
       setIsUsingAI(false);
-      setGenerationStatus('Tạo câu hỏi thành công!');
+      setGenerationStatus('Tạo bài quiz thành công!');
     } finally {
       setIsGenerating(false);
     }

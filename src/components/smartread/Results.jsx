@@ -4,6 +4,29 @@ import { FaTrophy, FaChartLine, FaLightbulb, FaRedo, FaHome, FaCheck, FaTimes, F
 import recommendationService from '../../services/recommendationService';
 
 const Results = ({ readingData, quizData, onRestart, onGoHome }) => {
+  // Check if data exists, otherwise use defaults
+  if (!readingData || !quizData) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">
+            Không tìm thấy dữ liệu
+          </h2>
+          <p className="text-gray-600 mb-6">
+            Vui lòng quay lại và thực hiện lại bài đọc và quiz.
+          </p>
+          <button
+            onClick={onRestart}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium transition-colors flex items-center justify-center mx-auto"
+          >
+            <FaRedo className="mr-2" />
+            Thử lại
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   const { finalWPM, wordsRead, elapsedTime, averageWPM } = readingData;
   const { score, correctAnswers, totalQuestions, questions, answers } = quizData;
   

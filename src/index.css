@@ -45,6 +45,18 @@
     word-spacing: 0.05em;
   }
   
+  /* Paper-like reading experience */
+  .paper-text {
+    font-family: 'Inter', 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    font-feature-settings: 'kern' 1, 'liga' 1;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    line-height: 1.6;
+    letter-spacing: 0.01em;
+    word-spacing: 0.05em;
+  }
+  
   /* Enhanced text selection styles - Light Theme */
   ::selection {
     background: #3b82f6;
@@ -65,6 +77,16 @@
     color: white;
     text-shadow: none;
     border-radius: 3px;
+  }
+  
+  /* Override for smartread content to prevent global yellow */
+  .smartread-content ::selection,
+  .smartread-content ::-moz-selection,
+  .smartread-content ::-webkit-selection {
+    background: #3b82f6 !important;
+    color: white !important;
+    text-shadow: none !important;
+    border-radius: 3px !important;
   }
   
   /* Dark Theme Selection */

@@ -47,7 +47,7 @@ const ReadingHeader = ({
 }) => {
   return (
     <div className={`fixed top-0 left-0 right-0 backdrop-blur-md border-b z-50 shadow-sm transition-all duration-300 ${
-      readingSettings.theme === 'dark' 
+      readingSettings.theme === 'dark' || readingSettings.theme === 'focus' || readingSettings.theme === 'focus'
         ? 'bg-gray-900/95 border-gray-700' 
         : 'bg-white/95 border-gray-200'
     }`}>
@@ -59,7 +59,7 @@ const ReadingHeader = ({
             <button
               onClick={onGoBack}
               className={`flex items-center px-4 py-2.5 rounded-xl transition-all duration-200 border ${
-                readingSettings.theme === 'dark'
+                readingSettings.theme === 'dark' || readingSettings.theme === 'focus'
                   ? 'text-gray-300 hover:text-gray-100 hover:bg-gray-800 border-gray-600 hover:border-gray-500'
                   : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50 border-gray-200 hover:border-gray-300'
               }`}
@@ -79,7 +79,7 @@ const ReadingHeader = ({
             <button
               onClick={resetReading}
               className={`flex items-center px-4 py-2.5 rounded-xl transition-all duration-200 border ${
-                readingSettings.theme === 'dark'
+                readingSettings.theme === 'dark' || readingSettings.theme === 'focus'
                   ? 'text-gray-300 hover:text-gray-100 hover:bg-gray-800 border-gray-600 hover:border-gray-500'
                   : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50 border-gray-200 hover:border-gray-300'
               }`}
@@ -94,54 +94,54 @@ const ReadingHeader = ({
           <div className="flex items-center space-x-6">
             {/* WPM Card */}
             <div className={`rounded-xl p-4 min-w-[100px] border transition-all duration-300 ${
-              readingSettings.theme === 'dark'
+              readingSettings.theme === 'dark' || readingSettings.theme === 'focus'
                 ? 'bg-gradient-to-br from-blue-900/50 to-blue-800/50 border-blue-700'
                 : 'bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200'
             }`}>
               <div className="text-center">
                 <div className={`text-3xl font-bold mb-1 ${
-                  readingSettings.theme === 'dark' ? 'text-blue-300' : 'text-blue-700'
+                  readingSettings.theme === 'dark' || readingSettings.theme === 'focus' ? 'text-blue-300' : 'text-blue-700'
                 }`}>
                   {isReading && !isNaN(smoothedWPM) ? smoothedWPM : 0}
                 </div>
                 <div className={`text-xs font-medium uppercase tracking-wide ${
-                  readingSettings.theme === 'dark' ? 'text-blue-400' : 'text-blue-600'
+                  readingSettings.theme === 'dark' || readingSettings.theme === 'focus' ? 'text-blue-400' : 'text-blue-600'
                 }`}>WPM</div>
               </div>
             </div>
 
             {/* Time Card */}
             <div className={`rounded-xl p-4 min-w-[100px] border transition-all duration-300 ${
-              readingSettings.theme === 'dark'
+              readingSettings.theme === 'dark' || readingSettings.theme === 'focus'
                 ? 'bg-gradient-to-br from-green-900/50 to-green-800/50 border-green-700'
                 : 'bg-gradient-to-br from-green-50 to-green-100 border-green-200'
             }`}>
               <div className="text-center">
                 <div className={`text-2xl font-bold mb-1 ${
-                  readingSettings.theme === 'dark' ? 'text-green-300' : 'text-green-700'
+                  readingSettings.theme === 'dark' || readingSettings.theme === 'focus' ? 'text-green-300' : 'text-green-700'
                 }`}>
                   {formatTime(elapsedTime || 0)}
                 </div>
                 <div className={`text-xs font-medium uppercase tracking-wide ${
-                  readingSettings.theme === 'dark' ? 'text-green-400' : 'text-green-600'
+                  readingSettings.theme === 'dark' || readingSettings.theme === 'focus' ? 'text-green-400' : 'text-green-600'
                 }`}>Thời gian</div>
               </div>
             </div>
 
             {/* Words Card */}
             <div className={`rounded-xl p-4 min-w-[100px] border transition-all duration-300 ${
-              readingSettings.theme === 'dark'
+              readingSettings.theme === 'dark' || readingSettings.theme === 'focus'
                 ? 'bg-gradient-to-br from-purple-900/50 to-purple-800/50 border-purple-700'
                 : 'bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200'
             }`}>
               <div className="text-center">
                 <div className={`text-2xl font-bold mb-1 ${
-                  readingSettings.theme === 'dark' ? 'text-purple-300' : 'text-purple-700'
+                  readingSettings.theme === 'dark' || readingSettings.theme === 'focus' ? 'text-purple-300' : 'text-purple-700'
                 }`}>
                   {wordsRead || 0}
                 </div>
                 <div className={`text-xs font-medium uppercase tracking-wide ${
-                  readingSettings.theme === 'dark' ? 'text-purple-400' : 'text-purple-600'
+                  readingSettings.theme === 'dark' || readingSettings.theme === 'focus' ? 'text-purple-400' : 'text-purple-600'
                 }`}>Từ đã đọc</div>
               </div>
             </div>
