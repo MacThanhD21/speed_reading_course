@@ -5,10 +5,163 @@
 @layer base {
   html {
     scroll-behavior: smooth;
+    margin: 0;
+    padding: 0;
   }
   
   body {
     font-family: 'Inter', system-ui, sans-serif;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    overflow-x: hidden;
+  }
+  
+  #root {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100vh;
+  }
+  
+  .App {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+  }
+  
+  /* SmartRead font improvements */
+  .smartread-text {
+    font-family: 'Inter', 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    font-feature-settings: 'kern' 1, 'liga' 1;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  .smartread-content {
+    line-height: 1.7;
+    letter-spacing: 0.01em;
+    word-spacing: 0.05em;
+  }
+  
+  /* Enhanced text selection styles - Light Theme */
+  ::selection {
+    background: #3b82f6;
+    color: white;
+    text-shadow: none;
+    border-radius: 3px;
+  }
+  
+  ::-moz-selection {
+    background: #3b82f6;
+    color: white;
+    text-shadow: none;
+    border-radius: 3px;
+  }
+  
+  ::-webkit-selection {
+    background: #3b82f6;
+    color: white;
+    text-shadow: none;
+    border-radius: 3px;
+  }
+  
+  /* Dark Theme Selection */
+  .bg-gray-900 ::selection,
+  .dark-theme ::selection {
+    background: #f59e0b;
+    color: #1f2937;
+    text-shadow: none;
+    border-radius: 3px;
+  }
+  
+  .bg-gray-900 ::-moz-selection,
+  .dark-theme ::-moz-selection {
+    background: #f59e0b;
+    color: #1f2937;
+    text-shadow: none;
+    border-radius: 3px;
+  }
+  
+  .bg-gray-900 ::-webkit-selection,
+  .dark-theme ::-webkit-selection {
+    background: #f59e0b;
+    color: #1f2937;
+    text-shadow: none;
+    border-radius: 3px;
+  }
+  
+  /* Sepia Theme Selection */
+  .bg-amber-50 ::selection,
+  .sepia-theme ::selection {
+    background: #d97706;
+    color: white;
+    text-shadow: none;
+    border-radius: 3px;
+  }
+  
+  .bg-amber-50 ::-moz-selection,
+  .sepia-theme ::-moz-selection {
+    background: #d97706;
+    color: white;
+    text-shadow: none;
+    border-radius: 3px;
+  }
+  
+  .bg-amber-50 ::-webkit-selection,
+  .sepia-theme ::-webkit-selection {
+    background: #d97706;
+    color: white;
+    text-shadow: none;
+    border-radius: 3px;
+  }
+  
+  /* Enhanced cursor styles */
+  .cursor-text {
+    cursor: text !important;
+  }
+  
+  .cursor-text:hover {
+    cursor: text !important;
+  }
+  
+  /* Smooth text selection animation */
+  * {
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+  
+  /* Custom scrollbar for better UX */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    border-radius: 4px;
+    transition: background 0.3s ease;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #2563eb, #1e40af);
+  }
+  
+  /* Better text rendering */
+  body {
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  /* Remove focus outline for reading content */
+  .smartread-content:focus,
+  .smartread-content *:focus {
+    outline: none !important;
   }
 }
 

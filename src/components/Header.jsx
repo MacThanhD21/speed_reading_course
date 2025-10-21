@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import { Link } from 'react-router-dom'
 import { HiMenu, HiX, HiBookOpen } from 'react-icons/hi'
 
 const Header = () => {
@@ -82,6 +83,12 @@ const Header = () => {
             >
               Học phí
             </button>
+            <Link 
+              to="/smartread"
+              className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+            >
+              SmartRead
+            </Link>
             <button 
               onClick={() => scrollToSection('cta')}
               className="btn-primary"
@@ -131,9 +138,15 @@ const Header = () => {
             >
               Học phí
             </button>
+            <Link 
+              to="/smartread"
+              className="block w-full mx-4 mt-4 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300 text-center"
+            >
+              SmartRead
+            </Link>
             <button 
               onClick={() => scrollToSection('cta')}
-              className="block w-full mx-4 mt-4 btn-primary"
+              className="block w-full mx-4 mt-2 btn-primary"
             >
               Đăng ký ngay
             </button>

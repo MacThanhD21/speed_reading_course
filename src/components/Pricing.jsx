@@ -139,7 +139,7 @@ const Pricing = () => {
               <div className="w-16 h-16 bg-accent-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <HiStar className="w-8 h-8 text-accent-600" />
               </div>
-              <h4 className="text-lg font-semibold text-gray-900 mb-2">Coach 1-1 tận tâm</h4>
+              <h4 className="text-lg font-semibold text-gray-900 mb-2">Giáo viên tận tâm</h4>
               <p className="text-gray-600">Theo sát tiến độ, chỉnh kỹ thuật trực tiếp</p>
             </div>
 

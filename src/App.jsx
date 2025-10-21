@@ -1,4 +1,5 @@
 import React from 'react'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import Header from './components/Header'
 import Hero from './components/Hero'
 import PainPoints from './components/PainPoints'
@@ -10,8 +11,9 @@ import Testimonials from './components/Testimonials'
 import FAQ from './components/FAQ'
 import CTA from './components/CTA'
 import Footer from './components/Footer'
+import SmartReadRouter from './components/smartread/SmartReadRouter'
 
-function App() {
+function HomePage() {
   return (
     <div className="App">
       <Header />
@@ -28,6 +30,17 @@ function App() {
       </main>
       <Footer />
     </div>
+  )
+}
+
+function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/smartread/*" element={<SmartReadRouter />} />
+      </Routes>
+    </Router>
   )
 }
 
