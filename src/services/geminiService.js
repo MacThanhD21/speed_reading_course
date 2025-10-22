@@ -1,7 +1,7 @@
 // Gemini API Service - Centralized service for all Gemini API calls
 class GeminiService {
   constructor() {
-    this.apiKey = 'AIzaSyBd6g9ac99blI_CARFWqRciL87-44ObzWQ';
+    this.apiKey = 'AIzaSyBkOeepvhEWdc-cX46hMjauKDxWko6S0U8';
     this.baseURL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
     this.requestQueue = [];
     this.isProcessing = false;

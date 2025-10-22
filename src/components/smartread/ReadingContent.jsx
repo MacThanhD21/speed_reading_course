@@ -128,14 +128,14 @@ const ReadingContent = React.memo(({
       )}
       
       {/* Paper-like container */}
-      <div className="flex justify-center px-4">
-        <div className="w-full max-w-5xl">
+      <div className="w-full flex justify-center">
+        <div className="w-full max-w-4xl mx-4 sm:mx-6 lg:mx-8">
           <motion.div
             {...fadeInUp}
             className={`rounded-lg sm:rounded-xl shadow-lg transition-colors duration-300 ${
               readingSettings.readingMode 
                 ? 'bg-white border-2 border-blue-200' 
-                : currentTheme.card
+                : 'border border-gray-200'
             }`}
             style={{
               backgroundColor: readingSettings.readingMode 
@@ -146,20 +146,45 @@ const ReadingContent = React.memo(({
                     ? '#fef3c7'
                     : readingSettings.theme === 'focus'
                       ? '#1e293b'
-                      : '#fefefe', // Paper white
+                      : 'rgba(248, 250, 252, 0.95)', // Màu xám nhạt chìm hơn để tạo sự nổi bật
               backgroundImage: readingSettings.theme === 'light' || readingSettings.readingMode
                 ? `repeating-linear-gradient(
                     transparent,
-                    transparent 31px,
-                    #e5e7eb 31px,
-                    #e5e5e7 32px
+                    transparent ${Math.round(readingSettings.fontSize * 1.6) - 1}px,
+                    rgba(59, 130, 246, 0.2) ${Math.round(readingSettings.fontSize * 1.6) - 1}px,
+                    rgba(59, 130, 246, 0.25) ${Math.round(readingSettings.fontSize * 1.6)}px
                   )`
+                : readingSettings.theme === 'dark'
+                  ? `repeating-linear-gradient(
+                      transparent,
+                      transparent ${Math.round(readingSettings.fontSize * 1.6) - 1}px,
+                      rgba(255, 255, 255, 0.1) ${Math.round(readingSettings.fontSize * 1.6) - 1}px,
+                      rgba(255, 255, 255, 0.15) ${Math.round(readingSettings.fontSize * 1.6)}px
+                    )`
+                  : readingSettings.theme === 'sepia'
+                    ? `repeating-linear-gradient(
+                        transparent,
+                        transparent ${Math.round(readingSettings.fontSize * 1.6) - 1}px,
+                        rgba(139, 69, 19, 0.2) ${Math.round(readingSettings.fontSize * 1.6) - 1}px,
+                        rgba(139, 69, 19, 0.3) ${Math.round(readingSettings.fontSize * 1.6)}px
+                      )`
+                    : readingSettings.theme === 'focus'
+                      ? `repeating-linear-gradient(
+                          transparent,
+                          transparent ${Math.round(readingSettings.fontSize * 1.6) - 1}px,
+                          rgba(255, 255, 255, 0.1) ${Math.round(readingSettings.fontSize * 1.6) - 1}px,
+                          rgba(255, 255, 255, 0.15) ${Math.round(readingSettings.fontSize * 1.6)}px
+                        )`
+                      : 'none',
+              backgroundSize: readingSettings.theme === 'light' || readingSettings.readingMode || readingSettings.theme === 'dark' || readingSettings.theme === 'sepia' || readingSettings.theme === 'focus'
+                ? `100% ${Math.round(readingSettings.fontSize * 1.6)}px`
                 : 'none',
-              backgroundSize: '100% 32px',
-              padding: '3rem 4rem',
+              padding: '3rem 0',
               margin: '0 auto',
               boxShadow: readingSettings.theme === 'light' || readingSettings.readingMode
-                ? '0 0 0 1px #d1d5db, 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+                ? readingSettings.readingMode 
+                  ? '0 0 0 1px #d1d5db, 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+                  : '0 10px 30px -5px rgba(0, 0, 0, 0.15), 0 6px 15px -3px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(226, 232, 240, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
                 : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
             }}
           >
@@ -307,7 +332,7 @@ const ReadingContent = React.memo(({
             {/* Paper-like text content */}
             <div 
               ref={contentRef}
-              className={`paper-text smartread-content max-w-none leading-relaxed transition-all duration-300 ${currentFontFamily.class} ${getTextFormattingClasses} select-text px-4 py-4 ${
+              className={`paper-text smartread-content max-w-none leading-relaxed transition-all duration-300 ${currentFontFamily.class} ${getTextFormattingClasses} select-text px-4 sm:px-6 py-4 ${
                 isColorMode ? 'cursor-crosshair' : 'cursor-text'
               }`}
               style={{

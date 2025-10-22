@@ -168,6 +168,167 @@ ${textContent}
     
     return typeQuestions[type];
   }
+
+  // Tạo mẹo đọc hiệu quả
+  async generateReadingTips(content, readingData = {}) {
+    try {
+      console.log('Generating reading tips...');
+      
+      const prompt = this.createReadingTipsPrompt(content, readingData);
+      const response = await this.geminiService.generateContent(prompt, {
+        temperature: 0.7,
+        maxOutputTokens: 1000
+      });
+      
+      const tips = this.parseReadingTipsResponse(response);
+      console.log('Generated reading tips:', tips);
+      
+      return tips;
+    } catch (error) {
+      console.error('Error generating reading tips:', error);
+      // Fallback to local generation
+      return this.generateLocalReadingTips(content, readingData);
+    }
+  }
+
+  // Tạo prompt cho reading tips
+  createReadingTipsPrompt(content, readingData) {
+    const title = content.title || 'Bài viết';
+    const textContent = content.content || content;
+    const readingProgress = readingData.progress || 'start';
+    const readingSpeed = readingData.speed || 'normal';
+    
+    return `Bạn là một chuyên gia về kỹ năng đọc hiệu quả người Việt Nam. Hãy tạo các mẹo đọc hiệu quả bằng TIẾNG VIỆT dựa trên nội dung sau:
+
+**Tiêu đề:** ${title}
+
+**Nội dung:**
+${textContent}
+
+**Thông tin đọc hiện tại:**
+- Tiến độ: ${readingProgress}
+- Tốc độ: ${readingSpeed}
+
+**Yêu cầu:**
+1. Tạo 3-5 mẹo đọc hiệu quả bằng TIẾNG VIỆT
+2. Mỗi mẹo phải phù hợp với nội dung bài viết
+3. Mẹo phải giúp người đọc hiểu và ghi nhớ tốt hơn
+4. Sử dụng từ ngữ tiếng Việt tự nhiên và dễ hiểu
+5. Trả về dưới dạng JSON array với format:
+[
+  {
+    "id": 1,
+    "title": "Tiêu đề mẹo bằng tiếng Việt",
+    "description": "Mô tả chi tiết mẹo bằng tiếng Việt",
+    "icon": "emoji phù hợp"
+  }
+]
+
+**QUAN TRỌNG:** 
+- TẤT CẢ tiêu đề và mô tả phải bằng TIẾNG VIỆT
+- Không sử dụng tiếng Anh trong mẹo
+- Chỉ trả về JSON array, không có text thêm.`;
+  }
+
+  // Parse response từ API cho reading tips
+  parseReadingTipsResponse(response) {
+    try {
+      // Tìm JSON trong response
+      const jsonMatch = response.match(/\[[\s\S]*\]/);
+      if (jsonMatch) {
+        const tips = JSON.parse(jsonMatch[0]);
+        return tips.filter(tip => tip.title && tip.description);
+      }
+      
+      // Fallback parsing
+      const lines = response.split('\n').filter(line => line.trim());
+      const tips = [];
+      let currentTip = null;
+      
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        
+        if (line.match(/^\d+\./) || line.includes('Mẹo') || line.includes('Tip')) {
+          if (currentTip) {
+            tips.push(currentTip);
+          }
+          currentTip = {
+            id: tips.length + 1,
+            title: line.replace(/^\d+\.\s*/, '').trim(),
+            description: '',
+            icon: this.getRandomIcon()
+          };
+        } else if (currentTip && line.length > 10) {
+          currentTip.description = line;
+        }
+      }
+      
+      if (currentTip) {
+        tips.push(currentTip);
+      }
+      
+      return tips.slice(0, 5); // Giới hạn 5 mẹo
+    } catch (error) {
+      console.error('Error parsing reading tips response:', error);
+      return [];
+    }
+  }
+
+  // Get random icon for tips
+  getRandomIcon() {
+    const icons = ['📖', '🎯', '⚡', '🧠', '💡', '🚀', '⭐', '🔍', '📝', '💪'];
+    return icons[Math.floor(Math.random() * icons.length)];
+  }
+
+  // Fallback: Generate local reading tips
+  generateLocalReadingTips(content, readingData) {
+    const textContent = content.content || content;
+    const wordCount = textContent.split(' ').length;
+    const readingProgress = readingData.progress || 'start';
+    
+    const tips = [
+      {
+        id: 1,
+        title: "Đọc với tốc độ thoải mái",
+        description: "Hãy đọc ở tốc độ bạn cảm thấy thoải mái và có thể hiểu nội dung một cách rõ ràng",
+        icon: "🐌"
+      },
+      {
+        id: 2,
+        title: "Tập trung vào nội dung",
+        description: "Loại bỏ các yếu tố gây phân tán và tập trung hoàn toàn vào bài đọc",
+        icon: "🎯"
+      },
+      {
+        id: 3,
+        title: "Ghi chú những điểm quan trọng",
+        description: "Đánh dấu hoặc ghi chú những thông tin quan trọng để dễ dàng ôn tập sau này",
+        icon: "📝"
+      }
+    ];
+
+    // Thêm mẹo dựa trên độ dài nội dung
+    if (wordCount > 500) {
+      tips.push({
+        id: 4,
+        title: "Chia nhỏ nội dung",
+        description: "Với bài viết dài, hãy chia thành các phần nhỏ để đọc và hiểu từng phần một cách hiệu quả",
+        icon: "📚"
+      });
+    }
+
+    // Thêm mẹo dựa trên tiến độ đọc
+    if (readingProgress === 'in_progress') {
+      tips.push({
+        id: 5,
+        title: "Nhấn 'Hoàn thành' khi xong",
+        description: "Đánh dấu hoàn thành khi bạn đã đọc và hiểu nội dung để tiếp tục các bước học tập tiếp theo",
+        icon: "✅"
+      });
+    }
+
+    return tips;
+  }
 }
 
 // Export singleton instance
