@@ -69,7 +69,6 @@ ${textContent}
     "id": 1,
     "question": "Câu hỏi về tiêu đề bằng tiếng Việt",
     "type": "what|who|when|where|why|how",
-    "hint": "Gợi ý ngắn gọn bằng tiếng Việt",
     "expectedLength": "Ngắn|Trung bình|Dài",
     "keyPoints": ["Điểm chính 1", "Điểm chính 2", "Điểm chính 3"]
   }
@@ -107,26 +106,54 @@ Nếu tiêu đề là "Giá dầu có tuần tăng mạnh nhất kể từ giữ
         return this.generateLocal5W1HQuestions(content);
       }
       
-      // Clean response
-      let cleanedResponse = response.trim()
+      // Clean response - xử lý markdown đúng cách
+      let cleanedResponse = response.trim();
+      
+      // Remove markdown code blocks - xử lý tất cả các trường hợp
+      cleanedResponse = cleanedResponse
         .replace(/^```json\s*/i, '')
         .replace(/^```\s*/i, '')
         .replace(/```\s*$/i, '')
+        .replace(/^`json\s*/i, '')  // Thêm case này
+        .replace(/^`\s*/i, '')     // Thêm case này
+        .replace(/`\s*$/i, '')     // Thêm case này
         .replace(/^json\s*/i, '')
         .replace(/^JSON\s*/i, '')
         .trim();
+      
+      // Xử lý thêm các trường hợp đặc biệt
+      if (cleanedResponse.startsWith('`')) {
+        cleanedResponse = cleanedResponse.substring(1);
+      }
+      if (cleanedResponse.endsWith('`')) {
+        cleanedResponse = cleanedResponse.substring(0, cleanedResponse.length - 1);
+      }
+      
+      logger.debug('READING_TIPS', 'Cleaned response', {
+        originalLength: response.length,
+        cleanedLength: cleanedResponse.length,
+        originalStart: response.substring(0, 50),
+        cleanedStart: cleanedResponse.substring(0, 50)
+      });
       
       // Try to parse JSON
       let questions = null;
       try {
         questions = JSON.parse(cleanedResponse);
-        logger.debug('READING_TIPS', 'Direct 5W1H JSON parse successful');
+        logger.info('READING_TIPS', 'Direct 5W1H JSON parse successful', {
+          questionsCount: questions?.length || 0,
+          firstQuestion: questions?.[0],
+          firstQuestionKeyPoints: questions?.[0]?.keyPoints
+        });
       } catch (e) {
-        logger.debug('READING_TIPS', 'Direct 5W1H JSON parse failed, trying extraction...');
+        logger.warn('READING_TIPS', 'Direct 5W1H JSON parse failed, trying extraction...', {
+          error: e.message,
+          cleanedResponseStart: cleanedResponse.substring(0, 100)
+        });
         
         // Extract JSON array
         const jsonMatch = cleanedResponse.match(/\[[\s\S]*\]/);
-        if (jsonMatch) {
+      if (jsonMatch) {
           let extractedJson = jsonMatch[0];
           
           // Fix JSON issues
@@ -154,13 +181,35 @@ Nếu tiêu đề là "Giá dầu có tuần tăng mạnh nhất kể từ giữ
       
       // Validate and return questions
       if (questions && Array.isArray(questions) && questions.length > 0) {
+        logger.info('READING_TIPS', 'Raw questions from API', {
+          totalQuestions: questions.length,
+          questions: questions.map(q => ({
+            id: q.id,
+            type: q.type,
+            question: q.question?.substring(0, 50) + '...',
+            hasHint: !!q.hint,
+            keyPoints: q.keyPoints,
+            keyPointsLength: q.keyPoints?.length || 0
+          }))
+        });
+        
         const validQuestions = questions.filter(q => q.question && q.type);
-        logger.info('READING_TIPS', `Parsed ${validQuestions.length} valid 5W1H questions`);
+        logger.info('READING_TIPS', `Parsed ${validQuestions.length} valid 5W1H questions`, {
+          totalQuestions: questions.length,
+          validQuestions: validQuestions.length,
+          questionTypes: validQuestions.map(q => q.type),
+          firstQuestion: validQuestions[0]?.question,
+          firstQuestionKeyPoints: validQuestions[0]?.keyPoints,
+          allKeyPoints: validQuestions.map(q => ({ id: q.id, keyPoints: q.keyPoints }))
+        });
         return this.normalizeAndSanitizeQuestions(this.validateAndFixQuestions(validQuestions, content?.title));
       }
       
       // Fallback parsing
-      logger.warn('READING_TIPS', 'Using fallback 5W1H parsing...');
+      logger.error('READING_TIPS', 'Using fallback 5W1H parsing - THIS SHOULD NOT HAPPEN WITH VALID API RESPONSE!', {
+        responsePreview: response.substring(0, 200) + '...',
+        cleanedResponsePreview: cleanedResponse.substring(0, 200) + '...'
+      });
       const lines = response.split('\n').filter(line => line.trim());
       const fallbackQuestions = [];
       
@@ -171,7 +220,6 @@ Nếu tiêu đề là "Giá dầu có tuần tăng mạnh nhất kể từ giữ
           fallbackQuestions.push({
             question: line.replace(/^\d+\.\s*/, '').trim(),
             type: type,
-            hint: this.generateHint(type),
             expectedLength: 'Trung bình',
             keyPoints: [],
             learningPoint: this.generateLearningPoint(line)
@@ -229,31 +277,51 @@ Nếu tiêu đề là "Giá dầu có tuần tăng mạnh nhất kể từ giữ
       inputQuestions: questions.map(q => ({ id: q.id, type: q.type, question: q.question?.substring(0, 30) + '...' }))
     });
     
-    const uniqueQuestions = this.removeDuplicateQuestions(questions);
+    // Tạm thời tắt removeDuplicateQuestions để hiển thị tất cả câu hỏi
+    // const uniqueQuestions = this.removeDuplicateQuestions(questions);
     
-    logger.debug('READING_TIPS', 'After removeDuplicateQuestions', {
-      uniqueCount: uniqueQuestions.length
+    logger.debug('READING_TIPS', 'Skipping duplicate removal', {
+      originalCount: questions.length
     });
     
-    const processedQuestions = uniqueQuestions.map((q, idx) => {
+    const processedQuestions = questions.map((q, idx) => {
       const safe = { ...q };
       safe.id = (q && typeof q.id === 'number') ? q.id : (idx + 1);
-      safe.question = this.sanitizeQuestionText(String(q.question || ''));
+      // Tạm thời tắt sanitizeQuestionText để debug
+      safe.question = String(q.question || '');
       safe.type = q.type || this.detectQuestionType(safe.question);
       if (!safe.expectedLength) safe.expectedLength = 'Trung bình';
-      if (!Array.isArray(safe.keyPoints)) safe.keyPoints = [];
+      // Giữ nguyên keyPoints từ API, chỉ đảm bảo là array
+      safe.keyPoints = Array.isArray(q.keyPoints) ? q.keyPoints : [];
+      // Loại bỏ hint để tiết kiệm băng thông
+      delete safe.hint;
       return safe;
     });
     
     logger.debug('READING_TIPS', 'After processing', {
       processedCount: processedQuestions.length,
-      processedQuestions: processedQuestions.map(q => ({ id: q.id, type: q.type, question: q.question?.substring(0, 30) + '...' }))
+      processedQuestions: processedQuestions.map(q => ({ 
+        id: q.id, 
+        type: q.type, 
+        question: q.question?.substring(0, 30) + '...',
+        keyPoints: q.keyPoints,
+        keyPointsLength: q.keyPoints?.length || 0
+      }))
     });
     
     // Loại bỏ các câu hỏi rỗng hoặc không hợp lệ
-    const validQuestions = processedQuestions.filter(q => 
-      q.question && q.question.trim().length > 0
-    );
+    const validQuestions = processedQuestions.filter(q => {
+      const isValid = q.question && q.question.trim().length > 0;
+      if (!isValid) {
+        logger.warn('READING_TIPS', 'Removing invalid question', {
+          id: q.id,
+          type: q.type,
+          question: q.question,
+          questionLength: q.question?.length || 0
+        });
+      }
+      return isValid;
+    });
     
     logger.info('READING_TIPS', 'Filtered invalid questions', {
       originalCount: processedQuestions.length,
@@ -350,51 +418,45 @@ Nếu tiêu đề là "Giá dầu có tuần tăng mạnh nhất kể từ giữ
     });
     
     return [
-      {
-        id: 1,
+        {
+          id: 1,
         question: "Tại sao sự kiện này lại quan trọng?",
         type: "why",
-        hint: "Tìm hiểu về nguyên nhân và ý nghĩa của sự kiện trong tiêu đề",
         expectedLength: "Trung bình",
         keyPoints: ["Nêu nguyên nhân chính", "Giải thích ý nghĩa", "Liên hệ với thực tế"]
-      },
-      {
-        id: 2,
+        },
+        {
+          id: 2,
         question: "Sự kiện này xảy ra khi nào?",
         type: "when",
-        hint: "Tìm hiểu về thời gian và thời điểm quan trọng trong tiêu đề",
-        expectedLength: "Trung bình",
+          expectedLength: "Trung bình",
         keyPoints: ["Xác định thời gian cụ thể", "Giải thích ý nghĩa thời gian", "Nêu bối cảnh"]
-      },
-      {
-        id: 3,
+        },
+        {
+          id: 3,
         question: "Những ai liên quan đến sự kiện này?",
         type: "who",
-        hint: "Xác định các nhân vật hoặc tổ chức liên quan đến tiêu đề",
-        expectedLength: "Trung bình",
+          expectedLength: "Trung bình",
         keyPoints: ["Liệt kê nhân vật/tổ chức liên quan", "Mô tả vai trò", "Nêu tầm quan trọng"]
-      },
-      {
-        id: 4,
+        },
+        {
+          id: 4,
         question: "Những địa điểm nào liên quan đến sự kiện này?",
-        type: "where",
-        hint: "Xác định các địa điểm liên quan đến tiêu đề",
-        expectedLength: "Trung bình",
+          type: "where",
+          expectedLength: "Trung bình",
         keyPoints: ["Liệt kê địa điểm liên quan", "Giải thích tầm quan trọng", "Mô tả đặc điểm"]
-      },
-      {
-        id: 5,
+        },
+        {
+          id: 5,
         question: "Cách thức hoạt động được mô tả như thế nào?",
         type: "how",
-        hint: "Tìm hiểu về quy trình và phương pháp liên quan đến tiêu đề",
         expectedLength: "Trung bình",
         keyPoints: ["Mô tả quy trình", "Giải thích từng bước", "Nêu đặc điểm chính"]
-      },
-      {
-        id: 6,
+        },
+        {
+          id: 6,
         question: "Điều này có ý nghĩa gì đối với thị trường?",
         type: "what",
-        hint: "Tìm hiểu về tác động và ý nghĩa của sự kiện",
         expectedLength: "Trung bình",
         keyPoints: ["Phân tích tác động", "Giải thích ý nghĩa", "Dự đoán xu hướng"]
       }
@@ -731,7 +793,6 @@ ${truncatedContent}
   "previewQuestions": [
     {
       "question": "Câu hỏi định hướng bằng tiếng Việt",
-      "hint": "Gợi ý tìm đáp án"
     }
   ]
 }
@@ -892,8 +953,8 @@ ${truncatedContent}
   generateFallbackComprehensiveData(content, readingData = {}) {
     logger.info('READING_TIPS', 'Generating fallback comprehensive data');
     
-    return {
-      readingTips: this.getFixedReadingTips(),
+        return {
+          readingTips: this.getFixedReadingTips(),
       conceptsAndTerms: [
         {
           term: "Khái niệm chính",
@@ -934,7 +995,6 @@ ${truncatedContent}
       previewQuestions: [
         {
           question: "Câu hỏi định hướng đọc",
-          hint: "Gợi ý tìm đáp án"
         }
       ]
     };

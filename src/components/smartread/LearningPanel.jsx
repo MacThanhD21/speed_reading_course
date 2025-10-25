@@ -237,13 +237,13 @@ const LearningPanel = ({ title, content, isVisible, onClose, readingProgress = '
     if (!isVisible || !content) return;
     // If incoming questions via props, prefer using them once
     if (fiveWOneHQuestions && fiveWOneHQuestions.length > 0) {
-      setFiveWOneHData({ fiveWoneH: fiveWOneHQuestions });
+        setFiveWOneHData({ fiveWoneH: fiveWOneHQuestions });
       return;
     }
     // Prevent duplicate API calls: only load once per content
     if ((readingProgress === 'finished_reading' || readingProgress === 'in_progress') && !fiveWOneHData && !isLoadingFiveWOneH) {
-      loadFiveWOneH();
-    }
+        loadFiveWOneH();
+      }
   }, [isVisible, content, readingProgress, fiveWOneHQuestions, isLoadingFiveWOneH]);
 
   // Load data when tab becomes active
@@ -754,8 +754,8 @@ const LearningPanel = ({ title, content, isVisible, onClose, readingProgress = '
               >
                 <h3 className="text-3xl font-bold text-gray-800 mb-2 flex items-center justify-center">
                   <FaTrophy className="mr-3 text-yellow-500 text-4xl" />
-                  Kết quả đánh giá tự luận
-                </h3>
+                Kết quả đánh giá tự luận
+              </h3>
                 <p className="text-gray-600 text-lg">Đánh giá chi tiết bài làm của bạn</p>
               </motion.div>
               
@@ -773,10 +773,10 @@ const LearningPanel = ({ title, content, isVisible, onClose, readingProgress = '
                   <p className="text-2xl font-semibold mb-2">Điểm tổng kết</p>
                   <div className="bg-white bg-opacity-20 rounded-full px-6 py-2 inline-block">
                     <p className="text-lg">
-                      {evaluationResults.totalQuestions} câu hỏi đã được đánh giá
-                    </p>
-                  </div>
+                    {evaluationResults.totalQuestions} câu hỏi đã được đánh giá
+                  </p>
                 </div>
+              </div>
               </motion.div>
 
               {/* Nhận xét tổng quan với layout đẹp hơn */}
@@ -854,7 +854,7 @@ const LearningPanel = ({ title, content, isVisible, onClose, readingProgress = '
                             </li>
                           ))}
                         </ul>
-                      </div>
+              </div>
                     )}
                     {evaluationResults.summary.nextSteps && (
                       <div className="bg-purple-50 border-2 border-purple-200 rounded-xl p-6">
@@ -942,7 +942,7 @@ const LearningPanel = ({ title, content, isVisible, onClose, readingProgress = '
                     <div className="bg-blue-50 border-l-4 border-blue-500 rounded-r-xl p-6 mb-6">
                       <h5 className="text-lg font-semibold text-gray-800 mb-2">📝 Câu hỏi:</h5>
                       <p className="text-gray-700 text-lg">{evaluation.question}</p>
-                    </div>
+                  </div>
                     
                     {/* Câu trả lời */}
                     <div className="bg-gray-50 border-l-4 border-gray-400 rounded-r-xl p-6 mb-6">
@@ -973,7 +973,7 @@ const LearningPanel = ({ title, content, isVisible, onClose, readingProgress = '
                                 </li>
                               ))}
                             </ul>
-                          </div>
+              </div>
                         )}
                         
                         {evaluation.evidence.missingPoints && evaluation.evidence.missingPoints.length > 0 && (
@@ -1088,11 +1088,12 @@ const LearningPanel = ({ title, content, isVisible, onClose, readingProgress = '
                     Câu {index + 1}: {sanitizeQuestion(item.question)}
                   </h4>
                   
-                  {item.hint && (
+                  {/* Ẩn hint để không hiển thị */}
+                  {/* {item.hint && (
                     <p className="text-sm text-blue-600 mb-3 italic">
                       💡 {item.hint}
                     </p>
-                  )}
+                  )} */}
                   
                   <div className="mb-3">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1112,18 +1113,25 @@ const LearningPanel = ({ title, content, isVisible, onClose, readingProgress = '
                     </div>
                   </div>
                   
-                  {item.keyPoints && (
+                  {/* Luôn hiển thị keyPoints section để debug */}
                     <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
                       <h5 className="text-sm font-medium text-gray-700 mb-2">
                         📋 Điểm chính cần có:
                       </h5>
+                    {item.keyPoints && item.keyPoints.length > 0 ? (
                       <ul className="text-xs text-gray-600 space-y-1">
                         {item.keyPoints.map((point, pointIndex) => (
                           <li key={pointIndex}>• {point}</li>
                         ))}
                       </ul>
+                    ) : (
+                      <div className="text-xs text-red-500 italic">
+                        Debug: keyPoints = {JSON.stringify(item.keyPoints)} (length: {item.keyPoints?.length || 'undefined'})
+                        <br />
+                        Full item: {JSON.stringify(item, null, 2)}
                     </div>
                   )}
+                  </div>
                 </motion.div>
               ))}
             </div>
