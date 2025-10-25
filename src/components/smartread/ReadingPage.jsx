@@ -10,9 +10,10 @@ const ReadingPage = () => {
   const contentData = JSON.parse(sessionStorage.getItem('smartread-content') || 'null');
 
   const handleFinishReading = (data) => {
-    // Store reading data in sessionStorage for quiz page
+    // Store reading data in sessionStorage
     sessionStorage.setItem('smartread-reading-data', JSON.stringify(data));
-    navigate('/smartread/quiz');
+    // Popup is now handled by ReadingCompletionPopup component
+    console.log('Reading completed:', data);
   };
 
   if (!contentData) {

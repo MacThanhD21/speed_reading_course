@@ -7,22 +7,22 @@ class RecommendationService {
   }
 
   // Generate AI recommendations using Gemini API
-  async generateRecommendations(readingData, quizData, content) {
+  async generateRecommendations(readingData, content) {
     if (!geminiService.isApiKeyAvailable()) {
       console.warn('Gemini API key not found');
-      return this.getFallbackRecommendations(readingData, quizData);
+      return this.getFallbackRecommendations(readingData);
     }
 
     try {
       console.log('Sending recommendation prompt to Gemini API...');
       
-      const generatedContent = await geminiService.generateRecommendations(readingData, quizData, content);
+      const generatedContent = await geminiService.generateRecommendations(readingData, content);
       console.log('Generated recommendations:', generatedContent);
       
       return this.parseRecommendations(generatedContent);
     } catch (error) {
       console.error('Gemini API error:', error);
-      return this.getFallbackRecommendations(readingData, quizData);
+      return this.getFallbackRecommendations(readingData);
     }
   }
 
@@ -79,9 +79,8 @@ class RecommendationService {
   }
 
   // Fallback recommendations
-  getFallbackRecommendations(readingData, quizData) {
-    const { finalWPM, score } = readingData;
-    const { correctAnswers, totalQuestions } = quizData;
+  getFallbackRecommendations(readingData) {
+    const { finalWPM } = readingData;
     
     let overview = "Dựa trên kết quả của bạn, ";
     let strengths = [];

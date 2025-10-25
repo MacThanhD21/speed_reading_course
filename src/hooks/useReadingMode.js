@@ -8,11 +8,13 @@ export const useReadingState = (content) => {
   const [wordsRead, setWordsRead] = useState(0);
   const [currentWPM, setCurrentWPM] = useState(0);
   const [smoothedWPM, setSmoothedWPM] = useState(0);
+  const [currentWPS, setCurrentWPS] = useState(0);
+  const [smoothedWPS, setSmoothedWPS] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
-  const [quizStatus, setQuizStatus] = useState('not_started');
 
   const intervalRef = useRef(null);
   const lastSmoothedWPMRef = useRef(0);
+  const lastSmoothedWPSRef = useRef(0);
 
   // Calculate actual word count from content
   const getTotalWordCount = useCallback(() => {
@@ -71,12 +73,13 @@ export const useReadingState = (content) => {
     return Math.max(0, Math.min(estimatedWordsRead, totalWords));
   }, [getTotalWordCount, isReading]);
 
-  // Update WPM calculation
+  // Update WPM and WPS calculation
   const updateWPM = useCallback(() => {
     if (!isReading || isPaused || !startTime) return;
 
     const now = Date.now();
     const elapsed = (now - startTime) / 60000; // Convert to minutes
+    const elapsedSeconds = (now - startTime) / 1000; // Convert to seconds
     
     if (elapsed > 0) {
       const currentWordsRead = calculateWordsRead();
@@ -88,17 +91,28 @@ export const useReadingState = (content) => {
       const instantWPM = currentWordsRead / elapsed;
       setCurrentWPM(isNaN(instantWPM) ? 0 : instantWPM);
       
-      // Apply exponential moving average for smoothing
+      // Calculate WPS based on actual reading time
+      const instantWPS = currentWordsRead / elapsedSeconds;
+      setCurrentWPS(isNaN(instantWPS) ? 0 : instantWPS);
+      
+      // Apply exponential moving average for smoothing WPM
       const alpha = 0.3; // Balanced alpha for responsive but smooth updates
       const newSmoothedWPM = alpha * instantWPM + (1 - alpha) * lastSmoothedWPMRef.current;
       lastSmoothedWPMRef.current = isNaN(newSmoothedWPM) ? 0 : newSmoothedWPM;
       setSmoothedWPM(Math.round(isNaN(newSmoothedWPM) ? 0 : newSmoothedWPM));
       
-      console.log('WPM Update:', {
+      // Apply exponential moving average for smoothing WPS
+      const newSmoothedWPS = alpha * instantWPS + (1 - alpha) * lastSmoothedWPSRef.current;
+      lastSmoothedWPSRef.current = isNaN(newSmoothedWPS) ? 0 : newSmoothedWPS;
+      setSmoothedWPS(Math.round((isNaN(newSmoothedWPS) ? 0 : newSmoothedWPS) * 10) / 10); // Round to 1 decimal
+      
+      console.log('WPM/WPS Update:', {
         currentWordsRead,
         elapsed: elapsed.toFixed(2),
         instantWPM: instantWPM.toFixed(1),
-        smoothedWPM: Math.round(newSmoothedWPM)
+        smoothedWPM: Math.round(newSmoothedWPM),
+        instantWPS: instantWPS.toFixed(2),
+        smoothedWPS: (Math.round(newSmoothedWPS * 10) / 10).toFixed(1)
       });
     }
   }, [isReading, isPaused, startTime, calculateWordsRead]);
@@ -186,17 +200,25 @@ export const useReadingState = (content) => {
   const finishReading = useCallback((onFinishReading) => {
     setIsReading(false);
     setIsPaused(false);
-    setQuizStatus('in_progress');
+    
+    // Clear the interval to stop WPM calculation
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
     
     const finalWPM = elapsedTime > 0 && wordsRead > 0 ? Math.round(wordsRead / (elapsedTime / 60)) : 0;
+    const finalWPS = elapsedTime > 0 && wordsRead > 0 ? Math.round((wordsRead / elapsedTime) * 10) / 10 : 0;
     
     onFinishReading({
       finalWPM: finalWPM || 0,
+      finalWPS: finalWPS || 0,
       wordsRead: wordsRead || 0,
       elapsedTime: Math.round(elapsedTime || 0),
-      averageWPM: Math.round(smoothedWPM || 0)
+      averageWPM: Math.round(smoothedWPM || 0),
+      averageWPS: smoothedWPS || 0
     });
-  }, [elapsedTime, wordsRead, smoothedWPM]);
+  }, [elapsedTime, wordsRead, smoothedWPM, smoothedWPS]);
 
   const resetReading = useCallback(() => {
     setIsReading(false);
@@ -206,8 +228,10 @@ export const useReadingState = (content) => {
     setWordsRead(0);
     setCurrentWPM(0);
     setSmoothedWPM(0);
-    setQuizStatus('not_started');
+    setCurrentWPS(0);
+    setSmoothedWPS(0);
     lastSmoothedWPMRef.current = 0;
+    lastSmoothedWPSRef.current = 0;
     
     // Clear any intervals
     if (intervalRef.current) {
@@ -218,20 +242,12 @@ export const useReadingState = (content) => {
     console.log('Reading state reset');
   }, []);
 
-  const handleQuizCompleted = useCallback((onQuizCompleted) => {
-    setQuizStatus('completed');
-    if (onQuizCompleted) {
-      onQuizCompleted();
-    }
-  }, []);
-
   // Helper functions
   const getReadingProgress = useCallback(() => {
     if (!isReading) return 'start';
-    if (isReading && quizStatus === 'not_started') return 'reading';
-    if (quizStatus === 'completed') return 'finished_all';
+    if (isReading) return 'reading';
     return 'finished_reading';
-  }, [isReading, quizStatus]);
+  }, [isReading]);
 
   const formatTime = useCallback((seconds) => {
     const mins = Math.floor(seconds / 60);
@@ -247,14 +263,14 @@ export const useReadingState = (content) => {
     wordsRead,
     currentWPM,
     smoothedWPM,
-    quizStatus,
+    currentWPS,
+    smoothedWPS,
     
     // Actions
     startReading,
     togglePause,
     finishReading,
     resetReading,
-    handleQuizCompleted,
     
     // Helpers
     getReadingProgress,

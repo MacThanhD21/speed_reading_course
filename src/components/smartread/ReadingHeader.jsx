@@ -21,6 +21,7 @@ const ReadingHeader = ({
   smoothedWPM,
   elapsedTime,
   wordsRead,
+  finalWPM,
   
   // Settings
   readingSettings,
@@ -102,7 +103,7 @@ const ReadingHeader = ({
                 <div className={`text-3xl font-bold mb-1 ${
                   readingSettings.theme === 'dark' || readingSettings.theme === 'focus' ? 'text-blue-300' : 'text-blue-700'
                 }`}>
-                  {isReading && !isNaN(smoothedWPM) ? smoothedWPM : 0}
+                  {isReading && !isNaN(smoothedWPM) ? smoothedWPM : (finalWPM || 0)}
                 </div>
                 <div className={`text-xs font-medium uppercase tracking-wide ${
                   readingSettings.theme === 'dark' || readingSettings.theme === 'focus' ? 'text-blue-400' : 'text-blue-600'
@@ -215,7 +216,7 @@ const ReadingHeader = ({
             <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-3 flex-1 border border-blue-200">
               <div className="text-center">
                 <div className="text-xl font-bold text-blue-700 mb-1">
-                  {isReading && !isNaN(smoothedWPM) ? smoothedWPM : 0}
+                  {isReading && !isNaN(smoothedWPM) ? smoothedWPM : (finalWPM || 0)}
                 </div>
                 <div className="text-xs font-medium text-blue-600 uppercase tracking-wide">WPM</div>
               </div>

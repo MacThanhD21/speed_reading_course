@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import SimpleSmartReadHome from './SimpleSmartReadHome';
 import PasteText from './PasteText';
 import ReadingMode from './ReadingMode';
-import Quiz from './Quiz';
 import Results from './Results';
 import SmartReadDemo from './SmartReadDemo';
 import AITestComponent from './AITestComponent';
@@ -13,7 +12,6 @@ const SmartRead = () => {
   const [currentScreen, setCurrentScreen] = useState('home');
   const [content, setContent] = useState(null);
   const [readingData, setReadingData] = useState(null);
-  const [quizData, setQuizData] = useState(null);
 
   const navigateTo = (screen) => {
     setCurrentScreen(screen);
@@ -26,25 +24,18 @@ const SmartRead = () => {
 
   const handleFinishReading = (data) => {
     setReadingData(data);
-    setCurrentScreen('quiz');
-  };
-
-  const handleFinishQuiz = (data) => {
-    setQuizData(data);
     setCurrentScreen('results');
   };
 
   const handleRestart = () => {
     setContent(null);
     setReadingData(null);
-    setQuizData(null);
     setCurrentScreen('paste-text');
   };
 
   const handleGoHome = () => {
     setContent(null);
     setReadingData(null);
-    setQuizData(null);
     setCurrentScreen('home');
   };
 
@@ -76,19 +67,10 @@ const SmartRead = () => {
             onFinishReading={handleFinishReading}
           />
         );
-      case 'quiz':
-        return (
-          <Quiz 
-            content={content}
-            readingData={readingData}
-            onFinishQuiz={handleFinishQuiz}
-          />
-        );
       case 'results':
         return (
           <Results 
             readingData={readingData}
-            quizData={quizData}
             onRestart={handleRestart}
             onGoHome={handleGoHome}
           />

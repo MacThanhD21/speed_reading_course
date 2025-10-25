@@ -4,10 +4,11 @@ import LearningPanel from './LearningPanel';
 import ReadingHeader from './ReadingHeader';
 import ReadingSettingsPanel from './ReadingSettingsPanel';
 import ReadingContent from './ReadingContent';
+import ReadingCompletionPopup from './ReadingCompletionPopup';
 import { useReadingState, useReadingSettings } from '../../hooks/useReadingMode';
-import { readingTipsService } from '../../services/readingTipsService';
+import readingTipsService from '../../services/readingTipsService';
 
-const ReadingMode = React.memo(({ content, onFinishReading, onQuizCompleted }) => {
+const ReadingMode = React.memo(({ content, onFinishReading }) => {
   const navigate = useNavigate();
   const contentRef = useRef(null);
   
@@ -18,15 +19,10 @@ const ReadingMode = React.memo(({ content, onFinishReading, onQuizCompleted }) =
   // Local state
   const [showLearningPanel, setShowLearningPanel] = useState(false);
   const [showSettingsPanel, setShowSettingsPanel] = useState(false);
+  const [showCompletionPopup, setShowCompletionPopup] = useState(false);
+  const [completionData, setCompletionData] = useState(null);
   const [fiveWOneHQuestions, setFiveWOneHQuestions] = useState([]);
   const [isLoading5W1H, setIsLoading5W1H] = useState(false);
-
-  // Load 5W1H questions when entering reading page
-  useEffect(() => {
-    if (content) {
-      load5W1HQuestions();
-    }
-  }, [content]);
 
   // Load 5W1H questions for learning panel
   const load5W1HQuestions = useCallback(async () => {
@@ -34,16 +30,32 @@ const ReadingMode = React.memo(({ content, onFinishReading, onQuizCompleted }) =
     
     setIsLoading5W1H(true);
     try {
-      console.log('Loading 5W1H questions for learning...');
       const questions = await readingTipsService.generate5W1HQuestions(content);
       setFiveWOneHQuestions(questions);
       console.log('5W1H questions loaded:', questions.length);
     } catch (error) {
       console.error('Error loading 5W1H questions:', error);
+      
+      // Show user-friendly message for different error types
+      if (error.message && error.message.includes('429')) {
+        console.warn('Gemini API quota exceeded. Using fallback questions.');
+      } else if (error.message && error.message.includes('503')) {
+        console.warn('Gemini API server overloaded. Using fallback questions.');
+      } else if (error.message && error.message.includes('All API keys failed')) {
+        console.warn('All API keys exhausted. Using fallback questions.');
+      }
     } finally {
       setIsLoading5W1H(false);
     }
   }, [content]);
+
+
+  // Load 5W1H questions when content is available
+  useEffect(() => {
+    if (content && fiveWOneHQuestions.length === 0) {
+      load5W1HQuestions();
+    }
+  }, [content, fiveWOneHQuestions.length]);
 
   // Memoized navigation function
   const goBack = useCallback(() => {
@@ -66,26 +78,46 @@ const ReadingMode = React.memo(({ content, onFinishReading, onQuizCompleted }) =
 
   // Memoized finish reading handler
   const handleFinishReading = useCallback(() => {
-    // Prepare reading data for storage
-    const readingData = {
-      finalWPM: readingState.smoothedWPM,
-      averageWPM: readingState.smoothedWPM,
-      wpm: readingState.smoothedWPM,
-      time: readingState.elapsedTime,
-      elapsedTime: readingState.elapsedTime,
-      wordsRead: readingState.wordsRead,
-      content: content?.content || content,
-      title: content?.title || 'Bài viết'
-    };
-    
-    console.log('Reading data to be saved:', readingData);
-    onFinishReading(readingData);
-  }, [onFinishReading, readingState.smoothedWPM, readingState.elapsedTime, readingState.wordsRead, content]);
+    // Call the readingState.finishReading to properly stop timers
+    readingState.finishReading((readingData) => {
+      console.log('Reading data to be saved:', readingData);
+      
+      // Enhance completion data with additional fields
+      const enhancedData = {
+        ...readingData,
+        wpm: readingData.averageWPM || readingData.finalWPM || 0,
+        finalWPM: readingData.finalWPM || 0,
+        averageWPM: readingData.averageWPM || 0
+      };
+      
+      // Set completion data and show popup
+      setCompletionData(enhancedData);
+      setShowCompletionPopup(true);
+      
+      // Also call the original onFinishReading for backward compatibility
+      onFinishReading(enhancedData);
+    });
+  }, [readingState, onFinishReading]);
 
-  // Memoized quiz completed handler
-  const handleQuizCompleted = useCallback(() => {
-      onQuizCompleted();
-  }, [onQuizCompleted]);
+  // Handle popup actions
+  const handlePopupClose = useCallback(() => {
+    setShowCompletionPopup(false);
+    setCompletionData(null);
+  }, []);
+
+  const handleRetry = useCallback(() => {
+    setShowCompletionPopup(false);
+    setCompletionData(null);
+    // Reset reading state
+    readingState.resetReading();
+  }, [readingState]);
+
+  const handleGoToLearningPanel = useCallback(() => {
+    setShowCompletionPopup(false);
+    setCompletionData(null);
+    setShowLearningPanel(true);
+  }, []);
+
 
   // Memoized reset settings handler
   const handleResetSettings = useCallback(() => {
@@ -138,6 +170,7 @@ const ReadingMode = React.memo(({ content, onFinishReading, onQuizCompleted }) =
         smoothedWPM={readingState.smoothedWPM}
         elapsedTime={readingState.elapsedTime}
         wordsRead={readingState.wordsRead}
+        finalWPM={completionData?.averageWPM || 0}
         
         // Settings
         readingSettings={readingSettings.readingSettings}
@@ -215,14 +248,25 @@ const ReadingMode = React.memo(({ content, onFinishReading, onQuizCompleted }) =
                 isVisible={showLearningPanel}
                 onClose={handleCloseLearningPanel}
                 readingProgress={readingState.getReadingProgress()}
-                readingData={{
+                readingData={completionData || {
                   isReading: readingState.isReading,
                   currentWPM: readingState.smoothedWPM,
+                  finalWPM: readingState.smoothedWPM,
+                  wpm: readingState.smoothedWPM,
                   wordsRead: readingState.wordsRead,
                   elapsedTime: readingState.elapsedTime
                 }}
                 fiveWOneHQuestions={fiveWOneHQuestions}
                 isLoading5W1H={isLoading5W1H}
+              />
+
+              {/* Reading Completion Popup */}
+              <ReadingCompletionPopup
+                isVisible={showCompletionPopup}
+                onClose={handlePopupClose}
+                readingData={completionData}
+                onRetry={handleRetry}
+                onGoToLearningPanel={handleGoToLearningPanel}
               />
     </div>
   );

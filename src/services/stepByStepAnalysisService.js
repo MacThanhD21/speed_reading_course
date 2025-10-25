@@ -1,5 +1,6 @@
 // Service for step-by-step article analysis using Gemini AI
 import geminiService from './geminiService';
+import logger from '../utils/logger.js';
 
 class StepByStepAnalysisService {
   constructor() {
@@ -102,7 +103,11 @@ Nội dung: """${text || ''}"""`;
       
       return conceptsData;
     } catch (error) {
-      console.error('Error getting concepts:', error);
+      logger.error('STEP_BY_STEP_ANALYSIS', 'Error getting concepts', {
+        error: error.message,
+        errorType: error.constructor.name,
+        title: title?.substring(0, 50) + '...'
+      });
       return this.getDefaultConcepts();
     }
   }
@@ -110,12 +115,15 @@ Nội dung: """${text || ''}"""`;
   // 2️⃣ API FiveWOneH - Gọi sau khi hoàn thành đọc
   async getFiveWOneH(title, text) {
     if (!geminiService.isApiKeyAvailable()) {
-      console.warn('Gemini API key not found');
+      logger.warn('STEP_BY_STEP_ANALYSIS', 'Gemini API key not found');
       return this.getDefaultFiveWOneH();
     }
 
     try {
-      console.log('Getting 5W1H for:', title);
+      logger.info('STEP_BY_STEP_ANALYSIS', 'Getting 5W1H questions', {
+        title: title?.substring(0, 50) + '...',
+        textLength: text?.length || 0
+      });
       
       const fullPrompt = `${this.fiveWoneHPrompt}
 
@@ -125,22 +133,33 @@ Nội dung: """${text || ''}"""`;
       const response = await geminiService.generateContent(fullPrompt);
       const fiveWOneHData = this.parseFiveWOneHResponse(response);
       
+      logger.info('STEP_BY_STEP_ANALYSIS', '5W1H questions generated successfully', {
+        questionCount: fiveWOneHData?.fiveWoneH?.length || 0
+      });
+      
       return fiveWOneHData;
     } catch (error) {
-      console.error('Error getting 5W1H:', error);
+      logger.error('STEP_BY_STEP_ANALYSIS', 'Error getting 5W1H', {
+        error: error.message,
+        errorType: error.constructor.name,
+        title: title?.substring(0, 50) + '...'
+      });
       return this.getDefaultFiveWOneH();
     }
   }
 
-  // 3️⃣ API MCQ - Gọi sau khi hoàn thành Quiz ABCD
+  // 3️⃣ API MCQ - Gọi để tạo câu hỏi trắc nghiệm
   async getMCQ(title, text) {
     if (!geminiService.isApiKeyAvailable()) {
-      console.warn('Gemini API key not found');
+      logger.warn('STEP_BY_STEP_ANALYSIS', 'Gemini API key not found');
       return this.getDefaultMCQ();
     }
 
     try {
-      console.log('Getting MCQ for:', title);
+      logger.info('STEP_BY_STEP_ANALYSIS', 'Getting MCQ questions', {
+        title: title?.substring(0, 50) + '...',
+        textLength: text?.length || 0
+      });
       
       const fullPrompt = `${this.mcqPrompt}
 
@@ -150,22 +169,33 @@ Nội dung: """${text || ''}"""`;
       const response = await geminiService.generateContent(fullPrompt);
       const mcqData = this.parseMCQResponse(response);
       
+      logger.info('STEP_BY_STEP_ANALYSIS', 'MCQ questions generated successfully', {
+        questionCount: mcqData?.questions?.length || 0
+      });
+      
       return mcqData;
     } catch (error) {
-      console.error('Error getting MCQ:', error);
+      logger.error('STEP_BY_STEP_ANALYSIS', 'Error getting MCQ', {
+        error: error.message,
+        errorType: error.constructor.name,
+        title: title?.substring(0, 50) + '...'
+      });
       return this.getDefaultMCQ();
     }
   }
 
-  // 4️⃣ API Short Prompts - Gọi sau khi làm xong quiz
+  // 4️⃣ API Short Prompts - Gọi để tạo câu hỏi ngắn
   async getShortPrompts(title, text) {
     if (!geminiService.isApiKeyAvailable()) {
-      console.warn('Gemini API key not found');
+      logger.warn('STEP_BY_STEP_ANALYSIS', 'Gemini API key not found');
       return this.getDefaultShortPrompts();
     }
 
     try {
-      console.log('Getting short prompts for:', title);
+      logger.info('STEP_BY_STEP_ANALYSIS', 'Getting short prompts', {
+        title: title?.substring(0, 50) + '...',
+        textLength: text?.length || 0
+      });
       
       const fullPrompt = `${this.shortPromptsPrompt}
 
@@ -175,9 +205,17 @@ Nội dung: """${text || ''}"""`;
       const response = await geminiService.generateContent(fullPrompt);
       const shortPromptsData = this.parseShortPromptsResponse(response);
       
+      logger.info('STEP_BY_STEP_ANALYSIS', 'Short prompts generated successfully', {
+        promptCount: shortPromptsData?.prompts?.length || 0
+      });
+      
       return shortPromptsData;
     } catch (error) {
-      console.error('Error getting short prompts:', error);
+      logger.error('STEP_BY_STEP_ANALYSIS', 'Error getting short prompts', {
+        error: error.message,
+        errorType: error.constructor.name,
+        title: title?.substring(0, 50) + '...'
+      });
       return this.getDefaultShortPrompts();
     }
   }

@@ -2,64 +2,260 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   FaBook, FaLightbulb, FaQuestionCircle, FaEdit, FaCheck, 
-  FaTimes, FaSpinner, FaEye, FaGraduationCap, FaRocket, FaClock, FaRedo
+  FaTimes, FaSpinner, FaEye, FaGraduationCap, FaRocket, FaClock, FaRedo, FaChartBar,
+  FaTrophy, FaPaperPlane
 } from 'react-icons/fa';
 import stepByStepAnalysisService from '../../services/stepByStepAnalysisService';
 import readingTipsService from '../../services/readingTipsService';
+import logger from '../../utils/logger.js';
 
 const LearningPanel = ({ title, content, isVisible, onClose, readingProgress = 'start', readingData = {}, fiveWOneHQuestions = [], isLoading5W1H = false }) => {
   // State for different phases
   const [conceptsData, setConceptsData] = useState(null);
   const [fiveWOneHData, setFiveWOneHData] = useState(null);
-  const [mcqData, setMcQData] = useState(null);
-  const [shortPromptsData, setShortPromptsData] = useState(null);
   
-  // Reading tips state
-  const [readingTips, setReadingTips] = useState([]);
-  const [tipsLoading, setTipsLoading] = useState(false);
-  const [tipsError, setTipsError] = useState(null);
+  // Reading tips state - khởi tạo với mẹo đọc fix cứng
+  const [readingTips, setReadingTips] = useState(() => {
+    // Import getFixedReadingTips từ readingTipsService
+    return [
+      {
+        id: 1,
+        title: "Đọc với tốc độ thoải mái",
+        description: "Hãy đọc ở tốc độ bạn cảm thấy thoải mái và có thể hiểu nội dung một cách rõ ràng",
+        icon: "🐌"
+      },
+      {
+        id: 2,
+        title: "Tập trung vào nội dung",
+        description: "Loại bỏ các yếu tố gây phân tán và tập trung hoàn toàn vào bài đọc",
+        icon: "🎯"
+      },
+      {
+        id: 3,
+        title: "Ghi chú những điểm quan trọng",
+        description: "Đánh dấu hoặc ghi chú những thông tin quan trọng để dễ dàng ôn tập sau này",
+        icon: "📝"
+      },
+      {
+        id: 4,
+        title: "Đặt câu hỏi trong khi đọc",
+        description: "Tự đặt câu hỏi về nội dung để tăng khả năng hiểu và ghi nhớ",
+        icon: "❓"
+      },
+      {
+        id: 5,
+        title: "Tóm tắt sau khi đọc",
+        description: "Dành vài phút để tóm tắt lại những gì đã đọc để củng cố kiến thức",
+        icon: "✍️"
+      }
+    ];
+  });
   
   // Loading states for each phase
   const [isLoadingConcepts, setIsLoadingConcepts] = useState(false);
   const [isLoadingFiveWOneH, setIsLoadingFiveWOneH] = useState(false);
-  const [isLoadingMCQ, setIsLoadingMCQ] = useState(false);
-  const [isLoadingShortPrompts, setIsLoadingShortPrompts] = useState(false);
+  
+  // Comprehensive data loading state
+  const [isLoadingComprehensive, setIsLoadingComprehensive] = useState(false);
+  const [comprehensiveError, setComprehensiveError] = useState(null);
   
   // UI state
   const [activeTab, setActiveTab] = useState('reading_tips');
-  const [studentAnswers, setStudentAnswers] = useState({});
-  const [gradingResults, setGradingResults] = useState({});
+  const [fiveWOneHAnswers, setFiveWOneHAnswers] = useState({});
   const [fiveWOneHCompleted, setFiveWOneHCompleted] = useState(false);
+  const [evaluationResults, setEvaluationResults] = useState(null);
+  const [isEvaluating, setIsEvaluating] = useState(false);
+
+  // Handle submit essay for evaluation
+  const handleSubmitEssay = async () => {
+    if (!fiveWOneHData || !fiveWOneHData.fiveWoneH) return;
+    
+    setIsEvaluating(true);
+    
+    try {
+      logger.info('LEARNING_PANEL', 'Submitting essay for evaluation', {
+        questionCount: fiveWOneHData.fiveWoneH.length,
+        answerCount: Object.keys(fiveWOneHAnswers).length
+      });
+      
+      const evaluation = await readingTipsService.evaluateEssayAnswers(
+        fiveWOneHData.fiveWoneH,
+        fiveWOneHAnswers,
+        content
+      );
+      
+      setEvaluationResults(evaluation);
+      setFiveWOneHCompleted(true);
+      
+      logger.info('LEARNING_PANEL', 'Evaluation completed successfully', {
+        overallScore: evaluation.overallScore,
+        totalQuestions: evaluation.totalQuestions
+      });
+    } catch (error) {
+      logger.error('LEARNING_PANEL', 'Error evaluating essay', {
+        error: error.message,
+        errorType: error.constructor.name
+      });
+      // Show error message to user
+      alert('Có lỗi xảy ra khi đánh giá bài làm. Vui lòng thử lại sau.');
+    } finally {
+      setIsEvaluating(false);
+    }
+  };
+
+  // Handle tab click with lazy loading
+  const handleTabClick = (tabId) => {
+    logger.debug('LEARNING_PANEL', `Tab clicked: ${tabId}`, {
+      previousTab: activeTab,
+      newTab: tabId
+    });
+    
+    setActiveTab(tabId);
+    
+    // Load comprehensive data only when concepts_and_terms or statistics tab is clicked
+    if ((tabId === 'concepts_and_terms' || tabId === 'statistics') && !conceptsData && !isLoadingComprehensive) {
+      loadComprehensiveData();
+    }
+  };
+
+  // Load comprehensive learning data (tất cả trong một lần gọi API)
+  const loadComprehensiveData = async () => {
+    if (!content) return;
+    
+    // Tránh gọi API nhiều lần
+    if (isLoadingComprehensive) {
+      logger.debug('LEARNING_PANEL', 'Already loading comprehensive data, skipping...');
+      return;
+    }
+    
+    // Nếu đã có data, không cần gọi lại
+    if (conceptsData && conceptsData.statistics && conceptsData.statistics.length > 0) {
+      logger.debug('LEARNING_PANEL', 'Comprehensive data already loaded, skipping...');
+      return;
+    }
+    
+    logger.info('LEARNING_PANEL', 'Loading comprehensive learning data', {
+      contentLength: content?.content?.length || content?.length || 0,
+      hasTitle: !!content?.title,
+      readingProgress
+    });
+    
+    setIsLoadingComprehensive(true);
+    setComprehensiveError(null);
+    
+    try {
+      const data = await readingTipsService.generateComprehensiveLearningData(content, readingData);
+      
+      // Set tất cả data từ một lần gọi API
+      // Không ghi đè readingTips vì đã fix cứng
+      setConceptsData({
+        conceptsAndTerms: data.conceptsAndTerms || [],
+        statistics: data.statistics || [],
+        previewQuestions: data.previewQuestions || []
+      });
+    } catch (error) {
+      logger.error('LEARNING_PANEL', 'Error loading comprehensive learning data', {
+        error: error.message,
+        errorType: error.constructor.name
+      });
+      
+      // Hiển thị thông báo user-friendly
+      if (error.message.includes('503')) {
+        setComprehensiveError('Gemini API đang quá tải. Đang sử dụng dữ liệu mẫu...');
+        logger.warn('LEARNING_PANEL', 'Gemini API overloaded, using fallback data');
+      } else if (error.message.includes('500')) {
+        setComprehensiveError('Lỗi server Gemini API. Đang sử dụng dữ liệu mẫu...');
+        logger.warn('LEARNING_PANEL', 'Gemini API server error, using fallback data');
+      } else if (error.message.includes('All API keys failed')) {
+        setComprehensiveError('Tất cả API keys đã hết hạn. Đang sử dụng dữ liệu mẫu...');
+        logger.warn('LEARNING_PANEL', 'All API keys exhausted, using fallback data');
+      } else {
+        setComprehensiveError('Không thể tải dữ liệu học tập. Đang sử dụng dữ liệu mẫu...');
+        logger.warn('LEARNING_PANEL', 'Unknown error, using fallback data');
+      }
+      
+      // Fallback to default data - chỉ set conceptsData, không ghi đè readingTips
+      setConceptsData({
+        conceptsAndTerms: [
+          {
+            term: "Khái niệm chính",
+            definition: "Định nghĩa khái niệm quan trọng trong bài viết",
+            example: "Ví dụ minh họa",
+            type: "khái niệm"
+          },
+          {
+            term: "Thuật ngữ khó",
+            definition: "Giải thích thuật ngữ một cách đơn giản",
+            example: "Ví dụ cụ thể",
+            type: "thuật ngữ"
+          }
+        ],
+        statistics: [
+          {
+            data: "100",
+            unit: "người",
+            significance: "Số lượng người tham gia sự kiện quan trọng",
+            context: "Được đề cập trong đoạn đầu bài viết",
+            memoryTip: "Nhớ số 100 như một trăm điểm hoàn hảo"
+          },
+          {
+            data: "15%",
+            unit: "phần trăm",
+            significance: "Tỷ lệ tăng trưởng đáng kể",
+            context: "Thống kê trong phần phân tích",
+            memoryTip: "15% = 3/20, dễ nhớ như 15 phút"
+          },
+          {
+            data: "2024",
+            unit: "năm",
+            significance: "Năm quan trọng trong lịch sử",
+            context: "Được nhắc đến nhiều lần trong bài",
+            memoryTip: "2024 = 20 + 24 = 44, số may mắn"
+          }
+        ],
+        previewQuestions: [
+          {
+            question: "Câu hỏi định hướng đọc",
+            hint: "Gợi ý tìm đáp án"
+          },
+          {
+            question: "Câu hỏi về nội dung chính",
+            hint: "Tập trung vào ý chính của bài viết"
+          },
+          {
+            question: "Câu hỏi về số liệu quan trọng",
+            hint: "Chú ý đến các con số được đề cập"
+          }
+        ]
+      });
+    } finally {
+      setIsLoadingComprehensive(false);
+    }
+  };
 
   useEffect(() => {
-    if (isVisible && content) {
-      // Load reading tips immediately when panel opens
-      if (readingTips.length === 0) {
-        loadReadingTips();
-      }
-      
-      // Load concepts immediately when panel opens
-      if (!conceptsData) {
-        loadConcepts();
-      }
-      
-      // Use 5W1H questions from props if available
-      if (fiveWOneHQuestions.length > 0) {
-        setFiveWOneHData({ fiveWoneH: fiveWOneHQuestions });
-        setActiveTab('fiveWoneH');
-      } else if ((readingProgress === 'finished_reading' || readingProgress === 'in_progress') && !fiveWOneHData) {
-        loadFiveWOneH();
-      }
-      
-      if (readingProgress === 'finished_all' && !mcqData) {
-        loadMCQ();
-      }
-      
-      if (readingProgress === 'finished_all' && !shortPromptsData) {
-        loadShortPrompts();
-      }
+    if (!isVisible || !content) return;
+    // If incoming questions via props, prefer using them once
+    if (fiveWOneHQuestions && fiveWOneHQuestions.length > 0) {
+      setFiveWOneHData({ fiveWoneH: fiveWOneHQuestions });
+      return;
     }
-  }, [isVisible, content, readingProgress, readingData, fiveWOneHQuestions]);
+    // Prevent duplicate API calls: only load once per content
+    if ((readingProgress === 'finished_reading' || readingProgress === 'in_progress') && !fiveWOneHData && !isLoadingFiveWOneH) {
+      loadFiveWOneH();
+    }
+  }, [isVisible, content, readingProgress, fiveWOneHQuestions, isLoadingFiveWOneH]);
+
+  // Load data when tab becomes active
+  useEffect(() => {
+    // CHỈ load data khi panel thực sự visible
+    if (!isVisible) return;
+    
+    // Load comprehensive data for concepts_and_terms or statistics tabs
+    if ((activeTab === 'concepts_and_terms' || activeTab === 'statistics') && !conceptsData && !isLoadingComprehensive) {
+      loadComprehensiveData();
+    }
+  }, [activeTab, isVisible]);
 
   // Prevent body scroll when panel is open
   useEffect(() => {
@@ -80,170 +276,46 @@ const LearningPanel = ({ title, content, isVisible, onClose, readingProgress = '
     };
   }, [isVisible]);
 
-  // Load reading tips
-  const loadReadingTips = async () => {
-    if (!content) return;
-    
-    setTipsLoading(true);
-    setTipsError(null);
-    
-    try {
-      const tips = await readingTipsService.generateReadingTips(content, readingData);
-      setReadingTips(tips);
-    } catch (error) {
-      console.error('Error loading reading tips:', error);
-      setTipsError('Không thể tải mẹo đọc');
-      // Fallback to default tips
-      setReadingTips([
-        {
-          id: 1,
-          title: "Đọc với tốc độ thoải mái",
-          description: "Hãy đọc ở tốc độ bạn cảm thấy thoải mái và có thể hiểu nội dung",
-          icon: "🐌"
-        },
-        {
-          id: 2,
-          title: "Tập trung vào nội dung",
-          description: "Loại bỏ các yếu tố gây phân tán và tập trung vào bài đọc",
-          icon: "🎯"
-        },
-        {
-          id: 3,
-          title: "Nhấn 'Hoàn thành' khi xong",
-          description: "Đánh dấu hoàn thành khi bạn đã đọc và hiểu nội dung",
-          icon: "✅"
-        }
-      ]);
-    } finally {
-      setTipsLoading(false);
-    }
-  };
-
-  // 1️⃣ Load Concepts - Gọi khi mở Panel học tập
-  const loadConcepts = async () => {
-    setIsLoadingConcepts(true);
-    try {
-      const data = await stepByStepAnalysisService.getConcepts(title, content);
-      setConceptsData(data);
-    } catch (error) {
-      console.error('Error loading concepts:', error);
-    } finally {
-      setIsLoadingConcepts(false);
-    }
+  // Handle 5W1H answer
+  const handleFiveWOneHAnswer = (questionId, answer) => {
+    setFiveWOneHAnswers(prev => ({
+      ...prev,
+      [questionId]: answer
+    }));
   };
 
   // 2️⃣ Load FiveWOneH - Gọi sau khi hoàn thành đọc
   const loadFiveWOneH = async () => {
+    logger.info('LEARNING_PANEL', 'Loading 5W1H questions', {
+      contentLength: content?.content?.length || content?.length || 0,
+      hasTitle: !!content?.title
+    });
+    
     setIsLoadingFiveWOneH(true);
     try {
-      const questions = await readingTipsService.generate5W1HQuestions(content);
+      const questions = await readingTipsService.generate5W1HQuestions({ title, content });
       setFiveWOneHData({ fiveWoneH: questions });
-      // Tự động chuyển sang tab 5W1H khi load xong
-      setActiveTab('fiveWoneH');
+      
+      logger.info('LEARNING_PANEL', '5W1H questions loaded successfully', {
+        questionCount: questions?.length || 0,
+        questionTypes: questions?.map(q => q.type) || []
+      });
+      
+      // Không tự động chuyển tab, để người dùng tự chọn
     } catch (error) {
-      console.error('Error loading 5W1H:', error);
+      logger.error('LEARNING_PANEL', 'Error loading 5W1H questions', {
+        error: error.message,
+        errorType: error.constructor.name
+      });
     } finally {
       setIsLoadingFiveWOneH(false);
     }
   };
 
-  // 3️⃣ Load MCQ - Gọi sau khi hoàn thành Quiz ABCD
-  const loadMCQ = async () => {
-    setIsLoadingMCQ(true);
-    try {
-      const data = await stepByStepAnalysisService.getMCQ(title, content);
-      setMcQData(data);
-      // Tự động chuyển sang tab MCQ khi load xong
-      setActiveTab('mcq');
-    } catch (error) {
-      console.error('Error loading MCQ:', error);
-    } finally {
-      setIsLoadingMCQ(false);
-    }
-  };
-
-  // 4️⃣ Load Short Prompts - Gọi sau khi làm xong quiz
-  const loadShortPrompts = async () => {
-    setIsLoadingShortPrompts(true);
-    try {
-      const data = await stepByStepAnalysisService.getShortPrompts(title, content);
-      setShortPromptsData(data);
-      // Tự động chuyển sang tab Short Prompts khi load xong
-      setActiveTab('short_prompts');
-    } catch (error) {
-      console.error('Error loading short prompts:', error);
-    } finally {
-      setIsLoadingShortPrompts(false);
-    }
-  };
-
-  const handleMCQAnswer = (questionId, selectedIndex) => {
-    const question = mcqData?.mcq?.find(q => q.id === questionId);
-    if (!question) return;
-
-    const isCorrect = selectedIndex === question.correct_index;
-    const result = {
-      questionId,
-      selectedIndex,
-      isCorrect,
-      explanation: question.explanation,
-      correctIndex: question.correct_index
-    };
-
-    setGradingResults(prev => ({
-      ...prev,
-      [questionId]: result
-    }));
-
-    // Kiểm tra xem đã trả lời hết tất cả câu hỏi MCQ chưa
-    setTimeout(() => {
-      checkAndAutoTransitionToShortPrompts();
-    }, 1000);
-  };
-
   // Xử lý khi hoàn thành 5W1H
   const handleFiveWOneHComplete = () => {
     setFiveWOneHCompleted(true);
-    // Tự động chuyển sang MCQ sau khi hoàn thành 5W1H
-    if (!mcqData && !isLoadingMCQ) {
-      loadMCQ();
-    } else if (mcqData) {
-      // Nếu đã có MCQ data, chuyển sang tab MCQ ngay
-      setActiveTab('mcq');
-    }
-  };
-
-  // Kiểm tra và tự động chuyển sang Short Prompts
-  const checkAndAutoTransitionToShortPrompts = () => {
-    if (!mcqData?.mcq) return;
-    
-    const totalQuestions = mcqData.mcq.length;
-    const answeredQuestions = Object.keys(gradingResults).filter(key => 
-      !key.startsWith('short_') && gradingResults[key]
-    ).length;
-    
-    // Nếu đã trả lời hết tất cả câu hỏi MCQ và chưa có Short Prompts
-    if (answeredQuestions >= totalQuestions && !shortPromptsData && !isLoadingShortPrompts) {
-      console.log('All MCQ answered, loading short prompts...');
-      loadShortPrompts();
-    }
-  };
-
-  const handleShortAnswer = async (promptIndex, answer) => {
-    if (!answer.trim()) return;
-
-    const prompt = shortPromptsData?.short_prompts?.[promptIndex];
-    const gradingResult = await stepByStepAnalysisService.gradeShortAnswer(answer, prompt);
-    
-    if (gradingResult) {
-      setGradingResults(prev => ({
-        ...prev,
-        [`short_${promptIndex}`]: {
-          answer,
-          ...gradingResult
-        }
-      }));
-    }
+    // Không tự động chuyển tab, để người dùng tự chọn
   };
 
   const tabs = [
@@ -251,44 +323,30 @@ const LearningPanel = ({ title, content, isVisible, onClose, readingProgress = '
       id: 'reading_tips', 
       label: 'Mẹo đọc', 
       icon: FaLightbulb, 
-      isLoading: tipsLoading,
+      isLoading: false, // Mẹo đọc fix cứng, không cần loading
       isAvailable: true
     },
     { 
-      id: 'concepts', 
-      label: 'Khái niệm', 
+      id: 'concepts_and_terms', 
+      label: 'Khái niệm & Thuật ngữ', 
       icon: FaBook, 
-      isLoading: isLoadingConcepts,
+      isLoading: isLoadingComprehensive,
       isAvailable: true
     },
     { 
-      id: 'difficult_terms', 
-      label: 'Thuật ngữ', 
-      icon: FaEye, 
-      isLoading: isLoadingConcepts,
-      isAvailable: !!conceptsData
+      id: 'statistics', 
+      label: 'Số liệu', 
+      icon: FaChartBar, 
+      isLoading: isLoadingComprehensive,
+      isAvailable: true
     },
     { 
       id: 'fiveWoneH', 
       label: '5W1H', 
       icon: FaQuestionCircle, 
       isLoading: isLoading5W1H || isLoadingFiveWOneH,
-      isAvailable: !!fiveWOneHData || fiveWOneHQuestions.length > 0 || readingProgress === 'finished_reading' || readingProgress === 'in_progress'
+      isAvailable: true // Luôn available, data sẽ được load khi cần
     },
-    { 
-      id: 'mcq', 
-      label: 'Trắc nghiệm', 
-      icon: FaCheck, 
-      isLoading: isLoadingMCQ,
-      isAvailable: !!mcqData || readingProgress === 'finished_all'
-    },
-    { 
-      id: 'short_prompts', 
-      label: 'Tự luận', 
-      icon: FaEdit, 
-      isLoading: isLoadingShortPrompts,
-      isAvailable: !!shortPromptsData || readingProgress === 'finished_all'
-    }
   ];
 
   if (!isVisible) return null;
@@ -296,7 +354,7 @@ const LearningPanel = ({ title, content, isVisible, onClose, readingProgress = '
   return (
     <>
       {/* Custom scrollbar styles */}
-      <style jsx>{`
+      <style>{`
         .learning-panel-scroll::-webkit-scrollbar {
           width: 6px;
         }
@@ -338,49 +396,49 @@ const LearningPanel = ({ title, content, isVisible, onClose, readingProgress = '
               <div className="bg-white bg-opacity-20 rounded-lg p-2">
                 <FaGraduationCap className="text-lg" />
               </div>
-              <div>
+          <div>
                 <h2 className="text-lg font-bold">Panel Học Tập</h2>
                 <p className="text-blue-100 text-xs">{title}</p>
-              </div>
-            </div>
-            <button
-              onClick={onClose}
-              className="bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg p-2 transition-all duration-200"
-            >
-              <FaTimes className="text-lg" />
-            </button>
           </div>
         </div>
+        <button
+          onClick={onClose}
+              className="bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg p-2 transition-all duration-200"
+        >
+              <FaTimes className="text-lg" />
+        </button>
+      </div>
+          </div>
 
         {/* Compact Tab Navigation */}
         <div className="bg-gray-50 border-b border-gray-200 px-4 py-3">
           <div className="flex space-x-1 overflow-x-auto">
-            {tabs.map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                disabled={!tab.isAvailable}
+                {tabs.map(tab => (
+                  <button
+                    key={tab.id}
+                onClick={() => handleTabClick(tab.id)}
+                    disabled={!tab.isAvailable}
                 className={`flex items-center px-3 py-2 rounded-lg font-medium transition-all duration-200 whitespace-nowrap text-sm ${
-                  activeTab === tab.id
+                      activeTab === tab.id
                     ? 'bg-blue-600 text-white shadow-md transform scale-105'
-                    : tab.isAvailable
+                        : tab.isAvailable
                     ? 'bg-white text-gray-600 hover:bg-blue-50 hover:text-blue-600 border border-gray-200'
                     : 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200'
-                }`}
-              >
-                {tab.isLoading ? (
+                    }`}
+                  >
+                    {tab.isLoading ? (
                   <FaSpinner className="mr-1.5 animate-spin text-xs" />
-                ) : (
+                    ) : (
                   <tab.icon className="mr-1.5 text-xs" />
-                )}
-                {tab.label}
-                {!tab.isAvailable && !tab.isLoading && (
+                    )}
+                    {tab.label}
+                    {!tab.isAvailable && !tab.isLoading && (
                   <FaClock className="ml-1.5 text-xs" />
-                )}
-              </button>
-            ))}
+                    )}
+                  </button>
+                ))}
+            </div>
           </div>
-        </div>
 
         {/* Content Area */}
         <div 
@@ -401,30 +459,23 @@ const LearningPanel = ({ title, content, isVisible, onClose, readingProgress = '
 
           {/* Main Content */}
           <div className="p-4 max-w-4xl mx-auto">
-            {renderTabContent()}
+              {renderTabContent()}
+            </div>
           </div>
-        </div>
-      </motion.div>
+    </motion.div>
     </motion.div>
     </>
   );
 
   function renderTabContent() {
-    if (!conceptsData && activeTab !== 'reading_tips') return null;
+    // Chỉ check conceptsData cho các tab cần thiết
+    if (!conceptsData && (activeTab === 'concepts_and_terms' || activeTab === 'statistics')) {
+      return null;
+    }
 
     switch (activeTab) {
       case 'reading_tips':
-        if (tipsLoading) {
-          return (
-            <div className="flex items-center justify-center h-64">
-              <div className="text-center">
-                <FaSpinner className="animate-spin text-4xl text-yellow-600 mx-auto mb-4" />
-                <p className="text-gray-600">Đang tạo mẹo đọc hiệu quả...</p>
-              </div>
-            </div>
-          );
-        }
-
+        // Mẹo đọc đã fix cứng, không cần loading
         return (
           <div className="space-y-6">
             {/* Compact Header Section */}
@@ -434,34 +485,19 @@ const LearningPanel = ({ title, content, isVisible, onClose, readingProgress = '
                   <div className="bg-yellow-500 rounded-lg p-2">
                     <FaLightbulb className="text-lg text-white" />
                   </div>
-                  <div>
+          <div>
                     <h3 className="text-xl font-bold text-gray-800">Mẹo đọc hiệu quả</h3>
-                    <p className="text-gray-600 text-sm">Các gợi ý được AI tạo ra dựa trên nội dung bài viết</p>
+                    <p className="text-gray-600 text-sm">Các gợi ý đọc hiệu quả được tối ưu hóa</p>
                   </div>
                 </div>
-                <button
-                  onClick={loadReadingTips}
-                  disabled={tipsLoading}
-                  className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center shadow-md hover:shadow-lg disabled:opacity-50 text-sm"
-                  title="Làm mới mẹo đọc"
-                >
-                  <FaRedo className="mr-1.5" />
-                  Làm mới
-                </button>
               </div>
-              
-              {tipsError && (
-                <div className="bg-red-100 border border-red-300 rounded-lg p-3">
-                  <p className="text-red-700 font-medium text-sm">{tipsError}</p>
-                </div>
-              )}
             </div>
             
             {/* Compact Tips Grid */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {readingTips.map((tip, index) => (
                 <motion.div
-                  key={tip.id}
+                  key={`tip_${tip.id || index}`}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
@@ -491,15 +527,15 @@ const LearningPanel = ({ title, content, isVisible, onClose, readingProgress = '
                   <div className="grid gap-2 md:grid-cols-2">
                     <div className="flex items-start space-x-2">
                       <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                      <p className="text-blue-700 text-xs">Mẹo đọc được tạo dựa trên nội dung bài viết hiện tại</p>
+                      <p className="text-blue-700 text-xs">Mẹo đọc được tối ưu hóa cho hiệu quả tối đa</p>
                     </div>
                     <div className="flex items-start space-x-2">
                       <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                      <p className="text-blue-700 text-xs">Phù hợp với giai đoạn đọc và tốc độ hiện tại của bạn</p>
+                      <p className="text-blue-700 text-xs">Phù hợp với mọi loại nội dung và tốc độ đọc</p>
                     </div>
                     <div className="flex items-start space-x-2">
                       <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                      <p className="text-blue-700 text-xs">Có thể làm mới để nhận mẹo mới phù hợp hơn</p>
+                      <p className="text-blue-700 text-xs">Được thiết kế dựa trên nghiên cứu khoa học</p>
                     </div>
                     <div className="flex items-start space-x-2">
                       <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
@@ -512,56 +548,169 @@ const LearningPanel = ({ title, content, isVisible, onClose, readingProgress = '
           </div>
         );
 
-      case 'concepts':
+      case 'concepts_and_terms':
+        if (isLoadingComprehensive) {
+          return (
+            <div className="flex items-center justify-center h-64">
+              <div className="text-center">
+                <FaSpinner className="text-4xl text-blue-600 animate-spin mx-auto mb-4" />
+                <p className="text-gray-600">Đang tải khái niệm và thuật ngữ...</p>
+              </div>
+            </div>
+          );
+        }
+        
         return (
           <div>
-            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+            <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center">
               <FaBook className="mr-2 text-blue-600" />
-              Khái niệm chuyên ngành
+              Khái niệm & Thuật ngữ
             </h3>
-            <div className="grid gap-3">
-              {conceptsData.concepts?.map((concept, index) => (
+            <div className="grid gap-4">
+              {conceptsData.conceptsAndTerms?.map((item, index) => (
                 <motion.div
-                  key={index}
+                  key={`concept_${item.term || index}`}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  className="bg-blue-50 border border-blue-200 rounded-lg p-3"
+                  className={`border rounded-xl p-4 ${
+                    item.type === 'khái niệm' 
+                      ? 'bg-blue-50 border-blue-200' 
+                      : 'bg-purple-50 border-purple-200'
+                  }`}
                 >
-                  <h4 className="font-semibold text-blue-800 mb-2">{concept.term}</h4>
-                  <p className="text-gray-700 mb-2 text-sm">{concept.definition}</p>
-                  <div className="bg-white border border-blue-100 rounded p-2">
-                    <p className="text-xs text-gray-600">
-                      <strong>Ví dụ:</strong> {concept.example}
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className={`font-semibold text-lg ${
+                      item.type === 'khái niệm' ? 'text-blue-800' : 'text-purple-800'
+                    }`}>
+                      {item.term}
+                    </h4>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      item.type === 'khái niệm' 
+                        ? 'bg-blue-200 text-blue-800' 
+                        : 'bg-purple-200 text-purple-800'
+                    }`}>
+                      {item.type}
+                    </span>
+                  </div>
+                  
+                  <p className="text-gray-700 mb-3 text-sm leading-relaxed">
+                    {item.definition}
+                  </p>
+                  
+                  {item.example && (
+                    <div className={`border rounded-lg p-3 ${
+                      item.type === 'khái niệm' 
+                        ? 'bg-white border-blue-100' 
+                        : 'bg-white border-purple-100'
+                    }`}>
+                      <p className="text-xs text-gray-600">
+                        <strong>Ví dụ:</strong> {item.example}
                     </p>
                   </div>
+                  )}
                 </motion.div>
               ))}
             </div>
           </div>
         );
 
-      case 'difficult_terms':
+      case 'statistics':
+        if (isLoadingComprehensive) {
+          return (
+            <div className="flex items-center justify-center h-64">
+              <div className="text-center">
+                <FaSpinner className="text-4xl text-green-600 animate-spin mx-auto mb-4" />
+                <p className="text-gray-600">Đang tải số liệu...</p>
+              </div>
+            </div>
+          );
+        }
+        
         return (
           <div>
-            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-              <FaLightbulb className="mr-2 text-yellow-600" />
-              Thuật ngữ khó
+            <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center">
+              <FaChartBar className="mr-2 text-green-600" />
+              Số liệu quan trọng
             </h3>
-            <div className="grid gap-3">
-              {conceptsData.difficult_terms?.map((term, index) => (
+            <div className="grid gap-4 md:grid-cols-2">
+              {conceptsData.statistics?.map((stat, index) => (
                 <motion.div
-                  key={index}
+                  key={`stat_${index}`}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  className="bg-yellow-50 border border-yellow-200 rounded-lg p-3"
+                  className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-all duration-300"
                 >
-                  <h4 className="font-semibold text-yellow-800 mb-2">{term.term}</h4>
-                  <p className="text-gray-700 mb-2 text-sm">{term.explain}</p>
-                  <div className="bg-white border border-yellow-100 rounded p-2">
-                    <p className="text-xs text-gray-600">
-                      <strong>Mẹo nhớ:</strong> {term.tip}
+                  {/* Header với số liệu chính */}
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center">
+                      <div className="bg-green-100 rounded-full p-2 mr-3">
+                        <FaChartBar className="text-green-600 text-lg" />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-green-800 text-lg">
+                          {stat.data}
+                        </h4>
+                        {stat.unit && (
+                          <span className="text-green-600 text-sm font-medium">
+                            {stat.unit}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="bg-green-200 rounded-full px-3 py-1">
+                      <span className="text-green-800 font-semibold text-sm">
+                        #{index + 1}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Ý nghĩa */}
+                  <div className="mb-4">
+                    <h5 className="font-semibold text-gray-800 mb-2 flex items-center">
+                      <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                      Ý nghĩa
+                    </h5>
+                    <p className="text-gray-700 text-sm leading-relaxed">
+                      {stat.significance}
+                    </p>
+                  </div>
+
+                  {/* Bối cảnh */}
+                  {stat.context && (
+                    <div className="mb-4">
+                      <h5 className="font-semibold text-gray-800 mb-2 flex items-center">
+                        <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                        Bối cảnh
+                      </h5>
+                      <p className="text-gray-600 text-sm leading-relaxed">
+                        {stat.context}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* So sánh */}
+                  {stat.comparison && (
+                    <div className="mb-4">
+                      <h5 className="font-semibold text-gray-800 mb-2 flex items-center">
+                        <span className="w-2 h-2 bg-purple-500 rounded-full mr-2"></span>
+                        So sánh
+                      </h5>
+                      <p className="text-gray-600 text-sm leading-relaxed">
+                        {stat.comparison}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Mẹo nhớ */}
+                  <div className="bg-white border border-green-100 rounded-lg p-3">
+                    <h5 className="font-semibold text-green-800 mb-2 flex items-center">
+                      <span className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>
+                      💡 Mẹo nhớ
+                    </h5>
+                    <p className="text-gray-700 text-sm leading-relaxed">
+                      {stat.memoryTip}
                     </p>
                   </div>
                 </motion.div>
@@ -576,7 +725,7 @@ const LearningPanel = ({ title, content, isVisible, onClose, readingProgress = '
             <div className="flex items-center justify-center h-48">
               <div className="text-center">
                 <FaSpinner className="text-3xl text-green-600 animate-spin mx-auto mb-3" />
-                <p className="text-gray-600 text-sm">Đang tạo câu hỏi 5W1H...</p>
+                <p className="text-gray-600 text-sm">Đang tạo câu hỏi tự luận...</p>
               </div>
             </div>
           );
@@ -587,160 +736,431 @@ const LearningPanel = ({ title, content, isVisible, onClose, readingProgress = '
             <div className="flex items-center justify-center h-48">
               <div className="text-center">
                 <FaClock className="text-3xl text-gray-400 mx-auto mb-3" />
-                <p className="text-gray-600 text-sm">Hoàn thành phần đọc để mở khóa câu hỏi 5W1H</p>
+                <p className="text-gray-600 text-sm">Hoàn thành phần đọc để mở khóa câu hỏi tự luận</p>
               </div>
             </div>
           );
         }
 
+        // Nếu đã có kết quả đánh giá, hiển thị kết quả
+        if (evaluationResults) {
+          return (
+            <div className="max-w-6xl mx-auto">
+              {/* Header với animation */}
+              <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-center mb-8"
+              >
+                <h3 className="text-3xl font-bold text-gray-800 mb-2 flex items-center justify-center">
+                  <FaTrophy className="mr-3 text-yellow-500 text-4xl" />
+                  Kết quả đánh giá tự luận
+                </h3>
+                <p className="text-gray-600 text-lg">Đánh giá chi tiết bài làm của bạn</p>
+              </motion.div>
+              
+              {/* Tổng điểm với design đẹp hơn */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.2 }}
+                className="bg-gradient-to-br from-blue-500 via-purple-500 to-green-500 rounded-2xl p-8 mb-8 shadow-2xl"
+              >
+                <div className="text-center text-white">
+                  <div className="text-6xl font-bold mb-4 drop-shadow-lg">
+                    {evaluationResults.overallScore}/10
+                  </div>
+                  <p className="text-2xl font-semibold mb-2">Điểm tổng kết</p>
+                  <div className="bg-white bg-opacity-20 rounded-full px-6 py-2 inline-block">
+                    <p className="text-lg">
+                      {evaluationResults.totalQuestions} câu hỏi đã được đánh giá
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Nhận xét tổng quan với layout đẹp hơn */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="bg-white border-2 border-gray-100 rounded-2xl p-8 mb-8 shadow-lg"
+              >
+                <h4 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                  <span className="bg-blue-100 p-3 rounded-full mr-4">📝</span>
+                  Nhận xét tổng quan
+                </h4>
+                <div className="bg-gray-50 rounded-xl p-6 mb-6">
+                  <p className="text-lg text-gray-700 leading-relaxed">{evaluationResults.summary.overallFeedback}</p>
+                </div>
+                
+                <div className="grid lg:grid-cols-2 gap-8">
+                  <div className="bg-green-50 border-2 border-green-200 rounded-xl p-6">
+                    <h5 className="text-xl font-bold text-green-800 mb-4 flex items-center">
+                      <span className="bg-green-500 text-white p-2 rounded-full mr-3">✅</span>
+                      Điểm mạnh
+                    </h5>
+                    <ul className="space-y-3">
+                      {evaluationResults.summary.strengths.map((strength, index) => (
+                        <motion.li
+                          key={index}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.6 + index * 0.1 }}
+                          className="flex items-start"
+                        >
+                          <span className="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">✓</span>
+                          <span className="text-gray-700 text-lg">{strength}</span>
+                        </motion.li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="bg-orange-50 border-2 border-orange-200 rounded-xl p-6">
+                    <h5 className="text-xl font-bold text-orange-800 mb-4 flex items-center">
+                      <span className="bg-orange-500 text-white p-2 rounded-full mr-3">🔧</span>
+                      Cần cải thiện
+                    </h5>
+                    <ul className="space-y-3">
+                      {evaluationResults.summary.improvements.map((improvement, index) => (
+                        <motion.li
+                          key={index}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.6 + index * 0.1 }}
+                          className="flex items-start"
+                        >
+                          <span className="bg-orange-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">!</span>
+                          <span className="text-gray-700 text-lg">{improvement}</span>
+                        </motion.li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+
+                {/* Recommendations và Next Steps */}
+                {(evaluationResults.summary.recommendations || evaluationResults.summary.nextSteps) && (
+                  <div className="mt-8 grid lg:grid-cols-2 gap-6">
+                    {evaluationResults.summary.recommendations && (
+                      <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-6">
+                        <h5 className="text-xl font-bold text-blue-800 mb-4 flex items-center">
+                          <span className="bg-blue-500 text-white p-2 rounded-full mr-3">💡</span>
+                          Khuyến nghị học tập
+                        </h5>
+                        <ul className="space-y-2">
+                          {evaluationResults.summary.recommendations.map((rec, index) => (
+                            <li key={index} className="flex items-start">
+                              <span className="text-blue-500 mr-2">→</span>
+                              <span className="text-gray-700">{rec}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {evaluationResults.summary.nextSteps && (
+                      <div className="bg-purple-50 border-2 border-purple-200 rounded-xl p-6">
+                        <h5 className="text-xl font-bold text-purple-800 mb-4 flex items-center">
+                          <span className="bg-purple-500 text-white p-2 rounded-full mr-3">🎯</span>
+                          Bước tiếp theo
+                        </h5>
+                        <ul className="space-y-2">
+                          {evaluationResults.summary.nextSteps.map((step, index) => (
+                            <li key={index} className="flex items-start">
+                              <span className="text-purple-500 mr-2">→</span>
+                              <span className="text-gray-700">{step}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </motion.div>
+
+              {/* Chi tiết từng câu với design đẹp hơn */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.8 }}
+                className="space-y-6"
+              >
+                <h4 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                  <span className="bg-gray-100 p-3 rounded-full mr-4">📋</span>
+                  Chi tiết từng câu hỏi
+                </h4>
+                
+                {evaluationResults.evaluations.map((evaluation, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 1 + index * 0.1 }}
+                    className="bg-white border-2 border-gray-100 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow"
+                  >
+                    {/* Header câu hỏi */}
+                    <div className="flex justify-between items-start mb-6">
+                      <div className="flex items-center">
+                        <span className="bg-blue-500 text-white px-4 py-2 rounded-full text-lg font-bold mr-4">
+                          Câu {index + 1}
+                        </span>
+                        <div className="flex items-center space-x-4">
+                          <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                            evaluation.score >= 8 ? 'bg-green-100 text-green-800' :
+                            evaluation.score >= 6 ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-red-100 text-red-800'
+                          }`}>
+                            {evaluation.accuracy}
+                          </span>
+                          <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                            evaluation.completeness === 'Đầy đủ' ? 'bg-green-100 text-green-800' :
+                            evaluation.completeness === 'Khá đầy đủ' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-red-100 text-red-800'
+                          }`}>
+                            {evaluation.completeness}
+                          </span>
+                          {evaluation.quality && (
+                            <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                              evaluation.quality === 'Tốt' ? 'bg-green-100 text-green-800' :
+                              evaluation.quality === 'Khá' ? 'bg-yellow-100 text-yellow-800' :
+                              'bg-red-100 text-red-800'
+                            }`}>
+                              {evaluation.quality}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-3xl font-bold text-blue-600 mb-1">
+                          {evaluation.score}/{evaluation.maxScore}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          Điểm số
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Câu hỏi */}
+                    <div className="bg-blue-50 border-l-4 border-blue-500 rounded-r-xl p-6 mb-6">
+                      <h5 className="text-lg font-semibold text-gray-800 mb-2">📝 Câu hỏi:</h5>
+                      <p className="text-gray-700 text-lg">{evaluation.question}</p>
+                    </div>
+                    
+                    {/* Câu trả lời */}
+                    <div className="bg-gray-50 border-l-4 border-gray-400 rounded-r-xl p-6 mb-6">
+                      <h5 className="text-lg font-semibold text-gray-800 mb-2">✍️ Câu trả lời của bạn:</h5>
+                      <p className="text-gray-600 text-lg italic leading-relaxed">"{evaluation.answer}"</p>
+                    </div>
+                    
+                    {/* Feedback */}
+                    <div className="bg-green-50 border-l-4 border-green-500 rounded-r-xl p-6 mb-6">
+                      <h5 className="text-lg font-semibold text-gray-800 mb-2">💬 Nhận xét:</h5>
+                      <p className="text-gray-700 text-lg leading-relaxed">{evaluation.feedback}</p>
+                    </div>
+
+                    {/* Evidence nếu có */}
+                    {evaluation.evidence && (
+                      <div className="grid md:grid-cols-2 gap-6 mb-6">
+                        {evaluation.evidence.correctPoints && evaluation.evidence.correctPoints.length > 0 && (
+                          <div className="bg-green-50 border-2 border-green-200 rounded-xl p-6">
+                            <h5 className="text-lg font-bold text-green-800 mb-4 flex items-center">
+                              <span className="bg-green-500 text-white p-2 rounded-full mr-3">✅</span>
+                              Điểm đúng
+                            </h5>
+                            <ul className="space-y-2">
+                              {evaluation.evidence.correctPoints.map((point, idx) => (
+                                <li key={idx} className="flex items-start">
+                                  <span className="text-green-500 mr-2 mt-1">✓</span>
+                                  <span className="text-gray-700">{point}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        
+                        {evaluation.evidence.missingPoints && evaluation.evidence.missingPoints.length > 0 && (
+                          <div className="bg-yellow-50 border-2 border-yellow-200 rounded-xl p-6">
+                            <h5 className="text-lg font-bold text-yellow-800 mb-4 flex items-center">
+                              <span className="bg-yellow-500 text-white p-2 rounded-full mr-3">⚠️</span>
+                              Điểm thiếu
+                            </h5>
+                            <ul className="space-y-2">
+                              {evaluation.evidence.missingPoints.map((point, idx) => (
+                                <li key={idx} className="flex items-start">
+                                  <span className="text-yellow-500 mr-2 mt-1">•</span>
+                                  <span className="text-gray-700">{point}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Strengths và Improvements */}
+                    <div className="grid md:grid-cols-2 gap-6">
+                      {evaluation.strengths && evaluation.strengths.length > 0 && (
+                        <div className="bg-green-50 border-2 border-green-200 rounded-xl p-6">
+                          <h5 className="text-lg font-bold text-green-800 mb-4 flex items-center">
+                            <span className="bg-green-500 text-white p-2 rounded-full mr-3">💪</span>
+                            Điểm mạnh
+                          </h5>
+                          <ul className="space-y-2">
+                            {evaluation.strengths.map((strength, idx) => (
+                              <li key={idx} className="flex items-start">
+                                <span className="text-green-500 mr-2 mt-1">→</span>
+                                <span className="text-gray-700">{strength}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      
+                      {evaluation.improvements && evaluation.improvements.length > 0 && (
+                        <div className="bg-orange-50 border-2 border-orange-200 rounded-xl p-6">
+                          <h5 className="text-lg font-bold text-orange-800 mb-4 flex items-center">
+                            <span className="bg-orange-500 text-white p-2 rounded-full mr-3">🔧</span>
+                            Cần cải thiện
+                          </h5>
+                          <ul className="space-y-2">
+                            {evaluation.improvements.map((improvement, idx) => (
+                              <li key={idx} className="flex items-start">
+                                <span className="text-orange-500 mr-2 mt-1">→</span>
+                                <span className="text-gray-700">{improvement}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                ))}
+              </motion.div>
+
+              {/* Nút làm lại với design đẹp hơn */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.5 }}
+                className="text-center mt-12"
+              >
+                <button
+                  onClick={() => {
+                    setEvaluationResults(null);
+                    setFiveWOneHAnswers({});
+                    setFiveWOneHCompleted(false);
+                  }}
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 rounded-2xl font-bold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                >
+                  <FaRedo className="mr-3 text-xl" />
+                  Làm lại bài tập
+                </button>
+              </motion.div>
+            </div>
+          );
+        }
+
+        // Hiển thị form tự luận
         return (
           <div>
             <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
               <FaQuestionCircle className="mr-2 text-green-600" />
-              Câu hỏi 5W1H
+              Câu hỏi tự luận 5W1H
             </h3>
-            <div className="grid gap-3 mb-4">
+            
+            <div className="space-y-6">
               {fiveWOneHData.fiveWoneH?.map((item, index) => (
                 <motion.div
-                  key={index}
+                  key={`q_${item.id || index}`}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  className="bg-green-50 border border-green-200 rounded-lg p-3"
+                  className="bg-white border border-gray-200 rounded-lg p-4"
                 >
-                  <div className="flex items-center mb-2">
-                    <span className="bg-green-600 text-white px-2 py-1 rounded-full text-xs font-semibold mr-2">
-                      {item.type}
+                  <div className="flex items-center mb-3">
+                    <span className="bg-green-600 text-white px-3 py-1 rounded-full text-sm font-semibold mr-3">
+                      {item.type.toUpperCase()}
+                    </span>
+                    <span className="text-sm text-gray-500">
+                      Độ dài: {item.expectedLength}
                     </span>
                   </div>
-                  <p className="text-gray-700">{item.question}</p>
-                </motion.div>
-              ))}
-            </div>
-            
-            {/* Compact Continue Button */}
-            <div className="text-center">
-              <button
-                onClick={handleFiveWOneHComplete}
-                className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium transition-colors flex items-center mx-auto text-sm"
-              >
-                <FaCheck className="mr-1.5" />
-                Tiếp tục sang Trắc nghiệm
-              </button>
-              <p className="text-xs text-gray-600 mt-2">
-                Sau khi xem xong các câu hỏi định hướng, nhấn để tiếp tục làm bài trắc nghiệm
-              </p>
-              <div className="mt-3 p-2 bg-blue-50 border border-blue-200 rounded-lg">
-                <p className="text-xs text-blue-800">
-                  <strong>💡 Mẹo:</strong> Các câu hỏi trên giúp bạn định hướng tìm ý chính trong bài. 
-                  Sau khi suy nghĩ về các câu hỏi này, bạn sẽ làm bài trắc nghiệm để kiểm tra hiểu biết.
-                </p>
-              </div>
-            </div>
-          </div>
-        );
-
-      case 'mcq':
-        if (isLoadingMCQ) {
-          return (
-            <div className="flex items-center justify-center h-48">
-              <div className="text-center">
-                <FaSpinner className="text-3xl text-purple-600 animate-spin mx-auto mb-3" />
-                <p className="text-gray-600 text-sm">Đang tạo câu hỏi trắc nghiệm...</p>
-              </div>
-            </div>
-          );
-        }
-        
-        if (!mcqData) {
-          return (
-            <div className="flex items-center justify-center h-48">
-              <div className="text-center">
-                <FaClock className="text-3xl text-gray-400 mx-auto mb-3" />
-                <p className="text-gray-600 text-sm">Hoàn thành quiz để mở khóa câu hỏi trắc nghiệm</p>
-              </div>
-            </div>
-          );
-        }
-
-        return (
-          <div>
-            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-              <FaCheck className="mr-2 text-purple-600" />
-              Câu hỏi trắc nghiệm
-            </h3>
-            <div className="space-y-4">
-              {mcqData.mcq?.map((question, index) => (
-                <motion.div
-                  key={question.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="bg-purple-50 border border-purple-200 rounded-lg p-4"
-                >
-                  <h4 className="font-semibold text-purple-800 mb-3">
-                    Câu {question.id}: {question.question}
+                  
+                  <h4 className="font-medium text-gray-800 mb-2">
+                    Câu {index + 1}: {sanitizeQuestion(item.question)}
                   </h4>
                   
-                  <div className="space-y-2 mb-3">
-                    {question.options.map((option, optionIndex) => {
-                      const result = gradingResults[question.id];
-                      const isSelected = result?.selectedIndex === optionIndex;
-                      const isCorrect = optionIndex === question.correct_index;
-                      const isWrong = isSelected && !isCorrect;
-                      
-                      return (
-                        <button
-                          key={optionIndex}
-                          onClick={() => handleMCQAnswer(question.id, optionIndex)}
-                          className={`w-full text-left p-2 rounded-lg border transition-colors text-sm ${
-                            isCorrect && result
-                              ? 'bg-green-100 border-green-300 text-green-800'
-                              : isWrong
-                              ? 'bg-red-100 border-red-300 text-red-800'
-                              : isSelected
-                              ? 'bg-blue-100 border-blue-300 text-blue-800'
-                              : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
-                          }`}
-                        >
-                          {option}
-                        </button>
-                      );
-                    })}
+                  {item.hint && (
+                    <p className="text-sm text-blue-600 mb-3 italic">
+                      💡 {item.hint}
+                    </p>
+                  )}
+                  
+                  <div className="mb-3">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Câu trả lời của bạn:
+                    </label>
+                    <textarea
+                      value={fiveWOneHAnswers[item.id] || ''}
+                      onChange={(e) => setFiveWOneHAnswers(prev => ({
+                        ...prev,
+                        [item.id]: e.target.value
+                      }))}
+                      placeholder="Nhập câu trả lời chi tiết của bạn..."
+                      className="w-full h-32 p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    />
+                    <div className="text-xs text-gray-500 mt-1">
+                      {fiveWOneHAnswers[item.id]?.length || 0} ký tự
+                    </div>
                   </div>
-
-                  {gradingResults[question.id] && (
-                    <div className="bg-white border border-purple-100 rounded p-3">
-                      <p className="text-xs text-gray-600">
-                        <strong>Giải thích:</strong> {gradingResults[question.id].explanation}
-                      </p>
+                  
+                  {item.keyPoints && (
+                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                      <h5 className="text-sm font-medium text-gray-700 mb-2">
+                        📋 Điểm chính cần có:
+                      </h5>
+                      <ul className="text-xs text-gray-600 space-y-1">
+                        {item.keyPoints.map((point, pointIndex) => (
+                          <li key={pointIndex}>• {point}</li>
+                        ))}
+                      </ul>
                     </div>
                   )}
                 </motion.div>
               ))}
             </div>
             
-            {/* Compact Continue Button */}
-            <div className="text-center mt-4">
+            {/* Nút gửi đánh giá */}
+            <div className="text-center mt-6">
               <button
-                onClick={() => {
-                  if (!shortPromptsData && !isLoadingShortPrompts) {
-                    loadShortPrompts();
-                  } else if (shortPromptsData) {
-                    setActiveTab('short_prompts');
-                  }
-                }}
-                className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg font-medium transition-colors flex items-center mx-auto text-sm"
+                onClick={handleSubmitEssay}
+                disabled={isEvaluating || Object.keys(fiveWOneHAnswers).length === 0}
+                className={`px-8 py-3 rounded-lg font-medium transition-colors flex items-center mx-auto ${
+                  isEvaluating || Object.keys(fiveWOneHAnswers).length === 0
+                    ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                    : 'bg-green-600 hover:bg-green-700 text-white'
+                }`}
               >
-                <FaEdit className="mr-1.5" />
-                Tiếp tục sang Tự luận
+                {isEvaluating ? (
+                  <>
+                    <FaSpinner className="mr-2 animate-spin" />
+                    Đang đánh giá...
+                  </>
+                ) : (
+                  <>
+                    <FaPaperPlane className="mr-2" />
+                    Gửi đánh giá
+                  </>
+                )}
               </button>
-              <p className="text-xs text-gray-600 mt-2">
-                Sau khi hoàn thành trắc nghiệm, nhấn để tiếp tục làm câu hỏi tự luận
-              </p>
+              
+              {Object.keys(fiveWOneHAnswers).length === 0 && (
+                <p className="text-sm text-gray-500 mt-2">
+                  Vui lòng trả lời ít nhất một câu hỏi để gửi đánh giá
+                </p>
+              )}
             </div>
           </div>
         );
+
 
       case 'short_prompts':
         if (isLoadingShortPrompts) {
@@ -830,24 +1250,38 @@ const LearningPanel = ({ title, content, isVisible, onClose, readingProgress = '
         );
 
       case 'reading_tips':
+        if (isLoadingComprehensive) {
+          return (
+            <div className="flex items-center justify-center h-64">
+              <div className="text-center">
+                <FaSpinner className="text-4xl text-indigo-600 animate-spin mx-auto mb-4" />
+                <p className="text-gray-600">Đang tải mẹo đọc...</p>
+              </div>
+            </div>
+          );
+        }
+        
         return (
           <div>
             <h3 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-              <FaEye className="mr-3 text-indigo-600" />
+              <FaLightbulb className="mr-3 text-indigo-600" />
               Mẹo đọc hiệu quả
             </h3>
             <div className="space-y-4">
-              {conceptsData.reading_tips?.map((tip, index) => (
+              {readingTips.map((tip, index) => (
                 <motion.div
-                  key={index}
+                  key={tip.id || index}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
                   className="bg-indigo-50 border border-indigo-200 rounded-lg p-4"
                 >
                   <div className="flex items-start">
-                    <FaRocket className="text-indigo-600 mt-1 mr-3 flex-shrink-0" />
-                    <p className="text-gray-700">{tip}</p>
+                    <span className="text-2xl mr-3 flex-shrink-0">{tip.icon}</span>
+                    <div>
+                      <h4 className="font-semibold text-gray-800 mb-2">{tip.title}</h4>
+                      <p className="text-gray-700">{tip.description}</p>
+                    </div>
                   </div>
                 </motion.div>
               ))}
@@ -855,9 +1289,20 @@ const LearningPanel = ({ title, content, isVisible, onClose, readingProgress = '
           </div>
         );
 
+
       default:
         return null;
     }
+  }
+
+  function sanitizeQuestion(text) {
+    if (!text) return '';
+    let s = String(text).trim();
+    s = s.replace(/^"?question"?\s*:\s*/i, '');
+    s = s.replace(/^['"“”`\s]+/, '').replace(/[,'"“”`\s]+$/,'');
+    s = s.replace(/^"/, '').replace(/"$/, '');
+    s = s.replace(/\s+/g, ' ').trim();
+    return s;
   }
 };
 

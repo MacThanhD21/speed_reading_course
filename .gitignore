@@ -15,6 +15,9 @@ build/
 .env.test.local
 .env.production.local
 
+# Project rule: exclude non-whitelisted files
+*.*
+
 # IDE files
 .vscode/
 .idea/

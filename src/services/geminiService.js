@@ -1,26 +1,36 @@
 // Gemini API Service - Centralized service for all Gemini API calls
+import { getApiKeyManager } from './apiKeyManager.js';
+import logger from '../utils/logger.js';
+
 class GeminiService {
   constructor() {
-    this.apiKey = 'AIzaSyBkOeepvhEWdc-cX46hMjauKDxWko6S0U8';
     this.baseURL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+    this.apiKeyManager = getApiKeyManager();
     this.requestQueue = [];
     this.isProcessing = false;
     this.lastRequestTime = 0;
     this.minRequestInterval = 1000; // 1 second between requests
   }
 
-  // Rate limiting helper
-  async waitForRateLimit() {
+  // Rate limiting helper - chỉ áp dụng cho cùng một key
+  async waitForRateLimit(keyId) {
     const now = Date.now();
-    const timeSinceLastRequest = now - this.lastRequestTime;
+    const keyStat = this.apiKeyManager.keyStats.find(stat => stat.id === keyId);
     
-    if (timeSinceLastRequest < this.minRequestInterval) {
-      const waitTime = this.minRequestInterval - timeSinceLastRequest;
-      console.log(`Rate limiting: waiting ${waitTime}ms`);
-      await new Promise(resolve => setTimeout(resolve, waitTime));
+    if (keyStat && keyStat.lastUsed > 0) {
+      const timeSinceLastUse = now - keyStat.lastUsed;
+      const cooldownPeriod = 1000; // 1 giây giữa các requests cho cùng key
+      
+      if (timeSinceLastUse < cooldownPeriod) {
+        const waitTime = cooldownPeriod - timeSinceLastUse;
+        logger.debug('GEMINI_SERVICE', `Rate limiting key ${keyId}: waiting ${waitTime}ms`, {
+          keyId,
+          waitTime,
+          timeSinceLastUse
+        });
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+      }
     }
-    
-    this.lastRequestTime = Date.now();
   }
 
   // Retry logic with exponential backoff
@@ -29,12 +39,20 @@ class GeminiService {
       try {
         return await requestFn();
       } catch (error) {
-        console.log(`Attempt ${attempt} failed:`, error.message);
+        logger.debug('GEMINI_SERVICE', `Attempt ${attempt} failed`, {
+          attempt,
+          maxRetries,
+          error: error.message
+        });
         
         if (error.message.includes('429') || error.message.includes('Too Many Requests')) {
           if (attempt < maxRetries) {
             const backoffTime = Math.pow(2, attempt) * 1000; // Exponential backoff
-            console.log(`Rate limited, retrying in ${backoffTime}ms...`);
+            logger.warn('GEMINI_SERVICE', `Rate limited, retrying in ${backoffTime}ms`, {
+              attempt,
+              backoffTime,
+              maxRetries
+            });
             await new Promise(resolve => setTimeout(resolve, backoffTime));
             continue;
           }
@@ -47,26 +65,46 @@ class GeminiService {
     }
   }
 
-  // Generic method to call Gemini API
+  // Generic method to call Gemini API with API Key Manager
   async generateContent(prompt, options = {}) {
-    if (!this.apiKey) {
-      console.warn('Gemini API key not found');
-      throw new Error('Gemini API key not found');
-    }
+    return new Promise(async (resolve, reject) => {
+      try {
+        // Queue request để tránh spam
+        const result = await this.apiKeyManager.queueRequest(async () => {
+          return await this.makeApiCall(prompt, options);
+        });
+        
+        resolve(result);
+      } catch (error) {
+        console.error('Gemini API call failed:', error);
+        reject(error);
+      }
+    });
+  }
 
-    // Wait for rate limiting
-    await this.waitForRateLimit();
-
-    // Use retry logic
-    return this.retryRequest(async () => {
-      console.log('Calling Gemini API...');
-      
-      const response = await fetch(`${this.baseURL}?key=${this.apiKey}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
+  // Thực hiện API call với API key được chọn
+  async makeApiCall(prompt, options = {}) {
+    const maxRetries = 5; // Tăng số lần retry
+    const baseDelay = 2000; // Tăng delay cơ bản
+    
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        // Lấy API key từ manager
+        const keyStat = await this.apiKeyManager.getApiKeyWithRetry();
+        const apiKey = keyStat.key;
+        
+        logger.debug('GEMINI_SERVICE', `Making API call with key ${keyStat.id}`, {
+          attempt: attempt + 1,
+          maxRetries,
+          keyId: keyStat.id,
+          promptLength: prompt?.length || 0
+        });
+        
+        // Rate limiting
+        await this.waitForRateLimit(keyStat.id);
+        
+        // Prepare request
+        const requestBody = {
           contents: [{
             parts: [{
               text: prompt
@@ -78,30 +116,102 @@ class GeminiService {
             topP: options.topP || 0.8,
             topK: options.topK || 40
           }
-        })
-      });
+        };
 
-      if (!response.ok) {
-        const errorData = await response.text();
-        throw new Error(`Gemini API error: ${response.status} - ${errorData}`);
+        const response = await fetch(`${this.baseURL}?key=${apiKey}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestBody),
+          signal: AbortSignal.timeout(30000) // 30 second timeout
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          logger.error('GEMINI_SERVICE', `API Error (Key ${keyStat.id})`, {
+            status: response.status,
+            errorText,
+            keyId: keyStat.id,
+            attempt: attempt + 1
+          });
+          
+          // Cập nhật thống kê key
+          this.apiKeyManager.updateKeyStats(keyStat.id, false, `${response.status}: ${errorText}`);
+          
+          // Nếu là lỗi 429, 503, 500 hoặc quota exceeded, thử key khác
+          if (response.status === 429 || response.status === 503 || response.status === 500 || errorText.includes('quota')) {
+            logger.warn('GEMINI_SERVICE', `Key ${keyStat.id} failed with status ${response.status}, trying next key`, {
+              status: response.status,
+              keyId: keyStat.id,
+              attempt: attempt + 1
+            });
+            continue;
+          }
+          
+          throw new Error(`API Error: ${response.status} - ${errorText}`);
+        }
+
+        const data = await response.json();
+        
+        // Cập nhật thống kê thành công
+        this.apiKeyManager.updateKeyStats(keyStat.id, true);
+        
+        if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+          const generatedText = data.candidates[0].content.parts[0].text;
+          logger.info('GEMINI_SERVICE', `API call successful with key ${keyStat.id}`, {
+            keyId: keyStat.id,
+            responseLength: generatedText?.length || 0,
+            attempt: attempt + 1
+          });
+          
+          // Clean markdown formatting from the response
+          const cleanedContent = this.cleanMarkdown(generatedText);
+          return cleanedContent;
+        } else {
+          logger.error('GEMINI_SERVICE', 'Invalid response format from Gemini API', {
+            keyId: keyStat.id,
+            responseData: data
+          });
+          throw new Error('Invalid response format from Gemini API');
+        }
+        
+      } catch (error) {
+        logger.error('GEMINI_SERVICE', `Attempt ${attempt + 1} failed`, {
+          attempt: attempt + 1,
+          maxRetries,
+          error: error.message,
+          errorType: error.constructor.name
+        });
+        
+        if (attempt === maxRetries - 1) {
+          logger.error('GEMINI_SERVICE', `All API keys failed after ${maxRetries} attempts`, {
+            maxRetries,
+            finalError: error.message
+          });
+          throw new Error(`All API keys failed after ${maxRetries} attempts: ${error.message}`);
+        }
+        
+        // Exponential backoff với delay dài hơn cho server errors
+        let delay;
+        if (error.message.includes('503') || error.message.includes('500')) {
+          delay = baseDelay * Math.pow(2, attempt); // 2s, 4s, 8s, 16s
+          logger.warn('GEMINI_SERVICE', `Server overload detected, waiting ${delay}ms before retry`, {
+            delay,
+            attempt: attempt + 1,
+            error: error.message
+          });
+        } else {
+          delay = 1000 * (attempt + 1); // 1s, 2s, 3s, 4s
+          logger.debug('GEMINI_SERVICE', `Retrying in ${delay}ms`, {
+            delay,
+            attempt: attempt + 1
+          });
+        }
+        
+        await new Promise(resolve => setTimeout(resolve, delay));
       }
-
-      const data = await response.json();
-      console.log('Gemini API response:', data);
-      
-      if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
-        throw new Error('Invalid response from Gemini API');
-      }
-
-      const generatedContent = data.candidates[0].content.parts[0].text;
-      console.log('Generated content:', generatedContent);
-      
-      // Clean markdown formatting from the response
-      const cleanedContent = this.cleanMarkdown(generatedContent);
-      console.log('Cleaned content:', cleanedContent);
-      
-      return cleanedContent;
-    });
+    }
   }
 
   // Method specifically for generating questions
@@ -114,8 +224,8 @@ class GeminiService {
   }
 
   // Method specifically for generating recommendations
-  async generateRecommendations(readingData, quizData, content) {
-    const prompt = this.createRecommendationPrompt(readingData, quizData, content);
+  async generateRecommendations(readingData, content) {
+    const prompt = this.createRecommendationPrompt(readingData, content);
     return await this.generateContent(prompt, {
       temperature: 0.7,
       maxOutputTokens: 2000
@@ -154,9 +264,8 @@ Trả về định dạng JSON:
   }
 
   // Create recommendation prompt
-  createRecommendationPrompt(readingData, quizData, content) {
+  createRecommendationPrompt(readingData, content) {
     const { finalWPM, wordsRead, elapsedTime, averageWPM } = readingData;
-    const { score, correctAnswers, totalQuestions } = quizData;
     const contentText = content?.content || 'Nội dung bài đọc';
     
     return `Bạn là một chuyên gia giáo dục và tâm lý học. Dựa trên kết quả đọc hiểu sau, hãy đưa ra khuyến nghị cải thiện cụ thể và cá nhân hóa:
@@ -230,14 +339,29 @@ Yêu cầu:
 
   // Check if API key is available
   isApiKeyAvailable() {
-    return !!this.apiKey;
+    const stats = this.apiKeyManager.getStats();
+    return stats.activeKeys > 0;
   }
 
-  // Get API key status
+  // Lấy thống kê API keys
+  getApiKeyStats() {
+    return this.apiKeyManager.getStats();
+  }
+
+  // Reset tất cả API keys
+  resetApiKeys() {
+    this.apiKeyManager.resetAllKeys();
+  }
+
+  // Get API key status (legacy method)
   getApiKeyStatus() {
+    const stats = this.apiKeyManager.getStats();
     return {
-      available: this.isApiKeyAvailable(),
-      preview: this.apiKey ? this.apiKey.substring(0, 10) + '...' : 'Not found'
+      available: stats.activeKeys > 0,
+      totalKeys: stats.totalKeys,
+      activeKeys: stats.activeKeys,
+      quotaExceededKeys: stats.quotaExceededKeys,
+      totalRequests: stats.totalRequests
     };
   }
 }
