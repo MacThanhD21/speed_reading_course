@@ -87,14 +87,14 @@ const PainPoints = () => {
           <p className="text-lg text-gray-600 mb-6 max-w-2xl mx-auto">
             Khoá học Kỹ Thuật Đọc Nhanh sẽ giúp bạn giải quyết tất cả những vấn đề trên một cách hiệu quả
           </p>
-          <button
+          <motion.button
             onClick={scrollToSolution}
             className="btn-primary text-lg px-8 py-4"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
             Khám phá giải pháp ngay
-          </button>
+          </motion.button>
         </motion.div>
       </div>
     </section>

@@ -4,7 +4,7 @@ import LearningPanel from './LearningPanel';
 import ReadingHeader from './ReadingHeader';
 import ReadingSettingsPanel from './ReadingSettingsPanel';
 import ReadingContent from './ReadingContent';
-import ReadingCompletionPopup from './ReadingCompletionPopup';
+import ReadingCompletionPopup from './ReadingCompletionPopup.jsx';
 import { useReadingState, useReadingSettings } from '../../hooks/useReadingMode';
 import readingTipsService from '../../services/readingTipsService';
 
