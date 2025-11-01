@@ -1,220 +1,128 @@
 import React from 'react';
+import { motion } from 'framer-motion';
+import { FaBook, FaTachometerAlt, FaBrain, FaCheckCircle } from 'react-icons/fa';
 
 const SimpleSmartReadHome = ({ onNavigate }) => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-6xl font-bold text-gray-800 mb-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      <div className="container mx-auto px-4 py-12 md:py-20">
+        {/* Hero Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-16 max-w-3xl mx-auto"
+        >
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl mb-6 shadow-lg">
+            <FaBook className="text-white text-3xl" />
+          </div>
+          <h1 className="text-5xl md:text-7xl font-bold text-gray-900 mb-6">
             SmartRead
           </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Đo tốc độ đọc thực tế và kiểm tra khả năng hiểu biết của bạn
+          <p className="text-xl md:text-2xl text-gray-600 mb-4 leading-relaxed">
+            Đo tốc độ đọc thực tế và đánh giá khả năng hiểu biết của bạn
           </p>
-        </div>
-
-        {/* Quick Tip */}
-        <div className="bg-blue-100 border-l-4 border-blue-500 p-4 mb-8 rounded-r-lg">
-          <p className="text-blue-800 font-medium">
-            💡 <strong>Mẹo:</strong> Để có kết quả tốt nhất, hãy đọc ở nơi yên tĩnh và sử dụng tai nghe nếu cần thiết.
+          <p className="text-gray-500 text-lg">
+            Công cụ luyện tập đọc nhanh với AI hỗ trợ tạo câu hỏi tự động
           </p>
-        </div>
+        </motion.div>
 
-        {/* Features Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-          {/* Demo */}
-          <div 
-            className="bg-white rounded-xl shadow-lg p-6 cursor-pointer hover:shadow-xl transition-all duration-300"
-            onClick={() => onNavigate('demo')}
-          >
-            <div className="text-center">
-              <div className="mb-4 flex justify-center">
-                <div className="text-4xl text-red-600">🚀</div>
-              </div>
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                Demo
-              </h3>
-              <p className="text-gray-600 text-sm">
-                Xem demo và thông tin về SmartRead
-              </p>
-            </div>
-          </div>
-
-          {/* AI Test */}
-          <div 
-            className="bg-white rounded-xl shadow-lg p-6 cursor-pointer hover:shadow-xl transition-all duration-300"
-            onClick={() => onNavigate('ai-test')}
-          >
-            <div className="text-center">
-              <div className="mb-4 flex justify-center">
-                <div className="text-4xl text-purple-600">🤖</div>
-              </div>
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                AI Test
-              </h3>
-              <p className="text-gray-600 text-sm">
-                Test chức năng tạo câu hỏi bằng AI
-              </p>
-            </div>
-          </div>
-
-          {/* Gemini Test */}
-          <div 
-            className="bg-white rounded-xl shadow-lg p-6 cursor-pointer hover:shadow-xl transition-all duration-300"
-            onClick={() => onNavigate('gemini-test')}
-          >
-            <div className="text-center">
-              <div className="mb-4 flex justify-center">
-                <div className="text-4xl text-blue-600">🧠</div>
-              </div>
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                Gemini Test
-              </h3>
-              <p className="text-gray-600 text-sm">
-                Test kết nối Gemini API
-              </p>
-            </div>
-          </div>
-
-          {/* Env Debug */}
-          <div 
-            className="bg-white rounded-xl shadow-lg p-6 cursor-pointer hover:shadow-xl transition-all duration-300"
-            onClick={() => onNavigate('env-debug')}
-          >
-            <div className="text-center">
-              <div className="mb-4 flex justify-center">
-                <div className="text-4xl text-orange-600">🔧</div>
-              </div>
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                Env Debug
-              </h3>
-              <p className="text-gray-600 text-sm">
-                Debug environment variables
-              </p>
-            </div>
-          </div>
-
-          {/* Paste Text */}
-          <div 
-            className="bg-white rounded-xl shadow-lg p-6 cursor-pointer hover:shadow-xl transition-all duration-300"
+        {/* Main CTA */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="flex justify-center mb-16"
+        >
+          <button
             onClick={() => onNavigate('paste-text')}
+            className="group relative px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold text-lg rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center space-x-3"
           >
-            <div className="text-center">
-              <div className="mb-4 flex justify-center">
-                <div className="text-4xl text-blue-600">📄</div>
-              </div>
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                Dán văn bản
-              </h3>
-              <p className="text-gray-600 text-sm">
-                Dán nội dung bài đọc để đo tốc độ đọc
-              </p>
+            <FaBook className="text-xl" />
+            <span>Bắt đầu đọc ngay</span>
+            <svg className="w-5 h-5 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
+          </button>
+        </motion.div>
+
+        {/* Features */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto mb-16"
+        >
+          <div className="bg-white rounded-2xl p-8 shadow-md hover:shadow-lg transition-shadow">
+            <div className="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center mb-6">
+              <FaTachometerAlt className="text-blue-600 text-2xl" />
             </div>
+            <h3 className="text-xl font-bold text-gray-800 mb-3">Đo tốc độ đọc</h3>
+            <p className="text-gray-600 leading-relaxed">
+              Theo dõi tốc độ đọc (WPM) theo thời gian thực khi bạn đọc văn bản
+            </p>
           </div>
 
-          {/* URL */}
-          <div 
-            className="bg-white rounded-xl shadow-lg p-6 cursor-pointer hover:shadow-xl transition-all duration-300"
-            onClick={() => onNavigate('paste-url')}
-          >
-            <div className="text-center">
-              <div className="mb-4 flex justify-center">
-                <div className="text-4xl text-green-600">🔗</div>
-              </div>
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                Nhập URL
-              </h3>
-              <p className="text-gray-600 text-sm">
-                Nhập link bài viết để tự động trích xuất nội dung
-              </p>
+          <div className="bg-white rounded-2xl p-8 shadow-md hover:shadow-lg transition-shadow">
+            <div className="w-14 h-14 bg-purple-100 rounded-xl flex items-center justify-center mb-6">
+              <FaBrain className="text-purple-600 text-2xl" />
             </div>
+            <h3 className="text-xl font-bold text-gray-800 mb-3">AI tự động tạo câu hỏi</h3>
+            <p className="text-gray-600 leading-relaxed">
+              Hệ thống tự động tạo câu hỏi 5W1H và trắc nghiệm để kiểm tra khả năng hiểu biết
+            </p>
           </div>
 
-          {/* Upload */}
-          <div 
-            className="bg-white rounded-xl shadow-lg p-6 cursor-pointer hover:shadow-xl transition-all duration-300"
-            onClick={() => onNavigate('upload-file')}
-          >
-            <div className="text-center">
-              <div className="mb-4 flex justify-center">
-                <div className="text-4xl text-purple-600">📤</div>
-              </div>
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                Tải file
-              </h3>
-              <p className="text-gray-600 text-sm">
-                Tải lên file văn bản để đọc
-              </p>
+          <div className="bg-white rounded-2xl p-8 shadow-md hover:shadow-lg transition-shadow">
+            <div className="w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center mb-6">
+              <FaCheckCircle className="text-green-600 text-2xl" />
             </div>
+            <h3 className="text-xl font-bold text-gray-800 mb-3">Đánh giá toàn diện</h3>
+            <p className="text-gray-600 leading-relaxed">
+              Nhận điểm số REI và RCI để đánh giá hiệu quả đọc và độ ổn định của bạn
+            </p>
           </div>
-
-          {/* History */}
-          <div 
-            className="bg-white rounded-xl shadow-lg p-6 cursor-pointer hover:shadow-xl transition-all duration-300"
-            onClick={() => onNavigate('history')}
-          >
-            <div className="text-center">
-              <div className="mb-4 flex justify-center">
-                <div className="text-4xl text-orange-600">📊</div>
-              </div>
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                Lịch sử
-              </h3>
-              <p className="text-gray-600 text-sm">
-                Xem lại các phiên đọc trước đó
-              </p>
-            </div>
-          </div>
-
-          {/* Settings */}
-          <div 
-            className="bg-white rounded-xl shadow-lg p-6 cursor-pointer hover:shadow-xl transition-all duration-300"
-            onClick={() => onNavigate('settings')}
-          >
-            <div className="text-center">
-              <div className="mb-4 flex justify-center">
-                <div className="text-4xl text-gray-600">⚙️</div>
-              </div>
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                Cài đặt
-              </h3>
-              <p className="text-gray-600 text-sm">
-                Tùy chỉnh giao diện và cài đặt
-              </p>
-            </div>
-          </div>
-        </div>
+        </motion.div>
 
         {/* How it works */}
-        <div className="mt-16 bg-white rounded-xl shadow-lg p-8 max-w-4xl mx-auto">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
-            Cách hoạt động
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="bg-white rounded-2xl shadow-lg p-10 md:p-12 max-w-4xl mx-auto"
+        >
+          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
+            Cách sử dụng
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center">
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-blue-600 font-bold">1</span>
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-md">
+                <span className="text-white font-bold text-2xl">1</span>
               </div>
-              <h3 className="font-semibold text-gray-800 mb-2">Dán văn bản</h3>
-              <p className="text-gray-600 text-sm">Dán nội dung bài đọc hoặc nhập URL</p>
+              <h3 className="font-bold text-gray-800 mb-3 text-lg">Dán văn bản</h3>
+              <p className="text-gray-600 leading-relaxed">
+                Copy và dán nội dung bài đọc vào SmartRead
+              </p>
             </div>
             <div className="text-center">
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-green-600 font-bold">2</span>
+              <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-md">
+                <span className="text-white font-bold text-2xl">2</span>
               </div>
-              <h3 className="font-semibold text-gray-800 mb-2">Đọc và đo tốc độ</h3>
-              <p className="text-gray-600 text-sm">Đọc văn bản và theo dõi tốc độ WPM trực tiếp</p>
+              <h3 className="font-bold text-gray-800 mb-3 text-lg">Đọc và đo tốc độ</h3>
+              <p className="text-gray-600 leading-relaxed">
+                Đọc văn bản và theo dõi tốc độ đọc trực tiếp
+              </p>
             </div>
             <div className="text-center">
-              <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-purple-600 font-bold">3</span>
+              <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-md">
+                <span className="text-white font-bold text-2xl">3</span>
               </div>
-              <h3 className="font-semibold text-gray-800 mb-2">Kiểm tra hiểu biết</h3>
-              <p className="text-gray-600 text-sm">Làm bài kiểm tra tự động để đánh giá khả năng hiểu</p>
+              <h3 className="font-bold text-gray-800 mb-3 text-lg">Làm bài kiểm tra</h3>
+              <p className="text-gray-600 leading-relaxed">
+                Trả lời câu hỏi để đánh giá khả năng hiểu biết
+              </p>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

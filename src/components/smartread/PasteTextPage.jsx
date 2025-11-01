@@ -17,7 +17,6 @@ const PasteTextPage = () => {
       <div className="container mx-auto px-4 py-8">
         <BackButton to="/smartread" text="Về trang chủ SmartRead" />
         <PasteText 
-          onNavigate={(screen) => navigate(`/smartread/${screen}`)}
           onStartReading={handleStartReading}
         />
       </div>

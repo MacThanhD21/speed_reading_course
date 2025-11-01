@@ -2,8 +2,11 @@ import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { HiMenu, HiX, HiBookOpen } from 'react-icons/hi'
+import { useAuth } from '../context/AuthContext'
+import UserMenu from './auth/UserMenu'
 
 const Header = () => {
+  const { isAuthenticated } = useAuth()
   const [isOpen, setIsOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
 
@@ -89,12 +92,24 @@ const Header = () => {
             >
               SmartRead
             </Link>
-            <button 
-              onClick={() => scrollToSection('cta')}
-              className="btn-primary"
-            >
-              Đăng ký ngay
-            </button>
+            {isAuthenticated() ? (
+              <UserMenu />
+            ) : (
+              <>
+                <Link 
+                  to="/login"
+                  className="text-gray-700 hover:text-primary-600 transition-colors duration-300 font-medium"
+                >
+                  Đăng nhập
+                </Link>
+                <Link 
+                  to="/register"
+                  className="btn-primary"
+                >
+                  Đăng ký
+                </Link>
+              </>
+            )}
           </nav>
 
           {/* Mobile menu button */}
@@ -144,12 +159,26 @@ const Header = () => {
             >
               SmartRead
             </Link>
-            <button 
-              onClick={() => scrollToSection('cta')}
-              className="block w-full mx-4 mt-2 btn-primary"
-            >
-              Đăng ký ngay
-            </button>
+            {isAuthenticated() ? (
+              <div className="mx-4 mt-4 space-y-2">
+                <UserMenu />
+              </div>
+            ) : (
+              <>
+                <Link 
+                  to="/login"
+                  className="block w-full mx-4 mt-2 text-center px-4 py-2 text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md transition-colors"
+                >
+                  Đăng nhập
+                </Link>
+                <Link 
+                  to="/register"
+                  className="block w-full mx-4 mt-2 btn-primary"
+                >
+                  Đăng ký
+                </Link>
+              </>
+            )}
           </div>
         </motion.nav>
       </div>

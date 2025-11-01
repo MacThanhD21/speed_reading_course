@@ -13,6 +13,8 @@ import {
 } from 'react-icons/fa';
 import quizService from '../../services/quizService';
 import logger from '../../utils/logger';
+import { useNotification } from '../../context/NotificationContext';
+import ConfirmDialog from '../common/ConfirmDialog';
 
 const QuizPanel = ({ 
   isVisible, 
@@ -20,9 +22,11 @@ const QuizPanel = ({
   textId, 
   textContent, 
   wpm = 0,
-  onComplete 
+  onComplete,
+  readingSessionId = null
 }) => {
   // States
+  const { showError } = useNotification();
   const [quiz, setQuiz] = useState(null);
   const [answers, setAnswers] = useState({});
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -32,6 +36,9 @@ const QuizPanel = ({
   const [timePerQuestion, setTimePerQuestion] = useState({});
   const [questionStartTime, setQuestionStartTime] = useState(null);
   const [sessionId] = useState(() => `sess_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(null);
+  const [unansweredCount, setUnansweredCount] = useState(0);
 
   // Track time per question
   useEffect(() => {
@@ -78,7 +85,7 @@ const QuizPanel = ({
       });
     } catch (error) {
       logger.error('QUIZ_PANEL', 'Failed to generate quiz', { error: error.message });
-      alert('Không thể tạo quiz. Vui lòng thử lại sau.');
+      showError('Không thể tạo quiz. Vui lòng thử lại sau.', 'Lỗi');
     } finally {
       setIsLoading(false);
     }
@@ -112,11 +119,18 @@ const QuizPanel = ({
     // Validate: check if all questions answered
     const unanswered = quiz.questions.filter(q => !answers[q.qid]);
     if (unanswered.length > 0) {
-      const confirm = window.confirm(
-        `Bạn chưa trả lời ${unanswered.length} câu hỏi. Bạn có muốn nộp bài không?`
-      );
-      if (!confirm) return;
+      setUnansweredCount(unanswered.length);
+      setConfirmAction(() => () => {
+        submitQuiz();
+      });
+      setIsConfirmDialogOpen(true);
+      return;
     }
+    
+    submitQuiz();
+  };
+
+  const submitQuiz = async () => {
 
     setIsSubmitting(true);
     
@@ -162,11 +176,16 @@ const QuizPanel = ({
 
       // Call onComplete callback if provided
       if (onComplete) {
-        onComplete(gradeResult);
+        // Pass full gradeResult with readingSessionId if available
+        onComplete({
+          ...gradeResult,
+          readingSessionId: readingSessionId,
+          quizType: 'mcq',
+        });
       }
     } catch (error) {
       logger.error('QUIZ_PANEL', 'Failed to submit quiz', { error: error.message });
-      alert('Không thể chấm bài. Vui lòng thử lại sau.');
+      showError('Không thể chấm bài. Vui lòng thử lại sau.', 'Lỗi');
     } finally {
       setIsSubmitting(false);
     }
@@ -190,14 +209,16 @@ const QuizPanel = ({
   const totalQuestions = quiz?.questions?.length || 0;
 
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-        onClick={onClose}
-      >
+    <AnimatePresence mode="wait">
+      {isVisible && (
+        <motion.div
+          key="quiz-panel-overlay"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+          onClick={onClose}
+        >
         <motion.div
           initial={{ scale: 0.9, opacity: 0, y: 20 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -322,9 +343,11 @@ const QuizPanel = ({
                   <h4 className="font-semibold text-gray-800">Chi tiết từng câu:</h4>
                   {result.perQuestion.map((qResult, idx) => {
                     const question = quiz.questions.find(q => q.qid === qResult.qid);
+                    // Ensure unique key - use idx as fallback if qid is missing/duplicate
+                    const uniqueKey = qResult.qid || `q-${idx}`;
                     return (
                       <div
-                        key={qResult.qid}
+                        key={`result-${uniqueKey}-${idx}`}
                         className={`border rounded-lg p-4 ${
                           qResult.isCorrect 
                             ? 'bg-green-50 border-green-200' 
@@ -377,10 +400,12 @@ const QuizPanel = ({
                       const showAnswer = result && result.perQuestion?.find(
                         q => q.qid === currentQuestion.qid
                       );
+                      // Ensure unique key with question qid + option index
+                      const uniqueKey = currentQuestion.qid ? `${currentQuestion.qid}-option-${idx}` : `q${currentQuestionIndex}-opt${idx}`;
 
                       return (
                         <button
-                          key={idx}
+                          key={uniqueKey}
                           onClick={() => !result && handleAnswerSelect(currentQuestion.qid, optionLetter)}
                           disabled={!!result}
                           className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
@@ -505,7 +530,28 @@ const QuizPanel = ({
             </div>
           )}
         </motion.div>
+
+        {/* Confirm Dialog */}
+        <ConfirmDialog
+          isOpen={isConfirmDialogOpen}
+          onClose={() => {
+            setIsConfirmDialogOpen(false);
+            setConfirmAction(null);
+            setUnansweredCount(0);
+          }}
+          onConfirm={() => {
+            if (confirmAction) {
+              confirmAction();
+            }
+          }}
+          title="Xác nhận nộp bài"
+          message={`Bạn chưa trả lời ${unansweredCount} câu hỏi. Bạn có muốn nộp bài không?`}
+          confirmText="Nộp bài"
+          cancelText="Hủy"
+          type="warning"
+        />
       </motion.div>
+      )}
     </AnimatePresence>
   );
 };

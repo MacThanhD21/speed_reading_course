@@ -5,19 +5,21 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
-    port: 3000,
+    port: parseInt(process.env.VITE_PORT) || 3000,
     open: true,
     proxy: {
       '/api': {
-        target: 'http://localhost:3001', // Vercel dev server (nếu chạy vercel dev)
+        // Use environment variable for proxy target
+        // In development: Set VITE_API_PROXY to your backend URL
+        // Note: Proxy chỉ hoạt động trong development mode
+        // Trong production, frontend sẽ gọi API trực tiếp qua VITE_API_URL
+        // Default fallback for development: localhost:5000
+        target: process.env.VITE_API_PROXY || 
+                (process.env.VITE_API_URL && !process.env.VITE_API_URL.startsWith('/') && process.env.VITE_API_URL.replace('/api', '')) || 
+                'http://localhost:5000',
         changeOrigin: true,
         secure: false,
-        // Fallback nếu không có vercel dev server
-        configure: (proxy, _options) => {
-          proxy.on('error', (err, _req, res) => {
-            console.warn('Vercel dev server not running. Using development fallback mode.');
-          });
-        }
+        rewrite: (path) => path.replace(/^\/api/, '/api'),
       }
     }
   }

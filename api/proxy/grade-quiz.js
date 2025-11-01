@@ -6,17 +6,16 @@
  * Response: { sessionId, correctCount, totalQuestions, comprehensionPercent, wpm, rei, perQuestion, feedback }
  */
 
-// Lấy API keys từ environment variables hoặc fallback
+// Lấy API keys từ environment variables
+// ⚠️ KHÔNG hardcode API keys trong source code - chỉ dùng env variables
 const getApiKeys = () => {
-  const envKeys = process.env.GEMINI_API_KEYS?.split(',') || [];
-  const fallbackKeys = [
-    "AIzaSyCT1FqXtbVLeqJj-7WYPGDVbTF9RSq7z90",
-    "AIzaSyB25KpRF3v7vBOMDNaoRocYMA63zCohUAw",
-    "AIzaSyC9ST6XCn2yTVwPBW5SV9GCZKDmOBajbls",
-    "AIzaSyDW_ij25U5wFkYfgVa-D4jKcjE2MO-s_dU",
-    "AIzaSyADhyG_AvMr4QIkTE9WPB4h42769BnnfLM"
-  ];
-  return envKeys.length > 0 ? envKeys : fallbackKeys;
+  const envKeys = process.env.GEMINI_API_KEYS?.split(',').filter(key => key.trim()) || [];
+  
+  if (envKeys.length === 0) {
+    throw new Error('No API keys configured. Please set GEMINI_API_KEYS environment variable.');
+  }
+  
+  return envKeys.map(key => key.trim());
 };
 
 // Helper để gọi Gemini API
@@ -191,8 +190,17 @@ export default async function handler(req, res) {
     // Tạo prompt
     const prompt = createGradePrompt(sessionId, quiz, answers, wpm);
 
-    // Thử các API keys
-    const apiKeys = getApiKeys();
+    // Thử các API keys từ environment
+    let apiKeys;
+    try {
+      apiKeys = getApiKeys();
+    } catch (error) {
+      return res.status(500).json({
+        error: 'API keys configuration error',
+        details: error.message
+      });
+    }
+    
     let lastError = null;
 
     for (const apiKey of apiKeys) {

@@ -1,5 +1,8 @@
 /**
- * Quiz Service - Service để tạo và chấm quiz từ serverless proxy
+ * Quiz Service - Service để tạo và chấm quiz
+ * 
+ * - Generate Quiz: Gọi trực tiếp Gemini API qua geminiService
+ * - Grade Quiz: Sử dụng local grading (so sánh trực tiếp, không cần AI)
  */
 
 import logger from '../utils/logger.js';
@@ -7,12 +10,8 @@ import geminiService from './geminiService.js';
 
 class QuizService {
   constructor() {
-    // API endpoints (sẽ được route qua Vercel)
-    this.generateQuizEndpoint = '/api/proxy/generate-quiz';
-    this.gradeQuizEndpoint = '/api/proxy/grade-quiz';
-    
-    // Development mode detection
-    this.isDevelopment = import.meta.env.DEV || import.meta.env.MODE === 'development';
+    // Quiz service gọi trực tiếp Gemini API qua geminiService
+    // Không sử dụng proxy/serverless functions nữa
   }
 
   /**
@@ -73,7 +72,7 @@ QUAN TRỌNG: Chỉ trả về JSON, không thêm text giải thích bên ngoài
   }
 
   /**
-   * Tạo quiz từ textContent (với development fallback)
+   * Tạo quiz từ textContent - Gọi trực tiếp Gemini API
    * @param {string} textId - ID của text
    * @param {string} textContent - Nội dung text (300-500 từ)
    * @param {number} n - Số câu hỏi (10-15, mặc định 12)
@@ -81,95 +80,42 @@ QUAN TRỌNG: Chỉ trả về JSON, không thêm text giải thích bên ngoài
    */
   async generateQuiz(textId, textContent, n = 12) {
     try {
-      logger.info('QUIZ_SERVICE', 'Generating quiz', { textId, n });
-
-      // Thử gọi serverless function trước
-      try {
-        const response = await fetch(this.generateQuizEndpoint, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            textId,
-            textContent: textContent.substring(0, 2000), // Limit content length
-            n: Math.min(Math.max(n, 10), 15) // Clamp between 10-15
-          }),
-        });
-
-        if (response.ok) {
-          const quiz = await response.json();
-
-          // Validate quiz structure
-          if (quiz.questions && Array.isArray(quiz.questions) && quiz.questions.length > 0) {
-            logger.info('QUIZ_SERVICE', 'Quiz generated successfully via proxy', { 
-              quizId: quiz.quizId, 
-              questionCount: quiz.questions.length 
-            });
-            return quiz;
-          }
-        } else if (this.isDevelopment && (response.status === 404 || response.status === 500)) {
-          // 404 hoặc 500 trong development mode -> fallback (serverless có thể chưa setup đúng)
-          throw new Error(`${response.status} - Proxy error, using fallback`);
-        } else {
-          // Lỗi khác trong production -> throw
-          const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-          throw new Error(`Failed to generate quiz: ${response.status} - ${errorData.error || 'Unknown error'}`);
-        }
-      } catch (proxyError) {
-        // Nếu proxy không có hoặc lỗi (404, 500, network error), fallback sang direct call trong dev mode
-        if (this.isDevelopment && (
-          proxyError.message.includes('404') || 
-          proxyError.message.includes('500') ||
-          proxyError.message.includes('Failed to fetch') || 
-          proxyError.message.includes('Proxy not found') ||
-          proxyError.message.includes('Proxy error')
-        )) {
-          logger.warn('QUIZ_SERVICE', 'Proxy not available, using development fallback', {
-            error: proxyError.message
-          });
-          
-          // Development fallback: gọi Gemini trực tiếp
-          console.warn('⚠️ DEVELOPMENT MODE: Gọi Gemini API trực tiếp từ client. KHÔNG dùng trong production!');
-          
-          const prompt = this.createQuizPrompt(textId, textContent, n);
-          const responseText = await geminiService.generateContent(prompt, {
-            temperature: 0.2,
-            maxOutputTokens: 4000
-          });
-          
-          const quizData = this.parseQuizJSON(responseText);
-          
-          if (!quizData || !quizData.questions) {
-            throw new Error('Invalid quiz format from Gemini');
-          }
-
-          // Đảm bảo có đủ fields
-          const quiz = {
-            quizId: quizData.quizId || `quiz_${Date.now()}`,
-            textId: textId,
-            generatedAt: quizData.generatedAt || new Date().toISOString(),
-            questions: quizData.questions.map((q, idx) => ({
-              qid: q.qid || `q${idx + 1}`,
-              type: q.type || 'mcq',
-              prompt: q.prompt || '',
-              options: q.options || [],
-              correct: q.correct || 'A',
-              explanation: q.explanation || ''
-            }))
-          };
-
-          logger.info('QUIZ_SERVICE', 'Quiz generated successfully via fallback', { 
-            quizId: quiz.quizId, 
-            questionCount: quiz.questions.length 
-          });
-
-          return quiz;
-        }
-        
-        // Nếu không phải development hoặc không phải 404, throw error
-        throw proxyError;
+      logger.info('QUIZ_SERVICE', 'Generating quiz via Gemini API', { textId, n });
+      
+      // Gọi trực tiếp Gemini API
+      const prompt = this.createQuizPrompt(textId, textContent, n);
+      const responseText = await geminiService.generateContent(prompt, {
+        temperature: 0.2,
+        maxOutputTokens: 4000
+      });
+      
+      const quizData = this.parseQuizJSON(responseText);
+      
+      if (!quizData || !quizData.questions) {
+        throw new Error('Invalid quiz format from Gemini API');
       }
+
+      // Đảm bảo có đủ fields
+      const quiz = {
+        quizId: quizData.quizId || `quiz_${Date.now()}`,
+        textId: textId,
+        generatedAt: quizData.generatedAt || new Date().toISOString(),
+        questions: quizData.questions.map((q, idx) => ({
+          qid: q.qid || `q${idx + 1}`,
+          type: q.type || 'mcq',
+          prompt: q.prompt || '',
+          options: q.options || [],
+          correct: q.correct || 'A',
+          explanation: q.explanation || ''
+        }))
+      };
+
+      logger.info('QUIZ_SERVICE', 'Quiz generated successfully', { 
+        quizId: quiz.quizId, 
+        questionCount: quiz.questions.length 
+      });
+
+      return quiz;
       
     } catch (error) {
       logger.error('QUIZ_SERVICE', 'Failed to generate quiz', { 
@@ -181,7 +127,7 @@ QUAN TRỌNG: Chỉ trả về JSON, không thêm text giải thích bên ngoài
   }
 
   /**
-   * Chấm quiz local (fallback)
+   * Chấm quiz local - So sánh trực tiếp câu trả lời với đáp án
    */
   gradeQuizLocal(sessionId, quiz, answers, wpm) {
     const totalQuestions = quiz.questions?.length || 0;
@@ -233,7 +179,7 @@ QUAN TRỌNG: Chỉ trả về JSON, không thêm text giải thích bên ngoài
   }
 
   /**
-   * Chấm quiz (với development fallback)
+   * Chấm quiz - Sử dụng local grading (không cần AI)
    * @param {string} sessionId - Session ID
    * @param {Object} quiz - Quiz object (từ generateQuiz)
    * @param {Array} answers - Array of {qid, answer}
@@ -242,75 +188,19 @@ QUAN TRỌNG: Chỉ trả về JSON, không thêm text giải thích bên ngoài
    */
   async gradeQuiz(sessionId, quiz, answers, wpm) {
     try {
-      logger.info('QUIZ_SERVICE', 'Grading quiz', { sessionId, wpm });
-
-      // Thử gọi serverless function trước
-      try {
-        const response = await fetch(this.gradeQuizEndpoint, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            sessionId,
-            quiz,
-            answers,
-            wpm: Math.round(wpm)
-          }),
-        });
-
-        if (response.ok) {
-          const result = await response.json();
-
-          // Validate result structure
-          if (result.correctCount !== undefined && result.comprehensionPercent !== undefined) {
-            logger.info('QUIZ_SERVICE', 'Quiz graded successfully via proxy', { 
-              sessionId,
-              correctCount: result.correctCount,
-              comprehensionPercent: result.comprehensionPercent,
-              rei: result.rei
-            });
-            return result;
-          }
-        } else if (this.isDevelopment && (response.status === 404 || response.status === 500)) {
-          // 404 hoặc 500 trong development mode -> fallback (serverless có thể chưa setup đúng)
-          throw new Error(`${response.status} - Proxy error, using fallback`);
-        } else {
-          // Lỗi khác trong production -> throw
-          const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-          throw new Error(`Failed to grade quiz: ${response.status} - ${errorData.error || 'Unknown error'}`);
-        }
-      } catch (proxyError) {
-        // Nếu proxy không có hoặc lỗi (404, 500, network error), fallback trong dev mode
-        if (this.isDevelopment && (
-          proxyError.message.includes('404') || 
-          proxyError.message.includes('500') ||
-          proxyError.message.includes('Failed to fetch') || 
-          proxyError.message.includes('Proxy not found') ||
-          proxyError.message.includes('Proxy error')
-        )) {
-          logger.warn('QUIZ_SERVICE', 'Proxy not available, using local grading fallback', {
-            error: proxyError.message
-          });
-          
-          // Development fallback: chấm local
-          console.warn('⚠️ DEVELOPMENT MODE: Chấm quiz local. KHÔNG dùng trong production!');
-          
-          const result = this.gradeQuizLocal(sessionId, quiz, answers, wpm);
-          
-          logger.info('QUIZ_SERVICE', 'Quiz graded successfully via fallback', { 
-            sessionId,
-            correctCount: result.correctCount,
-            comprehensionPercent: result.comprehensionPercent,
-            rei: result.rei
-          });
-          
-          return result;
-        }
-        
-        // Nếu không phải development hoặc không phải 404, throw error
-        throw proxyError;
-      }
+      logger.info('QUIZ_SERVICE', 'Grading quiz locally', { sessionId, wpm });
+      
+      // Chấm quiz local (so sánh trực tiếp)
+      const result = this.gradeQuizLocal(sessionId, quiz, answers, wpm);
+      
+      logger.info('QUIZ_SERVICE', 'Quiz graded successfully', { 
+        sessionId,
+        correctCount: result.correctCount,
+        comprehensionPercent: result.comprehensionPercent,
+        rei: result.rei
+      });
+      
+      return result;
       
     } catch (error) {
       logger.error('QUIZ_SERVICE', 'Failed to grade quiz', { 

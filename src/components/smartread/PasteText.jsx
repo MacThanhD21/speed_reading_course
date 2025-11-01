@@ -1,195 +1,153 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { FaArrowLeft, FaEye, FaPlay } from 'react-icons/fa';
+import { FaPlay, FaPaste } from 'react-icons/fa';
 
-const PasteText = ({ onNavigate, onStartReading }) => {
+const PasteText = ({ onStartReading }) => {
   const [text, setText] = useState('');
-  const [url, setUrl] = useState('');
-  const [mode, setMode] = useState('text'); // 'text' or 'url'
-  const [preview, setPreview] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isPasting, setIsPasting] = useState(false);
+  const textareaRef = useRef(null);
 
   const handleTextChange = (e) => {
     setText(e.target.value);
   };
 
-  const handleUrlChange = (e) => {
-    setUrl(e.target.value);
-  };
-
-  const handlePreview = async () => {
-    if (mode === 'url' && url) {
-      setIsLoading(true);
-      try {
-        // Simulate URL fetching - in real implementation, this would call an API
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        setPreview({
-          title: "Bài viết mẫu",
-          content: "Đây là nội dung bài viết được trích xuất từ URL...",
-          wordCount: 500
-        });
-      } catch (error) {
-        console.error('Error fetching URL:', error);
-      } finally {
-        setIsLoading(false);
+  // Handle paste from clipboard
+  const handlePasteClick = async () => {
+    try {
+      setIsPasting(true);
+      const clipboardText = await navigator.clipboard.readText();
+      setText(clipboardText);
+      
+      // Focus vào textarea sau khi paste
+      if (textareaRef.current) {
+        textareaRef.current.focus();
+        // Scroll to bottom
+        textareaRef.current.scrollTop = textareaRef.current.scrollHeight;
       }
-    } else if (mode === 'text' && text) {
-      const wordCount = text.trim().split(/\s+/).length;
-      setPreview({
-        title: "Văn bản đã dán",
-        content: text,
-        wordCount: wordCount
-      });
+    } catch (error) {
+      console.error('Error reading clipboard:', error);
+      // Fallback: prompt user to paste manually
+      // Silent fail - user can use Ctrl+V instead
+      console.warn('Clipboard API not available');
+      if (textareaRef.current) {
+        textareaRef.current.focus();
+      }
+    } finally {
+      setIsPasting(false);
     }
   };
 
   const handleStartReading = () => {
-    const content = mode === 'url' ? preview?.content : text;
-    if (content) {
+    const trimmedText = text.trim();
+    if (trimmedText) {
+      const wordCount = trimmedText.split(/\s+/).filter(word => word.length > 0).length;
       onStartReading({
-        title: preview?.title || "Văn bản đã dán",
-        content: content,
-        wordCount: preview?.wordCount || text.trim().split(/\s+/).length,
-        source: mode === 'url' ? url : 'pasted'
+        title: "Văn bản đã dán",
+        content: trimmedText,
+        wordCount: wordCount,
+        source: 'pasted'
       });
     }
   };
 
+  const wordCount = text.trim().split(/\s+/).filter(word => word.length > 0).length;
+  const canStart = wordCount >= 10; // Ít nhất 10 từ
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="flex items-center mb-8">
-          <button
-            onClick={() => onNavigate('home')}
-            className="mr-4 p-2 hover:bg-gray-200 rounded-lg transition-colors"
-          >
-            <FaArrowLeft className="text-xl text-gray-600" />
-          </button>
-          <h1 className="text-3xl font-bold text-gray-800">
-            Nhập nội dung đọc
-          </h1>
-        </div>
-
-        <div className="max-w-4xl mx-auto">
-          {/* Mode Selection */}
-          <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">
-              Chọn phương thức nhập
-            </h2>
-            <div className="flex space-x-4">
-              <button
-                onClick={() => setMode('text')}
-                className={`px-6 py-3 rounded-lg font-medium transition-all ${
-                  mode === 'text'
-                    ? 'bg-blue-600 text-white shadow-lg'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                Dán văn bản
-              </button>
-              <button
-                onClick={() => setMode('url')}
-                className={`px-6 py-3 rounded-lg font-medium transition-all ${
-                  mode === 'url'
-                    ? 'bg-blue-600 text-white shadow-lg'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                Nhập URL
-              </button>
-            </div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="max-w-4xl mx-auto"
+        >
+          {/* Header */}
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold text-gray-800 mb-2">
+              Dán nội dung để bắt đầu đọc
+            </h1>
+            <p className="text-gray-600">
+              Dán văn bản của bạn vào đây và bắt đầu luyện tập đọc nhanh ngay
+            </p>
           </div>
 
           {/* Input Area */}
           <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-            {mode === 'text' ? (
-              <div>
-                <label className="block text-lg font-semibold text-gray-800 mb-4">
-                  Dán văn bản của bạn
-                </label>
-                <textarea
-                  value={text}
-                  onChange={handleTextChange}
-                  placeholder="Dán nội dung bài đọc vào đây..."
-                  className="smartread-text smartread-content w-full h-64 p-4 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-                <div className="mt-2 text-sm text-gray-500">
-                  Số từ: {text.trim().split(/\s+/).filter(word => word.length > 0).length}
-                </div>
+            <div className="flex items-center justify-between mb-4">
+              <label className="block text-lg font-semibold text-gray-800">
+                Nội dung bài đọc
+              </label>
+              <button
+                onClick={handlePasteClick}
+                disabled={isPasting}
+                className="inline-flex items-center px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Dán từ clipboard"
+              >
+                <FaPaste className="mr-2" />
+                {isPasting ? 'Đang dán...' : 'Dán'}
+              </button>
+            </div>
+            
+            <textarea
+              ref={textareaRef}
+              value={text}
+              onChange={handleTextChange}
+              onPaste={(e) => {
+                // Auto focus and scroll after paste
+                setTimeout(() => {
+                  if (textareaRef.current) {
+                    textareaRef.current.scrollTop = textareaRef.current.scrollHeight;
+                  }
+                }, 0);
+              }}
+              placeholder="Dán nội dung bài đọc vào đây hoặc click nút 'Dán' ở trên..."
+              className="smartread-text smartread-content w-full h-80 p-4 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-shadow"
+              autoFocus
+            />
+            
+            <div className="mt-3 flex items-center justify-between">
+              <div className="text-sm text-gray-500">
+                Số từ: <span className="font-semibold text-gray-700">{wordCount}</span>
+                {wordCount > 0 && (
+                  <span className="ml-2 text-xs">
+                    ({Math.ceil(wordCount / 200)} phút đọc ước tính)
+                  </span>
+                )}
               </div>
-            ) : (
-              <div>
-                <label className="block text-lg font-semibold text-gray-800 mb-4">
-                  Nhập URL bài viết
-                </label>
-                <input
-                  type="url"
-                  value={url}
-                  onChange={handleUrlChange}
-                  placeholder="https://example.com/article"
-                  className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-                <div className="mt-2 text-sm text-gray-500">
-                  Hệ thống sẽ tự động trích xuất nội dung bài viết
-                </div>
-              </div>
-            )}
+              {wordCount < 10 && wordCount > 0 && (
+                <p className="text-xs text-yellow-600">
+                  ⚠️ Cần ít nhất 10 từ để bắt đầu đọc
+                </p>
+              )}
+            </div>
           </div>
-
-          {/* Preview Button */}
-          <div className="text-center mb-6">
-            <button
-              onClick={handlePreview}
-              disabled={isLoading || (mode === 'text' && !text) || (mode === 'url' && !url)}
-              className="btn-primary inline-flex items-center px-6 py-3 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <FaEye className="mr-2" />
-              {isLoading ? 'Đang xử lý...' : 'Xem trước'}
-            </button>
-          </div>
-
-          {/* Preview */}
-          {preview && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-white rounded-xl shadow-lg p-6 mb-6"
-            >
-              <h3 className="text-xl font-semibold text-gray-800 mb-4">
-                Xem trước
-              </h3>
-              <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-                <h4 className="font-semibold text-gray-800 mb-2">
-                  {preview.title}
-                </h4>
-                <div className="text-sm text-gray-600 mb-2">
-                  Số từ: {preview.wordCount}
-                </div>
-                <div className="smartread-text smartread-content text-gray-700 max-h-32 overflow-y-auto">
-                  {preview.content.substring(0, 300)}...
-                </div>
-              </div>
-            </motion.div>
-          )}
 
           {/* Start Reading Button */}
-          {preview && (
-            <motion.div
+          <div className="text-center">
+            <motion.button
+              onClick={handleStartReading}
+              disabled={!canStart}
               initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="text-center"
+              animate={{ opacity: canStart ? 1 : 0.6 }}
+              whileHover={canStart ? { scale: 1.02 } : {}}
+              whileTap={canStart ? { scale: 0.98 } : {}}
+              className={`inline-flex items-center px-8 py-4 text-lg font-semibold rounded-xl shadow-lg transition-all ${
+                canStart
+                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              }`}
             >
-              <button
-                onClick={handleStartReading}
-                className="btn-accent inline-flex items-center px-8 py-4 text-lg"
-              >
-                <FaPlay className="mr-2" />
-                Bắt đầu đọc
-              </button>
-            </motion.div>
-          )}
-        </div>
+              <FaPlay className="mr-2" />
+              {canStart ? 'Bắt đầu đọc' : `Cần thêm ${10 - wordCount} từ nữa`}
+            </motion.button>
+            
+            {canStart && (
+              <p className="mt-4 text-sm text-gray-600">
+                💡 Tip: Bạn cũng có thể dán bằng Ctrl+V hoặc click nút "Dán"
+              </p>
+            )}
+          </div>
+        </motion.div>
       </div>
     </div>
   );

@@ -96,8 +96,8 @@ const LearningPanel = ({ title, content, isVisible, onClose, readingProgress = '
         error: error.message,
         errorType: error.constructor.name
       });
-      // Show error message to user
-      alert('Có lỗi xảy ra khi đánh giá bài làm. Vui lòng thử lại sau.');
+      // Error will be handled by parent component or logged to console
+      console.error('Error evaluating essay:', error);
     } finally {
       setIsEvaluating(false);
     }

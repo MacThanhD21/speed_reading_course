@@ -8,6 +8,7 @@ import ReadingCompletionPopup from './ReadingCompletionPopup';
 import QuizPanel from './QuizPanel';
 import { useReadingState, useReadingSettings } from '../../hooks/useReadingMode';
 import readingTipsService from '../../services/readingTipsService';
+import apiService from '../../services/apiService';
 
 const ReadingMode = React.memo(({ content, onFinishReading }) => {
   const navigate = useNavigate();
@@ -25,6 +26,9 @@ const ReadingMode = React.memo(({ content, onFinishReading }) => {
   const [completionData, setCompletionData] = useState(null);
   const [fiveWOneHQuestions, setFiveWOneHQuestions] = useState([]);
   const [isLoading5W1H, setIsLoading5W1H] = useState(false);
+  const [readingSessionId, setReadingSessionId] = useState(null);
+  // Track start time when reading starts
+  const readingStartTimeRef = useRef(null);
 
   // Load 5W1H questions for learning panel
   const load5W1HQuestions = useCallback(async () => {
@@ -78,10 +82,69 @@ const ReadingMode = React.memo(({ content, onFinishReading }) => {
     setShowLearningPanel(false);
   }, []);
 
+  // Track when reading starts
+  useEffect(() => {
+    if (readingState.isReading && !readingStartTimeRef.current) {
+      readingStartTimeRef.current = new Date();
+      console.log('Reading started at:', readingStartTimeRef.current);
+    } else if (!readingState.isReading) {
+      // Reset when reading stops
+      if (readingState.elapsedTime === 0) {
+        readingStartTimeRef.current = null;
+      }
+    }
+  }, [readingState.isReading, readingState.elapsedTime]);
+
+  // Save reading session to backend
+  const saveReadingSession = useCallback(async (readingData, contentData) => {
+    try {
+      const sessionStartTime = readingStartTimeRef.current || new Date();
+      const sessionEndTime = new Date();
+      
+      // Calculate duration if we have actual start time
+      let duration = readingData.elapsedTime * 1000; // Convert to milliseconds
+      if (readingStartTimeRef.current) {
+        duration = sessionEndTime.getTime() - sessionStartTime.getTime();
+      }
+
+      const sessionData = {
+        content: {
+          title: contentData?.title || 'Văn bản đã dán',
+          text: contentData?.content || contentData?.text || '',
+          wordCount: contentData?.wordCount || readingData.wordCount || 0,
+          source: contentData?.source || 'pasted',
+        },
+        readingStats: {
+          wpm: readingData.averageWPM || readingData.finalWPM || 0,
+          duration: duration,
+          startTime: sessionStartTime.toISOString(),
+          endTime: sessionEndTime.toISOString(),
+        },
+      };
+
+      console.log('Saving reading session:', sessionData);
+      
+      const response = await apiService.createReadingSession(sessionData);
+      if (response.success && response.data) {
+        setReadingSessionId(response.data._id);
+        console.log('✅ Reading session saved successfully:', response.data._id);
+      } else {
+        console.error('❌ Failed to save reading session:', response);
+      }
+    } catch (error) {
+      console.error('❌ Error saving reading session:', error);
+      console.error('Error details:', {
+        message: error.message,
+        stack: error.stack,
+      });
+      // Don't block user flow if save fails
+    }
+  }, []);
+
   // Memoized finish reading handler
   const handleFinishReading = useCallback(() => {
     // Call the readingState.finishReading to properly stop timers
-    readingState.finishReading((readingData) => {
+    readingState.finishReading(async (readingData) => {
       console.log('Reading data to be saved:', readingData);
       
       // Enhance completion data with additional fields
@@ -92,6 +155,9 @@ const ReadingMode = React.memo(({ content, onFinishReading }) => {
         averageWPM: readingData.averageWPM || 0
       };
       
+      // Save reading session to backend
+      await saveReadingSession(enhancedData, content);
+      
       // Set completion data and show popup
       setCompletionData(enhancedData);
       setShowCompletionPopup(true);
@@ -99,7 +165,7 @@ const ReadingMode = React.memo(({ content, onFinishReading }) => {
       // Also call the original onFinishReading for backward compatibility
       onFinishReading(enhancedData);
     });
-  }, [readingState, onFinishReading]);
+  }, [readingState, onFinishReading, content, saveReadingSession]);
 
   // Handle popup actions
   const handlePopupClose = useCallback(() => {
@@ -129,10 +195,44 @@ const ReadingMode = React.memo(({ content, onFinishReading }) => {
     setShowQuizPanel(false);
   }, []);
 
-  const handleQuizComplete = useCallback((quizResult) => {
+  const handleQuizComplete = useCallback(async (quizResult) => {
     console.log('Quiz completed:', quizResult);
-    // Có thể làm gì đó với kết quả quiz, ví dụ update completionData
-  }, []);
+    
+    // Save quiz result to backend
+    if (readingSessionId && quizResult) {
+      try {
+        const quizData = {
+          readingSessionId: readingSessionId,
+          quizType: quizResult.quizType || 'mixed',
+          results: {
+            correctCount: quizResult.correctCount || 0,
+            totalQuestions: quizResult.totalQuestions || 0,
+            comprehensionPercent: quizResult.comprehensionPercent || 0,
+          },
+          metrics: {
+            wpm: completionData?.averageWPM || completionData?.finalWPM || 0,
+            rei: quizResult.rei || 0,
+          },
+          answers: (quizResult.perQuestion || []).map((item) => ({
+            questionId: item.qid || '',
+            questionType: 'mcq',
+            userAnswer: item.userAnswer || '',
+            correctAnswer: item.correct || '',
+            isCorrect: item.isCorrect || false,
+            explanation: item.explanation || '',
+          })),
+          feedback: quizResult.feedback || '',
+        };
+
+        const response = await apiService.saveQuizResult(quizData);
+        if (response.success) {
+          console.log('Quiz result saved:', response.data);
+        }
+      } catch (error) {
+        console.error('Error saving quiz result:', error);
+      }
+    }
+  }, [readingSessionId, completionData]);
 
 
   // Memoized reset settings handler
@@ -294,6 +394,7 @@ const ReadingMode = React.memo(({ content, onFinishReading }) => {
                 textContent={content?.content || content || ''}
                 wpm={completionData?.averageWPM || completionData?.finalWPM || 0}
                 onComplete={handleQuizComplete}
+                readingSessionId={readingSessionId}
               />
     </div>
   );

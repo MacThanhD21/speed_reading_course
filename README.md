@@ -1,177 +1,144 @@
-# Website Kỹ Thuật Đọc Nhanh
+# 📚 Speed Reading Website
 
-Một website landing page marketing hiện đại, mượt mà và responsive cho khóa học Kỹ Thuật Đọc Nhanh.
+A comprehensive speed reading platform with SmartRead feature, user authentication, and admin panel.
 
-## 🚀 Tính năng
+## ✨ Features
 
-- **Design hiện đại**: Giao diện đẹp mắt với màu chủ đạo xanh dương + cam
-- **Responsive**: Tối ưu cho mọi thiết bị (desktop, tablet, mobile)
-- **Smooth animations**: Sử dụng Framer Motion để tạo hiệu ứng mượt mà
-- **Performance**: Tối ưu hóa với Vite và React 18
-- **SEO friendly**: Meta tags và cấu trúc HTML chuẩn
+- 🚀 **SmartRead**: AI-powered reading sessions with quiz system
+- 👥 **User Authentication**: Registration, login, and profile management
+- 📊 **Admin Panel**: Comprehensive dashboard with statistics and user management
+- 📝 **Contact Form**: User inquiry management
+- 🎯 **Reading Analytics**: WPM, REI, RCI tracking
+- 🤖 **AI Integration**: Gemini API for quiz generation and grading
 
-## 📱 Cấu trúc Website
+## 🛠️ Tech Stack
 
-### Hero Section
-- Headline chính: "Đọc Nhanh – Hiểu Sâu – Nhớ Lâu"
-- Subheadline: Thông tin về khóa học 6 buổi
-- CTA button: "Đăng Ký Ngay"
-- Background gradient và animation
+### Frontend
+- React + Vite
+- Tailwind CSS
+- Framer Motion
+- React Router DOM
+- Recharts
 
-### Pain Points
-- 3 vấn đề chính khi đọc chậm
-- CTA chuyển tiếp đến giải pháp
+### Backend
+- Node.js + Express
+- MongoDB Atlas
+- JWT Authentication
+- Mongoose ODM
 
-### Solution
-- 3 kỹ thuật cốt lõi: Hand Pacing, Skimming & Scanning, Chunking
-- Giải thích chi tiết từng kỹ thuật
+## 📦 Installation
 
-### Timeline
-- Lộ trình 6 buổi học với mục tiêu WPM
-- Timeline design đẹp mắt
-- Thống kê kết quả
+### Prerequisites
+- Node.js (v18 or higher)
+- MongoDB Atlas account
+- Gemini API keys
 
-### Outcomes
-- 4 lợi ích chính sau khóa học
-- Biểu đồ so sánh trước/sau
-- Tỷ lệ thành công
+### Setup Instructions
 
-### Pricing
-- Học phí: 1.200.000 VNĐ (giảm từ 1.500.000 VNĐ)
-- Danh sách tính năng đầy đủ
-- Cam kết hoàn tiền 100%
+1. **Clone the repository**
+```bash
+git clone <repository-url>
+cd website_speed_reading
+```
 
-### Testimonials
-- Phản hồi từ học viên thực tế
-- Thống kê thành công
-- Social proof
-
-### FAQ
-- 8 câu hỏi thường gặp
-- Accordion design
-- Thông tin liên hệ
-
-### CTA Final
-- Form đăng ký hoàn chỉnh
-- Thông tin liên hệ
-- Tạo cảm giác urgency
-
-## 🛠️ Công nghệ sử dụng
-
-- **Frontend**: React 18 + Vite
-- **Styling**: Tailwind CSS
-- **Animations**: Framer Motion
-- **Icons**: React Icons
-- **Build Tool**: Vite
-- **Package Manager**: npm
-
-## 📦 Cài đặt và chạy
-
-### Yêu cầu hệ thống
-- Node.js 16+ 
-- npm hoặc yarn
-
-### Cài đặt dependencies
+2. **Install frontend dependencies**
 ```bash
 npm install
 ```
 
-### Chạy development server
+3. **Install backend dependencies**
 ```bash
-npm run dev
+cd server
+npm install
+cd ..
 ```
 
-### Build production
+4. **Configure environment variables**
+
+   **Frontend**: Create `.env` in root directory
+   ```env
+   VITE_API_URL=/api
+   ```
+
+   **Backend**: Create `.env` in `server/` directory
+   ```env
+   PORT=5000
+   MONGODB_URI=your_mongodb_connection_string
+   JWT_SECRET=your_jwt_secret_key
+   BASE_URL=https://api.yourdomain.com
+   GEMINI_API_KEY_1=your_gemini_api_key_1
+   GEMINI_API_KEY_2=your_gemini_api_key_2
+   ```
+
+   See `.env.example` for complete configuration template.
+
+5. **Start development servers**
+
+   **Backend** (Terminal 1):
+   ```bash
+   cd server
+   npm start
+   ```
+
+   **Frontend** (Terminal 2):
+   ```bash
+   npm run dev
+   ```
+
+## 📖 Documentation
+
+- **Backend Setup**: See `BACKEND_SETUP_GUIDE.md`
+- **Environment Configuration**: See `ENVIRONMENT_CONFIGURATION.md`
+- **Admin Setup**: See `QUICK_ADMIN_SETUP.md`
+- **SmartRead Backend**: See `SMARTREAD_BACKEND_SUMMARY.md`
+
+## 🌐 Deployment
+
+### Frontend
+Build and deploy the `dist/` folder to your hosting service (Vercel, Netlify, etc.)
 ```bash
 npm run build
 ```
 
-### Preview production build
-```bash
-npm run preview
-```
+### Backend
+Deploy the `server/` directory to your hosting service (Railway, Render, Heroku, etc.)
 
-## 🎨 Customization
+**Important**: Set environment variables on your hosting platform before deploying.
 
-### Màu sắc
-- Primary (Blue): `#3b82f6` - `#1e3a8a`
-- Accent (Orange): `#f97316` - `#7c2d12`
+## 📝 API Endpoints
 
-### Font
-- Font chính: Inter (Google Fonts)
-- Fallback: system-ui, sans-serif
+### Authentication
+- `POST /api/auth/register` - User registration
+- `POST /api/auth/login` - User login
+- `GET /api/auth/me` - Get current user
 
-### Animations
-- Fade in/out effects
-- Slide animations
-- Hover effects
-- Scroll-triggered animations
+### SmartRead
+- `POST /api/smartread/sessions` - Create reading session
+- `GET /api/smartread/sessions` - Get reading history
+- `POST /api/smartread/quiz-results` - Save quiz result
+- `GET /api/smartread/stats` - Get user statistics
 
-## 📁 Cấu trúc thư mục
+### Admin
+- `GET /api/admin/dashboard` - Dashboard statistics
+- `GET /api/admin/users` - Get all users
+- `POST /api/admin/users` - Create new user
+- `PUT /api/admin/users/:id` - Update user
+- `DELETE /api/admin/users/:id` - Delete user
 
-```
-src/
-├── components/          # React components
-│   ├── Header.jsx      # Navigation header
-│   ├── Hero.jsx        # Hero section
-│   ├── PainPoints.jsx  # Pain points section
-│   ├── Solution.jsx    # Solution section
-│   ├── Timeline.jsx    # Timeline section
-│   ├── Outcomes.jsx    # Outcomes section
-│   ├── Pricing.jsx     # Pricing section
-│   ├── Testimonials.jsx # Testimonials section
-│   ├── FAQ.jsx         # FAQ section
-│   ├── CTA.jsx         # Call-to-action section
-│   └── Footer.jsx      # Footer
-├── App.jsx             # Main app component
-├── main.jsx            # Entry point
-└── index.css           # Global styles
+See `server/README.md` for complete API documentation.
 
-public/                 # Static assets
-├── favicon.ico        # Website icon
-├── course-logo.png    # Course logo (placeholder)
-└── video.mp4          # Marketing video (placeholder)
-```
+## 🔐 Security
 
-## 🔧 Cấu hình
-
-### Tailwind CSS
-- Custom color palette
-- Custom animations
-- Responsive breakpoints
-- Component classes
-
-### Vite
-- React plugin
-- Development server
-- Build optimization
-- Hot module replacement
-
-## 📱 Responsive Design
-
-- **Mobile First**: Thiết kế từ mobile lên
-- **Breakpoints**: sm (640px), md (768px), lg (1024px), xl (1280px)
-- **Grid System**: CSS Grid và Flexbox
-- **Typography**: Responsive font sizes
-
-## 🚀 Performance
-
-- **Code Splitting**: Lazy loading components
-- **Image Optimization**: Placeholder cho images
-- **Bundle Size**: Tối ưu với Vite
-- **Lighthouse Score**: Tối ưu SEO và Performance
-
-## 📧 Liên hệ
-
-- **Hotline**: 0901 234 567
-- **Zalo**: @docnhanh
-- **Email**: info@docnhanh.com
-- **Địa chỉ**: 123 Đường ABC, Quận 1, TP.HCM
+- JWT-based authentication
+- Password hashing with bcrypt
+- CORS configuration
+- Environment variable protection
+- Admin route protection
 
 ## 📄 License
 
-© 2024 Đọc Nhanh. Tất cả quyền được bảo lưu.
+MIT License
 
----
+## 👥 Contributing
 
-**Lưu ý**: Đây là website demo cho mục đích marketing. Các thông tin liên hệ và nội dung có thể được thay đổi theo yêu cầu thực tế.
+Contributions are welcome! Please open an issue or submit a pull request.

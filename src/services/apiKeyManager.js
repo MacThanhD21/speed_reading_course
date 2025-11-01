@@ -33,8 +33,9 @@ class ApiKeyManager {
     this.rateLimitConfig = {
       maxRequestsPerMinute: 15, // Gemini free tier limit
       maxRequestsPerHour: 1000,
-      cooldownPeriod: 60000, // 1 phút
-      errorThreshold: 3 // Số lỗi tối đa trước khi tạm ngưng key
+      cooldownPeriod: 4100, // ~4 giây/key (15 req/min = 1 req/4s)
+      errorThreshold: 3, // Số lỗi tối đa trước khi tạm ngưng key
+      maxConcurrentRequests: 10 // Số requests xử lý đồng thời
     };
 
     // Index của key hiện tại đang sử dụng
@@ -42,6 +43,7 @@ class ApiKeyManager {
     
     // Queue để quản lý request
     this.requestQueue = [];
+    this.activeRequests = new Set(); // Track active requests for parallel processing
     this.isProcessingQueue = false;
 
     logger.info('API_KEY_MANAGER', `Initialized with ${this.apiKeys.length} keys`);
@@ -186,7 +188,7 @@ class ApiKeyManager {
       return false;
     }
 
-    // Kiểm tra cooldown period
+    // Kiểm tra cooldown period (đã giảm từ 60s xuống ~4s)
     if (timeSinceLastUse < this.rateLimitConfig.cooldownPeriod) {
       return false;
     }
@@ -238,7 +240,7 @@ class ApiKeyManager {
   }
 
   /**
-   * Xử lý queue requests với retry logic
+   * Xử lý queue requests với parallel processing
    */
   async processQueue() {
     if (this.isProcessingQueue || this.requestQueue.length === 0) {
@@ -247,21 +249,40 @@ class ApiKeyManager {
 
     this.isProcessingQueue = true;
 
-    while (this.requestQueue.length > 0) {
-      const { requestFunction, resolve, reject } = this.requestQueue.shift();
-      
-      try {
-        const result = await this.executeWithRetry(requestFunction);
-        resolve(result);
-        
-        // Delay nhỏ giữa các requests để tránh rate limit
-        await this.delay(100);
-      } catch (error) {
-        reject(error);
+    // Xử lý parallel với giới hạn concurrent requests
+    while (this.requestQueue.length > 0 || this.activeRequests.size > 0) {
+      // Xử lý requests song song đến giới hạn
+      while (
+        this.requestQueue.length > 0 && 
+        this.activeRequests.size < this.rateLimitConfig.maxConcurrentRequests
+      ) {
+        const { requestFunction, resolve, reject } = this.requestQueue.shift();
+        const requestId = Date.now() + Math.random();
+        this.activeRequests.add(requestId);
+
+        // Xử lý request song song (không block)
+        this.executeRequest(requestFunction, resolve, reject, requestId);
       }
+
+      // Chờ một chút trước khi check lại
+      await this.delay(50);
     }
 
     this.isProcessingQueue = false;
+  }
+
+  /**
+   * Execute request và tự động remove khỏi active set
+   */
+  async executeRequest(requestFunction, resolve, reject, requestId) {
+    try {
+      const result = await this.executeWithRetry(requestFunction);
+      resolve(result);
+    } catch (error) {
+      reject(error);
+    } finally {
+      this.activeRequests.delete(requestId);
+    }
   }
 
   /**

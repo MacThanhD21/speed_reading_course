@@ -19,7 +19,7 @@ class GeminiService {
     
     if (keyStat && keyStat.lastUsed > 0) {
       const timeSinceLastUse = now - keyStat.lastUsed;
-      const cooldownPeriod = 1000; // 1 giây giữa các requests cho cùng key
+      const cooldownPeriod = this.apiKeyManager.rateLimitConfig.cooldownPeriod; // Dùng config từ manager
       
       if (timeSinceLastUse < cooldownPeriod) {
         const waitTime = cooldownPeriod - timeSinceLastUse;
