@@ -74,6 +74,25 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Routes
+// Root endpoint - API information
+app.get('/', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Speed Reading API Server',
+    version: '1.0.0',
+    endpoints: {
+      health: '/api/health',
+      auth: '/api/auth',
+      contacts: '/api/contacts',
+      admin: '/api/admin',
+      smartread: '/api/smartread'
+    },
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
+// Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'OK', 
