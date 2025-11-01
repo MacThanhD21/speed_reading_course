@@ -105,14 +105,14 @@ const Pricing = () => {
 
             {/* CTA Button */}
             <div className="text-center">
-              <button
+              <motion.button
                 onClick={scrollToCTA}
-                className="bg-accent-500 hover:bg-accent-600 text-white font-bold py-4 px-8 rounded-xl text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                className="bg-accent-500 hover:bg-accent-600 text-white font-bold py-4 px-8 rounded-xl text-lg transition-all duration-300 shadow-lg hover:shadow-xl"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
                 Đăng ký ngay hôm nay
-              </button>
+              </motion.button>
               <p className="text-primary-100 text-sm mt-3">
                 ⚡ Số lượng có hạn - Ưu đãi chỉ dành cho 50 học viên đầu tiên
               </p>

@@ -123,8 +123,10 @@ Name: JWT_SECRET
 Value: (paste kết quả từ command trên)
 ```
 
-#### Biến 6: BASE_URL
-⚠️ **Chưa set ngay!** Đợi Railway tạo URL cho service trước.
+#### Biến 6: BASE_URL (OPTIONAL - Không bắt buộc)
+⚠️ **Biến này KHÔNG BẮT BUỘC** - chỉ dùng để logging thông tin server URL.
+
+Nếu muốn set (để có logs đẹp hơn):
 
 1. Vào tab **"Settings"** → **"Domains"**
 2. Railway sẽ tự tạo domain như: `https://your-service-name.up.railway.app`
@@ -136,18 +138,36 @@ Value: https://your-service-name.up.railway.app
 ```
 (Không có `/api` ở cuối)
 
-#### Biến 7: CORS_ORIGIN
+**Lưu ý**: Nếu không set biến này, server vẫn chạy bình thường, chỉ là không log ra URL server mà thôi.
+
+#### Biến 7: CORS_ORIGIN (QUAN TRỌNG - BẮT BUỘC!)
+⚠️ **BẮT BUỘC phải set biến này** nếu không frontend sẽ không thể gọi API được!
+
+1. Lấy URL frontend từ Vercel:
+   - Vào Vercel Dashboard → Chọn project → Tab **"Deployments"**
+   - Copy URL deployment (ví dụ: `https://speed-reading-course.vercel.app`)
+
+2. Add vào Railway:
 ```
 Name: CORS_ORIGIN
-Value: https://your-frontend.vercel.app
+Value: https://speed-reading-course.vercel.app
 ```
-⚠️ Thay `your-frontend.vercel.app` bằng URL thực của frontend trên Vercel
+⚠️ **QUAN TRỌNG**: 
+- Phải có `https://` ở đầu
+- Không có `/` ở cuối
+- Thay URL trên bằng URL thực của frontend trên Vercel của bạn
 
-Nếu có nhiều domain (ví dụ: với/không www):
+**Nếu có nhiều domain** (ví dụ: production + preview):
 ```
-Value: https://your-app.vercel.app,https://www.your-app.vercel.app
+Value: https://speed-reading-course.vercel.app,https://speed-reading-course-git-main-yourname.vercel.app
 ```
-(Phân tách bằng dấu phẩy, KHÔNG có dấu cách)
+(Phân tách bằng dấu phẩy, KHÔNG có dấu cách giữa các URL)
+
+**Nếu muốn cho phép tất cả preview deployments của Vercel:**
+```
+Value: https://speed-reading-course.vercel.app,*.vercel.app
+```
+(Tuy nhiên cách này ít bảo mật hơn)
 
 #### Biến 8: GEMINI_API_KEYS
 ```
@@ -326,9 +346,27 @@ curl https://your-backend.up.railway.app/api/health
 ### Lỗi: "CORS error" trên frontend
 **Nguyên nhân**: Backend không cho phép frontend domain  
 **Giải pháp**:
-1. Kiểm tra `CORS_ORIGIN` trên Railway
-2. Đảm bảo có đúng URL frontend (không có trailing slash)
-3. Nếu có nhiều domain, phân tách bằng dấu phẩy
+1. **Kiểm tra `CORS_ORIGIN` trên Railway:**
+   - Vào Railway Dashboard → **Settings** → **Variables**
+   - Tìm biến `CORS_ORIGIN`
+   - Đảm bảo giá trị là URL frontend trên Vercel (ví dụ: `https://speed-reading-course.vercel.app`)
+
+2. **Nếu chưa có hoặc sai, thêm/sửa ngay:**
+   - Click **"+ New Variable"** hoặc edit biến hiện có
+   - Name: `CORS_ORIGIN`
+   - Value: URL frontend (phải có `https://`, không có `/` ở cuối)
+   - Railway sẽ tự động redeploy sau khi save
+
+3. **Nếu có nhiều domain** (production + preview):
+   - Phân tách bằng dấu phẩy: `https://domain1.vercel.app,https://domain2.vercel.app`
+   - KHÔNG có dấu cách giữa các URL
+
+4. **Sau khi redeploy:**
+   - Đợi 1-2 phút để Railway redeploy xong
+   - Refresh frontend và test lại
+   - Mở DevTools → Console, không còn lỗi CORS
+
+⚠️ **Lưu ý**: Biến `CORS_ORIGIN` là BẮT BUỘC trong production, nếu không set sẽ block tất cả requests từ frontend!
 
 ### Lỗi: "Cannot GET /api/..."
 **Nguyên nhân**: Backend chưa start hoặc route không tồn tại  

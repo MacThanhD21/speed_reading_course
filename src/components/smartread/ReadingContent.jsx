@@ -86,10 +86,10 @@ const ReadingContent = React.memo(({
   }, [readingSettings.textFormatting.highlight]);
 
   return (
-    <div className="pt-24 sm:pt-20 pb-8">
+    <div className="pt-20 sm:pt-24 md:pt-28 pb-6 sm:pb-8">
       {/* Color Palette */}
       {isColorMode && (
-        <div className="fixed top-20 right-4 z-50 bg-white rounded-lg shadow-lg p-4 border">
+        <div className="fixed top-16 sm:top-20 right-2 sm:right-4 z-50 bg-white rounded-lg shadow-lg p-2 sm:p-4 border max-w-[calc(100vw-1rem)]">
           <h3 className="text-sm font-medium text-gray-700 mb-3">Chọn màu chữ:</h3>
           <div className="grid grid-cols-6 gap-2">
             {[
@@ -129,7 +129,7 @@ const ReadingContent = React.memo(({
       
       {/* Paper-like container */}
       <div className="w-full flex justify-center">
-        <div className="w-full max-w-4xl mx-4 sm:mx-6 lg:mx-8">
+        <div className="w-full max-w-4xl mx-3 sm:mx-4 md:mx-6 lg:mx-8">
           <motion.div
             {...fadeInUp}
             className={`rounded-lg sm:rounded-xl shadow-lg transition-colors duration-300 ${
@@ -332,7 +332,7 @@ const ReadingContent = React.memo(({
             {/* Paper-like text content */}
             <div 
               ref={contentRef}
-              className={`paper-text smartread-content max-w-none leading-relaxed transition-all duration-300 ${currentFontFamily.class} ${getTextFormattingClasses} select-text px-4 sm:px-6 py-4 ${
+              className={`paper-text smartread-content max-w-none leading-relaxed transition-all duration-300 ${currentFontFamily.class} ${getTextFormattingClasses} select-text px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-4 md:py-6 ${
                 isColorMode ? 'cursor-crosshair' : 'cursor-text'
               }`}
               style={{

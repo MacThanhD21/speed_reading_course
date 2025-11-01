@@ -47,64 +47,68 @@ const Header = () => {
       animate={{ y: 0 }}
       transition={{ duration: 0.6 }}
     >
-      <div className="container-custom">
+      <div className="container-custom px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo */}
           <motion.div 
-            className="flex items-center space-x-2"
+            className="flex items-center space-x-1.5 sm:space-x-2 cursor-pointer"
             whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => scrollToSection('hero')}
           >
-            <HiBookOpen className="w-8 h-8 text-primary-600" />
-            <span className="text-xl lg:text-2xl font-bold text-primary-600">
+            <HiBookOpen className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-primary-600 flex-shrink-0" />
+            <span className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-primary-600 whitespace-nowrap">
               Đọc Nhanh
             </span>
           </motion.div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center space-x-8">
+          <nav className="hidden md:flex items-center space-x-4 lg:space-x-6 xl:space-x-8">
             <button 
               onClick={() => scrollToSection('hero')}
-              className="text-gray-700 hover:text-primary-600 transition-colors duration-300 font-medium"
+              className="text-gray-700 hover:text-primary-600 transition-colors duration-300 font-medium text-sm lg:text-base whitespace-nowrap"
             >
               Trang chủ
             </button>
             <button 
               onClick={() => scrollToSection('solution')}
-              className="text-gray-700 hover:text-primary-600 transition-colors duration-300 font-medium"
+              className="text-gray-700 hover:text-primary-600 transition-colors duration-300 font-medium text-sm lg:text-base whitespace-nowrap"
             >
               Giải pháp
             </button>
             <button 
               onClick={() => scrollToSection('timeline')}
-              className="text-gray-700 hover:text-primary-600 transition-colors duration-300 font-medium"
+              className="text-gray-700 hover:text-primary-600 transition-colors duration-300 font-medium text-sm lg:text-base whitespace-nowrap"
             >
               Lộ trình
             </button>
             <button 
               onClick={() => scrollToSection('pricing')}
-              className="text-gray-700 hover:text-primary-600 transition-colors duration-300 font-medium"
+              className="text-gray-700 hover:text-primary-600 transition-colors duration-300 font-medium text-sm lg:text-base whitespace-nowrap"
             >
               Học phí
             </button>
             <Link 
               to="/smartread"
-              className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+              className="bg-green-600 hover:bg-green-700 text-white font-semibold py-1.5 px-3 lg:py-2 lg:px-4 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl text-sm lg:text-base whitespace-nowrap"
             >
               SmartRead
             </Link>
             {isAuthenticated() ? (
-              <UserMenu />
+              <div className="ml-2 lg:ml-4">
+                <UserMenu />
+              </div>
             ) : (
               <>
                 <Link 
                   to="/login"
-                  className="text-gray-700 hover:text-primary-600 transition-colors duration-300 font-medium"
+                  className="text-gray-700 hover:text-primary-600 transition-colors duration-300 font-medium text-sm lg:text-base whitespace-nowrap"
                 >
                   Đăng nhập
                 </Link>
                 <Link 
                   to="/register"
-                  className="btn-primary"
+                  className="btn-primary text-sm lg:text-base whitespace-nowrap ml-2"
                 >
                   Đăng ký
                 </Link>
@@ -112,10 +116,11 @@ const Header = () => {
             )}
           </nav>
 
-          {/* Mobile menu button */}
+          {/* Mobile/Tablet menu button */}
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="lg:hidden p-2 rounded-md text-gray-700 hover:text-primary-600 hover:bg-gray-100 transition-colors duration-300"
+            className="md:hidden p-2 rounded-md text-gray-700 hover:text-primary-600 hover:bg-gray-100 transition-colors duration-300 flex-shrink-0"
+            aria-label="Toggle menu"
           >
             {isOpen ? <HiX className="w-6 h-6" /> : <HiMenu className="w-6 h-6" />}
           </button>
@@ -123,57 +128,63 @@ const Header = () => {
 
         {/* Mobile Navigation */}
         <motion.nav
-          className={`lg:hidden overflow-hidden transition-all duration-300 ${
-            isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+          className={`md:hidden overflow-hidden transition-all duration-300 ${
+            isOpen ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0'
           }`}
           initial={false}
+          animate={{
+            height: isOpen ? 'auto' : 0,
+          }}
         >
-          <div className="py-4 space-y-2">
+          <div className="py-4 space-y-2 border-t border-gray-200 mt-2">
             <button 
               onClick={() => scrollToSection('hero')}
-              className="block w-full text-left px-4 py-2 text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md transition-colors duration-300"
+              className="block w-full text-left px-4 py-3 text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md transition-colors duration-300 font-medium"
             >
               Trang chủ
             </button>
             <button 
               onClick={() => scrollToSection('solution')}
-              className="block w-full text-left px-4 py-2 text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md transition-colors duration-300"
+              className="block w-full text-left px-4 py-3 text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md transition-colors duration-300 font-medium"
             >
               Giải pháp
             </button>
             <button 
               onClick={() => scrollToSection('timeline')}
-              className="block w-full text-left px-4 py-2 text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md transition-colors duration-300"
+              className="block w-full text-left px-4 py-3 text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md transition-colors duration-300 font-medium"
             >
               Lộ trình
             </button>
             <button 
               onClick={() => scrollToSection('pricing')}
-              className="block w-full text-left px-4 py-2 text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md transition-colors duration-300"
+              className="block w-full text-left px-4 py-3 text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md transition-colors duration-300 font-medium"
             >
               Học phí
             </button>
             <Link 
               to="/smartread"
-              className="block w-full mx-4 mt-4 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300 text-center"
+              className="block w-full mx-4 mt-3 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-300 text-center shadow-md"
+              onClick={() => setIsOpen(false)}
             >
               SmartRead
             </Link>
             {isAuthenticated() ? (
-              <div className="mx-4 mt-4 space-y-2">
+              <div className="mx-4 mt-3 space-y-2">
                 <UserMenu />
               </div>
             ) : (
               <>
                 <Link 
                   to="/login"
-                  className="block w-full mx-4 mt-2 text-center px-4 py-2 text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md transition-colors"
+                  className="block w-full mx-4 mt-2 text-center px-4 py-3 text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md transition-colors font-medium"
+                  onClick={() => setIsOpen(false)}
                 >
                   Đăng nhập
                 </Link>
                 <Link 
                   to="/register"
-                  className="block w-full mx-4 mt-2 btn-primary"
+                  className="block w-full mx-4 mt-2 btn-primary text-center"
+                  onClick={() => setIsOpen(false)}
                 >
                   Đăng ký
                 </Link>
