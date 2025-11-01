@@ -50,46 +50,57 @@ class ReadingTipsService {
     const title = content.title || 'Bài viết';
     const textContent = content.content || content;
     
-    return `Bạn là một giáo viên chuyên nghiệp người Việt Nam. Hãy tạo các câu hỏi tự luận đơn giản theo phương pháp 5W1H bằng TIẾNG VIỆT dựa trên TIÊU ĐỀ bài viết sau:
+    // Lấy một đoạn ngắn từ nội dung để AI hiểu context
+    const contentPreview = typeof textContent === 'string' 
+      ? textContent.substring(0, 1000).trim() 
+      : '';
+    
+    return `Bạn là một giáo viên chuyên nghiệp người Việt Nam. Hãy tạo các câu hỏi tự luận đơn giản theo phương pháp 5W1H bằng TIẾNG VIỆT dựa trên TIÊU ĐỀ và NỘI DUNG thực tế của bài viết sau:
 
 **TIÊU ĐỀ:** ${title}
 
 **Nội dung bài viết:**
-${textContent}
+${contentPreview || textContent}
 
 **YÊU CẦU QUAN TRỌNG:**
-1. Tạo 5-7 câu hỏi TRỌNG TÂM dưới dạng tự luận đơn giản theo phương pháp 5W1H bằng TIẾNG VIỆT
-2. TẤT CẢ câu hỏi phải được tạo dựa trên TIÊU ĐỀ bài viết, KHÔNG phải từ nội dung chi tiết
-3. Mỗi câu hỏi phải khai thác thông tin liên quan đến tiêu đề từ nội dung bài viết
-4. Câu hỏi phải đơn giản, dễ hiểu, không phức tạp
-5. Sử dụng từ ngữ tiếng Việt tự nhiên và dễ hiểu
-6. Trả về dưới dạng JSON array với format:
+1. ĐỌC KỸ NỘI DUNG trước khi tạo câu hỏi. Câu hỏi phải PHÙ HỢP với nội dung thực tế, KHÔNG dùng template chung chung.
+2. Tạo 5-7 câu hỏi TRỌNG TÂM dưới dạng tự luận đơn giản theo phương pháp 5W1H bằng TIẾNG VIỆT
+3. Câu hỏi phải khai thác thông tin CỤ THỂ từ nội dung bài viết, không phải câu hỏi chung chung
+4. Nếu bài viết KHÔNG đề cập đến "thị trường", "kinh doanh", "tài chính" → KHÔNG tạo câu hỏi về thị trường
+5. Nếu bài viết KHÔNG có nhân vật cụ thể → KHÔNG tạo câu hỏi "Who"
+6. Nếu bài viết KHÔNG có địa điểm cụ thể → KHÔNG tạo câu hỏi "Where"  
+7. Nếu bài viết KHÔNG có thời gian cụ thể → KHÔNG tạo câu hỏi "When"
+8. MỖI CÂU HỎI PHẢI KHÁC NHAU, KHÔNG TRÙNG LẶP (không có 2 câu hỏi giống nhau)
+9. Câu hỏi phải đơn giản, dễ hiểu, không phức tạp
+10. Sử dụng từ ngữ tiếng Việt tự nhiên và dễ hiểu
+11. Trả về dưới dạng JSON array với format:
 [
   {
     "id": 1,
-    "question": "Câu hỏi về tiêu đề bằng tiếng Việt",
+    "question": "Câu hỏi về nội dung thực tế bằng tiếng Việt",
     "type": "what|who|when|where|why|how",
     "expectedLength": "Ngắn|Trung bình|Dài",
-    "keyPoints": ["Điểm chính 1", "Điểm chính 2", "Điểm chính 3"]
+    "keyPoints": ["Điểm chính 1 từ nội dung", "Điểm chính 2 từ nội dung", "Điểm chính 3 từ nội dung"]
   }
 ]
 
-**VÍ DỤ CỤ THỂ:**
-Nếu tiêu đề là "Giá dầu có tuần tăng mạnh nhất kể từ giữa tháng 6/2025", thì câu hỏi nên là:
-- "Tại sao giá dầu lại có tuần tăng mạnh nhất?"
-- "Sự kiện này xảy ra khi nào?"
-- "Những ai liên quan đến sự kiện này?"
-- "Những địa điểm nào liên quan đến sự kiện này?"
-- "Cách thức hoạt động được mô tả như thế nào?"
-- "Điều này có ý nghĩa gì đối với thị trường?"
+**VÍ DỤ PHÙ HỢP:**
+- Nếu bài về sao chổi/thiên văn: "Sao chổi 3I/ATLAS là gì?", "Tại sao sao chổi này lại quan trọng?", "Ai đã nghiên cứu về sao chổi này?"
+- Nếu bài về công nghệ: "Công nghệ này hoạt động như thế nào?", "Tại sao công nghệ này quan trọng?"
+- Nếu bài về khoa học: "Phát hiện này có ý nghĩa gì?", "Bằng chứng nào được đề cập?"
+
+**VÍ DỤ KHÔNG PHÙ HỢP (KHÔNG DÙNG):**
+- "Điều này có ý nghĩa gì đối với thị trường?" (nếu bài KHÔNG nói về thị trường)
+- Câu hỏi chung chung không liên quan đến nội dung
+- Câu hỏi trùng lặp nhau
 
 **QUAN TRỌNG:** 
 - TẤT CẢ câu hỏi, gợi ý và điểm chính phải bằng TIẾNG VIỆT
-- Câu hỏi phải NGẮN GỌN, ĐƠN GIẢN, không cần tiêu đề đầy đủ
-- MỖI CÂU HỎI PHẢI KHÁC NHAU, KHÔNG TRÙNG LẶP
-- Câu hỏi phải khai thác thông tin về chủ đề trong tiêu đề từ nội dung bài viết
+- Câu hỏi phải NGẮN GỌN, ĐƠN GIẢN, liên quan TRỰC TIẾP đến nội dung
+- MỖI CÂU HỎI PHẢI KHÁC NHAU HOÀN TOÀN, KHÔNG TRÙNG LẶP
+- Câu hỏi phải khai thác thông tin CỤ THỂ từ nội dung bài viết, không phải template
 - KHÔNG yêu cầu suy luận, phân tích sâu hay kiến thức bên ngoài
-- Mỗi câu hỏi phải có keyPoints để đánh giá câu trả lời
+- Mỗi câu hỏi phải có keyPoints CỤ THỂ từ nội dung để đánh giá câu trả lời
 - Chỉ trả về JSON array, không có text thêm.`;
   }
 
@@ -202,7 +213,7 @@ Nếu tiêu đề là "Giá dầu có tuần tăng mạnh nhất kể từ giữ
           firstQuestionKeyPoints: validQuestions[0]?.keyPoints,
           allKeyPoints: validQuestions.map(q => ({ id: q.id, keyPoints: q.keyPoints }))
         });
-        return this.normalizeAndSanitizeQuestions(this.validateAndFixQuestions(validQuestions, content?.title));
+        return this.normalizeAndSanitizeQuestions(this.validateAndFixQuestions(validQuestions, content?.title, content));
       }
       
       // Fallback parsing
@@ -227,7 +238,7 @@ Nếu tiêu đề là "Giá dầu có tuần tăng mạnh nhất kể từ giữ
         }
       }
       
-      return this.normalizeAndSanitizeQuestions(this.validateAndFixQuestions(fallbackQuestions.slice(0, 8), content?.title));
+      return this.normalizeAndSanitizeQuestions(this.validateAndFixQuestions(fallbackQuestions.slice(0, 8), content?.title, content));
     } catch (error) {
       logger.error('READING_TIPS', 'Error parsing 5W1H response', {
         error: error.message,
@@ -464,7 +475,7 @@ Nếu tiêu đề là "Giá dầu có tuần tăng mạnh nhất kể từ giữ
   }
 
   // Validate và sửa câu hỏi
-  validateAndFixQuestions(questions, title) {
+  validateAndFixQuestions(questions, title, content) {
     if (!Array.isArray(questions)) return questions;
     
     logger.debug('READING_TIPS', 'Validating questions', {
@@ -472,28 +483,74 @@ Nếu tiêu đề là "Giá dầu có tuần tăng mạnh nhất kể từ giữ
       title: title
     });
     
-    return questions.map(question => {
-      if (question.question && (
-        question.question.includes('dán') || 
-        question.question.includes('việc dán') ||
-        question.question.includes('văn bản được dán') ||
-        question.question.includes('Văn bản đã dán') ||
-        question.question.includes('văn bản đã dán')
+    const contentText = typeof content === 'string' 
+      ? content.toLowerCase() 
+      : (content?.content || '').toLowerCase();
+    
+    // Kiểm tra xem nội dung có đề cập đến thị trường không
+    const hasMarketContent = contentText.includes('thị trường') || 
+                            contentText.includes('kinh doanh') || 
+                            contentText.includes('tài chính') ||
+                            contentText.includes('đầu tư') ||
+                            contentText.includes('chứng khoán');
+    
+    // Lọc và sửa câu hỏi
+    const validatedQuestions = [];
+    const seenQuestions = new Set();
+    
+    for (const question of questions) {
+      if (!question.question || typeof question.question !== 'string') continue;
+      
+      const qText = question.question.toLowerCase().trim();
+      
+      // 1. Loại bỏ câu hỏi về "thị trường" nếu nội dung không đề cập
+      if (!hasMarketContent && (
+        qText.includes('thị trường') || 
+        qText.includes('ý nghĩa gì đối với thị trường') ||
+        qText.includes('tác động đến thị trường')
       )) {
-        logger.warn('READING_TIPS', 'Detected invalid question, fixing...', {
-          originalQuestion: question.question,
-          title: title
+        logger.warn('READING_TIPS', 'Removing market-related question (not in content)', {
+          question: question.question,
+          hasMarketContent
         });
-        
-        const fixedQuestion = this.generateQuestionFromTitle(question.type, title);
-        return {
-          ...question,
-          question: fixedQuestion
-        };
+        continue;
       }
       
-      return question;
+      // 2. Loại bỏ câu hỏi trùng lặp
+      const normalizedQ = qText
+        .replace(/[^\w\s]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+      
+      if (seenQuestions.has(normalizedQ)) {
+        logger.warn('READING_TIPS', 'Removing duplicate question', {
+          question: question.question
+        });
+        continue;
+      }
+      seenQuestions.add(normalizedQ);
+      
+      // 3. Loại bỏ câu hỏi về "văn bản đã dán"
+      if (qText.includes('dán') || 
+          qText.includes('việc dán') ||
+          qText.includes('văn bản được dán') ||
+          qText.includes('văn bản đã dán')) {
+        logger.warn('READING_TIPS', 'Detected invalid question, skipping...', {
+          originalQuestion: question.question
+        });
+        continue;
+      }
+      
+      validatedQuestions.push(question);
+    }
+    
+    logger.info('READING_TIPS', 'Questions validation complete', {
+      originalCount: questions.length,
+      validatedCount: validatedQuestions.length,
+      removedCount: questions.length - validatedQuestions.length
     });
+    
+    return validatedQuestions;
   }
 
   // Tạo câu hỏi từ tiêu đề

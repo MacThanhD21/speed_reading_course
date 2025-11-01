@@ -5,6 +5,7 @@ import ReadingHeader from './ReadingHeader';
 import ReadingSettingsPanel from './ReadingSettingsPanel';
 import ReadingContent from './ReadingContent';
 import ReadingCompletionPopup from './ReadingCompletionPopup';
+import QuizPanel from './QuizPanel';
 import { useReadingState, useReadingSettings } from '../../hooks/useReadingMode';
 import readingTipsService from '../../services/readingTipsService';
 
@@ -20,6 +21,7 @@ const ReadingMode = React.memo(({ content, onFinishReading }) => {
   const [showLearningPanel, setShowLearningPanel] = useState(false);
   const [showSettingsPanel, setShowSettingsPanel] = useState(false);
   const [showCompletionPopup, setShowCompletionPopup] = useState(false);
+  const [showQuizPanel, setShowQuizPanel] = useState(false);
   const [completionData, setCompletionData] = useState(null);
   const [fiveWOneHQuestions, setFiveWOneHQuestions] = useState([]);
   const [isLoading5W1H, setIsLoading5W1H] = useState(false);
@@ -116,6 +118,20 @@ const ReadingMode = React.memo(({ content, onFinishReading }) => {
     setShowCompletionPopup(false);
     setCompletionData(null);
     setShowLearningPanel(true);
+  }, []);
+
+  const handleTakeQuiz = useCallback(() => {
+    setShowCompletionPopup(false);
+    setShowQuizPanel(true);
+  }, []);
+
+  const handleQuizClose = useCallback(() => {
+    setShowQuizPanel(false);
+  }, []);
+
+  const handleQuizComplete = useCallback((quizResult) => {
+    console.log('Quiz completed:', quizResult);
+    // Có thể làm gì đó với kết quả quiz, ví dụ update completionData
   }, []);
 
 
@@ -267,6 +283,17 @@ const ReadingMode = React.memo(({ content, onFinishReading }) => {
                 readingData={completionData}
                 onRetry={handleRetry}
                 onGoToLearningPanel={handleGoToLearningPanel}
+                onTakeQuiz={handleTakeQuiz}
+              />
+
+              {/* Quiz Panel */}
+              <QuizPanel
+                isVisible={showQuizPanel}
+                onClose={handleQuizClose}
+                textId={content?.id || content?.title || `text_${Date.now()}`}
+                textContent={content?.content || content || ''}
+                wpm={completionData?.averageWPM || completionData?.finalWPM || 0}
+                onComplete={handleQuizComplete}
               />
     </div>
   );

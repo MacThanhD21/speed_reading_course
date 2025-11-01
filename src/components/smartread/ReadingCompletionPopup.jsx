@@ -9,7 +9,8 @@ import {
   FaGraduationCap,
   FaTimes,
   FaCheckCircle,
-  FaStar
+  FaStar,
+  FaQuestionCircle
 } from 'react-icons/fa';
 
 const ReadingCompletionPopup = ({ 
@@ -17,7 +18,8 @@ const ReadingCompletionPopup = ({
   onClose, 
   readingData, 
   onRetry, 
-  onGoToLearningPanel 
+  onGoToLearningPanel,
+  onTakeQuiz
 }) => {
   if (!isVisible) return null;
 
@@ -144,10 +146,26 @@ const ReadingCompletionPopup = ({
 
             {/* Action Buttons */}
             <div className="space-y-3">
+              {onTakeQuiz && (
+                <motion.button
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6 }}
+                  onClick={onTakeQuiz}
+                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-4 px-6 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center justify-center"
+                >
+                  <FaQuestionCircle className="mr-3 text-xl" />
+                  <div className="text-left">
+                    <div>Làm bài kiểm tra trắc nghiệm</div>
+                    <div className="text-sm text-purple-100 font-normal">Kiểm tra độ hiểu biết với 10-15 câu hỏi</div>
+                  </div>
+                </motion.button>
+              )}
+
               <motion.button
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6 }}
+                transition={{ delay: 0.65 }}
                 onClick={onGoToLearningPanel}
                 className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-4 px-6 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center justify-center"
               >

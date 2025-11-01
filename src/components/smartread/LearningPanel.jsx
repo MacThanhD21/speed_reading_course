@@ -1257,47 +1257,6 @@ const LearningPanel = ({ title, content, isVisible, onClose, readingProgress = '
           </div>
         );
 
-      case 'reading_tips':
-        if (isLoadingComprehensive) {
-          return (
-            <div className="flex items-center justify-center h-64">
-              <div className="text-center">
-                <FaSpinner className="text-4xl text-indigo-600 animate-spin mx-auto mb-4" />
-                <p className="text-gray-600">Đang tải mẹo đọc...</p>
-              </div>
-            </div>
-          );
-        }
-        
-        return (
-          <div>
-            <h3 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-              <FaLightbulb className="mr-3 text-indigo-600" />
-              Mẹo đọc hiệu quả
-            </h3>
-            <div className="space-y-4">
-              {readingTips.map((tip, index) => (
-                <motion.div
-                  key={tip.id || index}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="bg-indigo-50 border border-indigo-200 rounded-lg p-4"
-                >
-                  <div className="flex items-start">
-                    <span className="text-2xl mr-3 flex-shrink-0">{tip.icon}</span>
-                    <div>
-                      <h4 className="font-semibold text-gray-800 mb-2">{tip.title}</h4>
-                      <p className="text-gray-700">{tip.description}</p>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        );
-
-
       default:
         return null;
     }
