@@ -63,21 +63,29 @@ cd ..
    **Backend**: Create `.env` in `server/` directory
    ```env
    PORT=5000
-   MONGODB_URI=your_mongodb_connection_string
+   NODE_ENV=development
+   HOST=0.0.0.0
+   MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/speedreading_admin
    JWT_SECRET=your_jwt_secret_key
-   BASE_URL=https://api.yourdomain.com
-   GEMINI_API_KEY_1=your_gemini_api_key_1
-   GEMINI_API_KEY_2=your_gemini_api_key_2
+   ADMIN_EMAIL=admin@speedreading.com
+   ADMIN_PASSWORD=admin123
+   GEMINI_API_KEYS=key1,key2,key3
    ```
 
-   See `.env.example` for complete configuration template.
+   **Important**: See `BACKEND_SETUP_GUIDE.md` for detailed MongoDB Atlas setup and admin creation.
 
-5. **Start development servers**
+5. **Create admin user**
+   ```bash
+   cd server
+   npm run seed:admin
+   ```
+
+6. **Start development servers**
 
    **Backend** (Terminal 1):
    ```bash
    cd server
-   npm start
+   npm run dev
    ```
 
    **Frontend** (Terminal 2):
@@ -87,10 +95,13 @@ cd ..
 
 ## 📖 Documentation
 
-- **Backend Setup**: See `BACKEND_SETUP_GUIDE.md`
+- **Backend Setup**: See `BACKEND_SETUP_GUIDE.md` (includes MongoDB setup, admin setup, troubleshooting)
 - **Environment Configuration**: See `ENVIRONMENT_CONFIGURATION.md`
-- **Admin Setup**: See `QUICK_ADMIN_SETUP.md`
-- **SmartRead Backend**: See `SMARTREAD_BACKEND_SUMMARY.md`
+- **Deployment**: 
+  - Frontend: See `VERCEL_DEPLOYMENT_GUIDE.md`
+  - Backend: See `RAILWAY_DEPLOYMENT_GUIDE.md` (includes quick start)
+- **SmartRead Data Flow**: See `SMARTREAD_DATA_FLOW.md`
+- **Production**: See `PRODUCTION_DEPLOYMENT_GUIDE.md` and `PRODUCTION_CHECKLIST.md`
 
 ## 🌐 Deployment
 

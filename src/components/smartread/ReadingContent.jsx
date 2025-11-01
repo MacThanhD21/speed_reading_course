@@ -17,8 +17,8 @@ const ReadingContent = React.memo(({
 }) => {
   const [coloredTexts, setColoredTexts] = useState([]);
   const [isColorMode, setIsColorMode] = useState(false);
-  const [selectedColor, setSelectedColor] = useState('#ff0000'); // Default red
-  
+  const [selectedColor, setSelectedColor] = useState('#ff0000');
+
   const fadeInUp = {
     initial: { opacity: 0, y: 20 },
     animate: { opacity: 1, y: 0 },
@@ -32,44 +32,33 @@ const ReadingContent = React.memo(({
     const selection = window.getSelection();
     const selectedText = selection.toString().trim();
     
-    if (selectedText && selectedText.length > 0) {
-      const range = selection.getRangeAt(0);
-      
-      // Create colored span element
-      const span = document.createElement('span');
-      span.style.color = selectedColor;
-      span.style.fontWeight = 'bold';
-      span.style.display = 'inline';
-      
+    if (selectedText && selectedText.length > 0 && selection.rangeCount > 0) {
       try {
-        // Extract the selected content
+        const range = selection.getRangeAt(0);
+        
+        const span = document.createElement('span');
+        span.style.color = selectedColor;
+        span.style.fontWeight = 'bold';
+        span.style.display = 'inline';
+        
         const contents = range.extractContents();
-        
-        // Add the content to the span
         span.appendChild(contents);
-        
-        // Insert the span at the range position
         range.insertNode(span);
         
-        // Add to state for tracking
         setColoredTexts(prev => [...prev, {
           id: Date.now(),
           text: selectedText,
           color: selectedColor,
           element: span
         }]);
-        
-        console.log('Colored text:', selectedText, 'with color:', selectedColor);
       } catch (error) {
         console.log('Cannot color this selection:', error);
       }
       
-      // Clear selection
       selection.removeAllRanges();
     }
   };
 
-  // Clear all colored texts
   const clearColoredTexts = () => {
     const coloredElements = contentRef.current?.querySelectorAll('span[style*="color"]');
     coloredElements?.forEach(element => {
@@ -80,16 +69,82 @@ const ReadingContent = React.memo(({
     setColoredTexts([]);
   };
 
-  // Toggle color mode
   useEffect(() => {
-    setIsColorMode(readingSettings.textFormatting.highlight); // Reuse highlight toggle
+    setIsColorMode(readingSettings.textFormatting.highlight);
   }, [readingSettings.textFormatting.highlight]);
 
+  // Parse and format text content
+  const parseContent = (text) => {
+    if (!text) return [];
+    
+    // Normalize line breaks
+    const normalized = text
+      .replace(/\r\n/g, '\n')
+      .replace(/\r/g, '\n')
+      .replace(/\n{3,}/g, '\n\n');
+    
+    // Split by double line breaks for paragraphs
+    const paragraphs = normalized
+      .split(/\n\n+/)
+      .map(p => {
+        // Join single line breaks within paragraph with space
+        return p.split('\n').map(line => line.trim()).filter(line => line).join(' ');
+      })
+      .filter(p => p.trim().length > 0);
+    
+    return paragraphs;
+  };
+
+  // Get theme colors
+  const getThemeStyles = () => {
+    const theme = readingSettings.theme;
+    const readingMode = readingSettings.readingMode;
+    
+    if (readingMode) {
+      return {
+        bg: '#ffffff',
+        text: '#1f2937',
+        title: '#1e40af'
+      };
+    }
+    
+    switch (theme) {
+      case 'dark':
+        return {
+          bg: '#111827',
+          text: '#f3f4f6',
+          title: '#fbbf24'
+        };
+      case 'sepia':
+        return {
+          bg: '#fef3c7',
+          text: '#78350f',
+          title: '#92400e'
+        };
+      case 'focus':
+        return {
+          bg: '#0f172a',
+          text: '#e2e8f0',
+          title: '#60a5fa'
+        };
+      default: // light
+        return {
+          bg: '#ffffff',
+          text: '#1f2937',
+          title: '#1e40af'
+        };
+    }
+  };
+
+  const themeStyles = getThemeStyles();
+  const textContent = content?.content || content || '';
+  const paragraphs = parseContent(textContent);
+
   return (
-    <div className="pt-20 sm:pt-24 md:pt-28 pb-6 sm:pb-8">
+    <div className="pt-20 sm:pt-24 md:pt-28 pb-12 sm:pb-16">
       {/* Color Palette */}
       {isColorMode && (
-        <div className="fixed top-16 sm:top-20 right-2 sm:right-4 z-50 bg-white rounded-lg shadow-lg p-2 sm:p-4 border max-w-[calc(100vw-1rem)]">
+        <div className="fixed top-16 sm:top-20 right-2 sm:right-4 z-50 bg-white rounded-lg shadow-xl p-3 sm:p-4 border max-w-[calc(100vw-1rem)]">
           <h3 className="text-sm font-medium text-gray-700 mb-3">Chọn màu chữ:</h3>
           <div className="grid grid-cols-6 gap-2">
             {[
@@ -103,8 +158,8 @@ const ReadingContent = React.memo(({
               <button
                 key={color}
                 className={`w-8 h-8 rounded border-2 ${
-                  selectedColor === color ? 'border-gray-800' : 'border-gray-300'
-                }`}
+                  selectedColor === color ? 'border-gray-800 scale-110' : 'border-gray-300'
+                } transition-all`}
                 style={{ backgroundColor: color }}
                 onClick={() => setSelectedColor(color)}
                 title={color}
@@ -120,263 +175,138 @@ const ReadingContent = React.memo(({
           </div>
           <button
             onClick={clearColoredTexts}
-            className="mt-3 w-full px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-700 text-xs rounded transition-colors"
+            className="mt-3 w-full px-3 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-700 text-xs rounded transition-colors"
           >
             Xóa tất cả màu
           </button>
         </div>
       )}
       
-      {/* Paper-like container */}
+      {/* Clean Text Container */}
       <div className="w-full flex justify-center">
-        <div className="w-full max-w-4xl mx-3 sm:mx-4 md:mx-6 lg:mx-8">
+        <div className="w-full max-w-3xl mx-4 sm:mx-6 md:mx-8 lg:mx-auto">
           <motion.div
             {...fadeInUp}
-            className={`rounded-lg sm:rounded-xl shadow-lg transition-colors duration-300 ${
-              readingSettings.readingMode 
-                ? 'bg-white border-2 border-blue-200' 
-                : 'border border-gray-200'
-            }`}
+            className="rounded-2xl shadow-xl transition-all duration-300"
             style={{
-              backgroundColor: readingSettings.readingMode 
-                ? '#fefefe' 
-                : readingSettings.theme === 'dark' 
-                  ? '#1f2937' 
-                  : readingSettings.theme === 'sepia'
-                    ? '#fef3c7'
-                    : readingSettings.theme === 'focus'
-                      ? '#1e293b'
-                      : 'rgba(248, 250, 252, 0.95)', // Màu xám nhạt chìm hơn để tạo sự nổi bật
-              backgroundImage: readingSettings.theme === 'light' || readingSettings.readingMode
-                ? `repeating-linear-gradient(
-                    transparent,
-                    transparent ${Math.round(readingSettings.fontSize * 1.6) - 1}px,
-                    rgba(59, 130, 246, 0.2) ${Math.round(readingSettings.fontSize * 1.6) - 1}px,
-                    rgba(59, 130, 246, 0.25) ${Math.round(readingSettings.fontSize * 1.6)}px
-                  )`
-                : readingSettings.theme === 'dark'
-                  ? `repeating-linear-gradient(
-                      transparent,
-                      transparent ${Math.round(readingSettings.fontSize * 1.6) - 1}px,
-                      rgba(255, 255, 255, 0.1) ${Math.round(readingSettings.fontSize * 1.6) - 1}px,
-                      rgba(255, 255, 255, 0.15) ${Math.round(readingSettings.fontSize * 1.6)}px
-                    )`
-                  : readingSettings.theme === 'sepia'
-                    ? `repeating-linear-gradient(
-                        transparent,
-                        transparent ${Math.round(readingSettings.fontSize * 1.6) - 1}px,
-                        rgba(139, 69, 19, 0.2) ${Math.round(readingSettings.fontSize * 1.6) - 1}px,
-                        rgba(139, 69, 19, 0.3) ${Math.round(readingSettings.fontSize * 1.6)}px
-                      )`
-                    : readingSettings.theme === 'focus'
-                      ? `repeating-linear-gradient(
-                          transparent,
-                          transparent ${Math.round(readingSettings.fontSize * 1.6) - 1}px,
-                          rgba(255, 255, 255, 0.1) ${Math.round(readingSettings.fontSize * 1.6) - 1}px,
-                          rgba(255, 255, 255, 0.15) ${Math.round(readingSettings.fontSize * 1.6)}px
-                        )`
-                      : 'none',
-              backgroundSize: readingSettings.theme === 'light' || readingSettings.readingMode || readingSettings.theme === 'dark' || readingSettings.theme === 'sepia' || readingSettings.theme === 'focus'
-                ? `100% ${Math.round(readingSettings.fontSize * 1.6)}px`
-                : 'none',
-              padding: '3rem 0',
-              margin: '0 auto',
-              boxShadow: readingSettings.theme === 'light' || readingSettings.readingMode
-                ? readingSettings.readingMode 
-                  ? '0 0 0 1px #d1d5db, 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
-                  : '0 10px 30px -5px rgba(0, 0, 0, 0.15), 0 6px 15px -3px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(226, 232, 240, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
-                : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+              backgroundColor: themeStyles.bg,
+              padding: '3rem 2rem',
+              boxShadow: readingSettings.theme === 'dark' || readingSettings.theme === 'focus'
+                ? '0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2)'
+                : '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
             }}
           >
-          {/* Enhanced CSS for text selection and mouse UI */}
-          <style>{`
-            /* Dynamic text selection based on theme and color mode */
-            .smartread-content ::selection {
-              background: ${isColorMode 
-                ? '#e0e0e0' 
-                : readingSettings.theme === 'dark' 
-                  ? '#f59e0b' 
-                  : readingSettings.theme === 'sepia' 
-                    ? '#d97706'
-                    : '#3b82f6'} !important;
-              color: ${isColorMode 
-                ? '#000000'
-                : readingSettings.theme === 'dark'
-                  ? '#1f2937'
-                  : readingSettings.theme === 'sepia'
-                    ? 'white'
-                    : 'white'} !important;
-              text-shadow: none !important;
-              border-radius: 3px !important;
-            }
-            
-            .smartread-content ::-moz-selection {
-              background: ${isColorMode 
-                ? '#e0e0e0' 
-                : readingSettings.theme === 'dark' 
-                  ? '#f59e0b' 
-                  : readingSettings.theme === 'sepia' 
-                    ? '#d97706'
-                    : '#3b82f6'} !important;
-              color: ${isColorMode 
-                ? '#000000'
-                : readingSettings.theme === 'dark'
-                  ? '#1f2937'
-                  : readingSettings.theme === 'sepia'
-                    ? 'white'
-                    : 'white'} !important;
-              text-shadow: none !important;
-              border-radius: 3px !important;
-            }
-            
-            .smartread-content ::-webkit-selection {
-              background: ${isColorMode 
-                ? '#e0e0e0' 
-                : readingSettings.theme === 'dark' 
-                  ? '#f59e0b' 
-                  : readingSettings.theme === 'sepia' 
-                    ? '#d97706'
-                    : '#3b82f6'} !important;
-              color: ${isColorMode 
-                ? '#000000'
-                : readingSettings.theme === 'dark'
-                  ? '#1f2937'
-                  : readingSettings.theme === 'sepia'
-                    ? 'white'
-                    : 'white'} !important;
-              text-shadow: none !important;
-              border-radius: 3px !important;
-            }
-            
-            /* Enhanced performance CSS */
-            .smartread-content {
-              cursor: text !important;
-              will-change: transform, opacity;
-              transform: translateZ(0);
-              backface-visibility: hidden;
-              perspective: 1000px;
-            }
-            
-            .smartread-content:hover {
-              cursor: text !important;
-            }
-            
-            /* Optimized transitions */
-            .smartread-content * {
-              transition: background-color 0.15s ease, color 0.15s ease !important;
-              will-change: background-color, color;
-            }
-            
-            /* Hardware acceleration for animations */
-            .smartread-content p:hover,
-            .smartread-content h1:hover,
-            .smartread-content h2:hover,
-            .smartread-content h3:hover {
-              background-color: rgba(59, 130, 246, 0.05);
-              border-radius: 4px;
-              transition: background-color 0.2s ease;
-              transform: translateZ(0);
-            }
-            
-            /* Better text rendering with performance */
-            .smartread-content {
-              text-rendering: optimizeLegibility;
-              -webkit-font-smoothing: antialiased;
-              -moz-osx-font-smoothing: grayscale;
-              font-feature-settings: 'kern' 1, 'liga' 1;
-            }
-            
-            /* Enhanced selection feedback */
-            .smartread-content::selection {
-              animation: selectionPulse 0.3s ease-out;
-            }
-            
-            @keyframes selectionPulse {
-              0% {
-                background-color: ${readingSettings.theme === 'dark'
-                  ? 'rgba(245, 158, 11, 0.3)'
-                  : readingSettings.theme === 'sepia'
-                  ? 'rgba(217, 119, 6, 0.3)'
-                  : 'rgba(59, 130, 246, 0.3)'};
-              }
-              100% {
-                background-color: ${readingSettings.theme === 'dark'
-                  ? '#f59e0b'
-                  : readingSettings.theme === 'sepia'
-                  ? '#d97706'
-                  : '#3b82f6'};
-              }
-            }
-          `}</style>
-
-            {/* Paper-like text styling */}
-            <style>{`
-              .paper-text {
-                color: ${readingSettings.theme === 'dark' 
-                  ? '#e5e7eb' 
-                  : readingSettings.theme === 'sepia'
-                    ? '#92400e'
-                    : readingSettings.theme === 'focus'
-                      ? '#e2e8f0'
-                      : '#1f2937'};
-                text-shadow: ${readingSettings.theme === 'light' || readingSettings.readingMode
-                  ? '0 1px 2px rgba(0, 0, 0, 0.05)'
-                  : 'none'};
-                word-wrap: break-word;
-                word-break: normal;
-                white-space: normal;
-                overflow-wrap: break-word;
-              }
-            `}</style>
-
-            {/* Paper-like text content */}
+            {/* Text Content */}
             <div 
               ref={contentRef}
-              className={`paper-text smartread-content max-w-none leading-relaxed transition-all duration-300 ${currentFontFamily.class} ${getTextFormattingClasses} select-text px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-4 md:py-6 ${
+              className={`smartread-content transition-all duration-300 ${currentFontFamily.class} ${getTextFormattingClasses} select-text ${
                 isColorMode ? 'cursor-crosshair' : 'cursor-text'
               }`}
               style={{
                 fontSize: `${readingSettings.fontSize}px`,
-                lineHeight: '1.6',
-                fontFamily: readingSettings.fontFamily === 'system' ? 'system-ui, -apple-system, sans-serif' : undefined,
+                lineHeight: '1.75',
+                fontFamily: readingSettings.fontFamily === 'system' 
+                  ? 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+                  : undefined,
+                color: themeStyles.text,
                 ...getHighlightStyle,
-                maxWidth: 'none', // Remove width constraint
-                margin: '0 auto'
+                textAlign: 'left',
+                maxWidth: '100%',
+                wordSpacing: '0.05em',
+                letterSpacing: '0.01em',
+                textRendering: 'optimizeLegibility',
+                WebkitFontSmoothing: 'antialiased',
+                MozOsxFontSmoothing: 'grayscale'
               }}
               onMouseUp={handleMouseUp}
               tabIndex={0}
             >
-            {content.content.split('\n').map((paragraph, index) => {
-              // First paragraph is treated as title
-              if (index === 0 && paragraph.trim()) {
+              {/* Selection Styles */}
+              <style>{`
+                .smartread-content ::selection {
+                  background: ${readingSettings.theme === 'dark' || readingSettings.theme === 'focus'
+                    ? '#f59e0b'
+                    : readingSettings.theme === 'sepia'
+                      ? '#d97706'
+                      : '#3b82f6'} !important;
+                  color: ${readingSettings.theme === 'dark' || readingSettings.theme === 'focus'
+                    ? '#1f2937'
+                    : readingSettings.theme === 'sepia'
+                      ? 'white'
+                      : 'white'} !important;
+                  border-radius: 4px !important;
+                }
+                
+                .smartread-content ::-moz-selection {
+                  background: ${readingSettings.theme === 'dark' || readingSettings.theme === 'focus'
+                    ? '#f59e0b'
+                    : readingSettings.theme === 'sepia'
+                      ? '#d97706'
+                      : '#3b82f6'} !important;
+                  color: ${readingSettings.theme === 'dark' || readingSettings.theme === 'focus'
+                    ? '#1f2937'
+                    : readingSettings.theme === 'sepia'
+                      ? 'white'
+                      : 'white'} !important;
+                  border-radius: 4px !important;
+                }
+                
+                .smartread-content ::-webkit-selection {
+                  background: ${readingSettings.theme === 'dark' || readingSettings.theme === 'focus'
+                    ? '#f59e0b'
+                    : readingSettings.theme === 'sepia'
+                      ? '#d97706'
+                      : '#3b82f6'} !important;
+                  color: ${readingSettings.theme === 'dark' || readingSettings.theme === 'focus'
+                    ? '#1f2937'
+                    : readingSettings.theme === 'sepia'
+                      ? 'white'
+                      : 'white'} !important;
+                  border-radius: 4px !important;
+                }
+              `}</style>
+
+              {paragraphs.map((paragraph, index) => {
+                // First paragraph as title if short
+                const isTitle = index === 0 && (paragraph.length < 200 || paragraph.split(' ').length < 25);
+                
+                if (isTitle) {
                   return (
                     <h1 
-                      key={index} 
-                      className={`mb-4 sm:mb-6 text-center font-bold transition-colors duration-300 ${
-                        readingSettings.readingMode 
-                          ? 'text-blue-800 text-2xl sm:text-3xl lg:text-4xl' 
-                          : `${currentTheme.text} text-xl sm:text-2xl lg:text-3xl`
-                      }`}
+                      key={`title-${index}`}
+                      className="mb-8 sm:mb-10 md:mb-12 text-center font-bold"
+                      style={{
+                        fontSize: `${Math.min(readingSettings.fontSize * 1.8, 48)}px`,
+                        lineHeight: '1.2',
+                        color: themeStyles.title,
+                        fontWeight: 700,
+                        letterSpacing: '-0.02em',
+                        marginBottom: '3rem'
+                      }}
                     >
                       {paragraph}
                     </h1>
                   );
-              }
-              
-              // Regular paragraphs
-              return (
-                <p 
-                  key={index} 
-                  className={`mb-2 sm:mb-3 transition-colors duration-300 ${
-                    readingSettings.readingMode 
-                      ? 'text-gray-800' 
-                      : currentTheme.text
-                  }`}
-                >
-                  {paragraph}
-                </p>
-              );
-            })}
+                }
+                
+                // Regular paragraphs
+                return (
+                  <p 
+                    key={`para-${index}`}
+                    className="mb-6"
+                    style={{
+                      lineHeight: '1.75',
+                      marginBottom: '1.5rem',
+                      color: themeStyles.text,
+                      textAlign: 'left',
+                      wordSpacing: '0.05em',
+                      letterSpacing: '0.01em'
+                    }}
+                  >
+                    {paragraph}
+                  </p>
+                );
+              })}
             </div>
           </motion.div>
         </div>

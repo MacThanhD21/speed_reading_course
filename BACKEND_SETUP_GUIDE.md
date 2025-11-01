@@ -67,17 +67,46 @@ Sau khi kết nối thành công, MongoDB Atlas sẽ tự động tạo database
 **Collections (tự động tạo bởi Mongoose khi có data):**
 - `users` - Lưu thông tin người dùng
 - `contacts` - Lưu thông tin form trang chủ
-- `reading_sessions` - Lưu lịch sử đọc
+- `readingsessions` - Lưu lịch sử đọc (Mongoose tự chuyển `ReadingSession` → `readingsessions`)
   - **Khi nào có data:** Khi user hoàn thành đọc (click "Kết thúc đọc")
   - **API:** `POST /api/smartread/sessions`
-- `quiz_results` - Lưu kết quả quiz
+- `quizresults` - Lưu kết quả quiz (Mongoose tự chuyển `QuizResult` → `quizresults`)
   - **Khi nào có data:** Khi user hoàn thành quiz sau khi đọc
   - **API:** `POST /api/smartread/quiz-results`
   - **Lưu ý:** Cần có `readingSessionId` từ reading session trước
 
-**⚠️ Lưu ý:** Collections sẽ được tạo tự động khi có document đầu tiên. Không cần tạo thủ công.
+**⚠️ Lưu ý quan trọng về Collection Names:**
+
+Mongoose tự động convert model names thành collection names:
+- Model: `ReadingSession` → Collection: **`readingsessions`** (lowercase + plural, KHÔNG có underscore)
+- Model: `QuizResult` → Collection: **`quizresults`** (lowercase + plural, KHÔNG có underscore)
+- Model: `User` → Collection: **`users`**
+- Model: `Contact` → Collection: **`contacts``
+
+**❌ KHÔNG TÌM:** `reading_sessions` hoặc `quiz_results` (có underscore)  
+**✅ PHẢI TÌM:** `readingsessions` hoặc `quizresults` (không có underscore)
 
 **Xem chi tiết flow:** Xem file `SMARTREAD_DATA_FLOW.md` để hiểu rõ cách data được lưu.
+
+### Kiểm Tra Collections
+
+Nếu không thấy data trong MongoDB Compass:
+
+1. **Kiểm tra Database Name:** Phải là `speedreading_admin` (không phải `test`)
+2. **Kiểm tra Connection String:** Phải có `/speedreading_admin` ở cuối
+3. **Tìm Collections đúng tên:** `readingsessions`, `quizresults` (không có underscore)
+
+**Script kiểm tra nhanh:**
+```bash
+cd server
+npm run check:collections
+```
+
+Hoặc:
+```bash
+cd server
+node utils/checkCollections.js
+```
 
 ---
 
@@ -108,9 +137,11 @@ npm install -D nodemon
 # Server Configuration
 PORT=5000
 NODE_ENV=development
+HOST=0.0.0.0
 
 # MongoDB Atlas Connection
-MONGODB_URI=mongodb+srv://speedreading_admin:yourpassword@cluster0.xxxxx.mongodb.net/speedreading?retryWrites=true&w=majority
+# ⚠️ QUAN TRỌNG: Phải có /speedreading_admin ở cuối để kết nối đúng database
+MONGODB_URI=mongodb+srv://speedreading_admin:yourpassword@cluster0.xxxxx.mongodb.net/speedreading_admin?retryWrites=true&w=majority
 
 # JWT Secret (tạo một chuỗi ngẫu nhiên, bảo mật)
 JWT_SECRET=your_super_secret_jwt_key_change_this_in_production
@@ -121,15 +152,40 @@ JWT_EXPIRE=7d
 # Admin Default Credentials (thay đổi sau khi tạo admin đầu tiên)
 ADMIN_EMAIL=admin@speedreading.com
 ADMIN_PASSWORD=admin123
+ADMIN_NAME=Admin
+
+# Gemini API Keys (phân tách bằng dấu phẩy)
+GEMINI_API_KEYS=key1,key2,key3
 ```
 
 ### Tạo JWT Secret an toàn:
 ```bash
-# Linux/Mac
+# Linux/Mac/Windows
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 
 # Hoặc dùng online tool: https://randomkeygen.com/
 ```
+
+### ⚠️ Lưu ý về Database Name trong MONGODB_URI
+
+**Connection String đúng:**
+```
+mongodb+srv://username:password@cluster.mongodb.net/speedreading_admin?retryWrites=true&w=majority
+                                                                    ^^^^^^^^^^^^^^^^^^^^
+                                                                    Database name phải có
+```
+
+**Connection String sai (sẽ kết nối vào database "test"):**
+```
+mongodb+srv://username:password@cluster.mongodb.net/?retryWrites=true&w=majority
+                                                                    ^
+                                                                    Thiếu database name
+```
+
+**Nếu dữ liệu đang lưu vào database "test":**
+- Sửa connection string để có `/speedreading_admin` ở cuối (trước `?`)
+- Restart server
+- Kiểm tra logs: Phải thấy `📊 Database: speedreading_admin`
 
 ---
 
@@ -193,17 +249,82 @@ curl -X POST ${API_URL}/api/auth/register \
 
 ---
 
+## 7. Tạo Admin User
+
+### Cách 1: Sử dụng Script (Khuyến nghị)
+
+```bash
+cd server
+npm run seed:admin
+```
+
+Hoặc:
+```bash
+cd server
+node utils/seedAdmin.js
+```
+
+**Kết quả:**
+- Nếu admin chưa tồn tại: `✅ Đã tạo admin thành công!`
+- Nếu admin đã tồn tại: `✅ Admin đã tồn tại: admin@speedreading.com`
+
+### Cách 2: Kiểm tra Admin Hiện Tại
+
+```bash
+cd server
+npm run check:admin
+```
+
+Hoặc:
+```bash
+cd server
+node utils/checkAdmin.js
+```
+
+### Đăng Nhập Admin
+
+1. Mở trình duyệt và truy cập trang admin login
+2. Nhập thông tin từ `.env`:
+   - **Email**: `admin@speedreading.com` (hoặc email trong `.env`)
+   - **Password**: `admin123` (hoặc password trong `.env`)
+
+**⚠️ QUAN TRỌNG**: Sau khi đăng nhập thành công, nên đổi mật khẩu ngay!
+
+### Cập Nhật Password Admin
+
+1. Xóa admin cũ trong database (nếu cần)
+2. Cập nhật `ADMIN_PASSWORD` trong `.env`
+3. Chạy lại `npm run seed:admin`
+
+---
+
 ## ❓ Troubleshooting
 
 ### Lỗi kết nối MongoDB:
-- ✅ Kiểm tra IP đã được whitelist chưa
+- ✅ Kiểm tra IP đã được whitelist chưa (0.0.0.0/0 cho development)
 - ✅ Kiểm tra username/password đúng chưa
 - ✅ Kiểm tra connection string có đầy đủ không
+- ✅ Kiểm tra connection string có `/speedreading_admin` ở cuối không
 - ✅ Kiểm tra network/firewall không block port
 
 ### Lỗi authentication:
 - ✅ Kiểm tra JWT_SECRET đã set chưa
 - ✅ Kiểm tra token có được gửi đúng trong header không
+
+### Data lưu vào database "test" thay vì "speedreading_admin":
+- ✅ Kiểm tra `MONGODB_URI` có `/speedreading_admin` ở cuối chưa
+- ✅ Restart server và kiểm tra logs: Phải thấy `📊 Database: speedreading_admin`
+- ✅ Xem section "Lưu ý về Database Name" ở trên
+
+### Không thấy data trong MongoDB Compass:
+- ✅ Kiểm tra đang xem database `speedreading_admin` (không phải `test`)
+- ✅ Tìm collections: `readingsessions`, `quizresults` (không có underscore)
+- ✅ Chạy `npm run check:collections` để kiểm tra
+
+### Admin không đăng nhập được:
+- ✅ Kiểm tra đã chạy `npm run seed:admin` chưa
+- ✅ Kiểm tra email/password trong form đăng nhập có khớp với `.env` không
+- ✅ Kiểm tra user trong database có `role: "admin"` không
 
 ---
 
