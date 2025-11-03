@@ -38,7 +38,7 @@ const ReadingMode = React.memo(({ content, onFinishReading }) => {
     try {
       const questions = await readingTipsService.generate5W1HQuestions(content);
       setFiveWOneHQuestions(questions);
-      console.log('5W1H questions loaded:', questions.length);
+      
     } catch (error) {
       console.error('Error loading 5W1H questions:', error);
       
@@ -86,7 +86,7 @@ const ReadingMode = React.memo(({ content, onFinishReading }) => {
   useEffect(() => {
     if (readingState.isReading && !readingStartTimeRef.current) {
       readingStartTimeRef.current = new Date();
-      console.log('Reading started at:', readingStartTimeRef.current);
+      
     } else if (!readingState.isReading) {
       // Reset when reading stops
       if (readingState.elapsedTime === 0) {
@@ -122,12 +122,12 @@ const ReadingMode = React.memo(({ content, onFinishReading }) => {
         },
       };
 
-      console.log('Saving reading session:', sessionData);
+      
       
       const response = await apiService.createReadingSession(sessionData);
       if (response.success && response.data) {
         setReadingSessionId(response.data._id);
-        console.log('✅ Reading session saved successfully:', response.data._id);
+        
       } else {
         console.error('❌ Failed to save reading session:', response);
       }
@@ -145,7 +145,7 @@ const ReadingMode = React.memo(({ content, onFinishReading }) => {
   const handleFinishReading = useCallback(() => {
     // Call the readingState.finishReading to properly stop timers
     readingState.finishReading(async (readingData) => {
-      console.log('Reading data to be saved:', readingData);
+      
       
       // Enhance completion data with additional fields
       const enhancedData = {
@@ -196,7 +196,7 @@ const ReadingMode = React.memo(({ content, onFinishReading }) => {
   }, []);
 
   const handleQuizComplete = useCallback(async (quizResult) => {
-    console.log('Quiz completed:', quizResult);
+    
     
     // Save quiz result to backend
     if (readingSessionId && quizResult) {
@@ -226,7 +226,7 @@ const ReadingMode = React.memo(({ content, onFinishReading }) => {
 
         const response = await apiService.saveQuizResult(quizData);
         if (response.success) {
-          console.log('Quiz result saved:', response.data);
+          
         }
       } catch (error) {
         console.error('Error saving quiz result:', error);

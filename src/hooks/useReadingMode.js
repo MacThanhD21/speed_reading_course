@@ -24,8 +24,7 @@ export const useReadingState = (content) => {
     // Remove extra whitespace and split by words
     const words = text.trim().split(/\s+/).filter(word => word.length > 0);
     
-    // Debug log
-    console.log('Total words calculated:', words.length);
+    
     
     return words.length;
   }, [content?.content]);
@@ -59,16 +58,7 @@ export const useReadingState = (content) => {
     // Estimate words read based on scroll progress
     const estimatedWordsRead = Math.floor(totalWords * adjustedProgress);
     
-    // Debug log
-    console.log('Words calculation:', {
-      totalWords,
-      scrollProgress: scrollProgress.toFixed(3),
-      adjustedProgress: adjustedProgress.toFixed(3),
-      estimatedWordsRead,
-      scrollTop,
-      documentHeight,
-      viewportHeight
-    });
+    
     
     return Math.max(0, Math.min(estimatedWordsRead, totalWords));
   }, [getTotalWordCount, isReading]);
@@ -107,15 +97,7 @@ export const useReadingState = (content) => {
       lastSmoothedWPSRef.current = isNaN(newSmoothedWPS) ? 0 : newSmoothedWPS;
       setSmoothedWPS(Math.round((isNaN(newSmoothedWPS) ? 0 : newSmoothedWPS) * 10) / 10); // Round to 1 decimal
       
-      console.log('WPM/WPS Update:', {
-        currentWordsRead,
-        elapsedSeconds: elapsedSeconds.toFixed(1),
-        elapsedMinutes: elapsedMinutes.toFixed(3),
-        instantWPM: instantWPM.toFixed(1),
-        smoothedWPM: Math.round(newSmoothedWPM),
-        instantWPS: instantWPS.toFixed(2),
-        smoothedWPS: (Math.round(newSmoothedWPS * 10) / 10).toFixed(1)
-      });
+      
     }
   }, [isReading, isPaused, elapsedTime, calculateWordsRead]);
 
@@ -249,7 +231,7 @@ export const useReadingState = (content) => {
       intervalRef.current = null;
     }
     
-    console.log('Reading state reset');
+    
   }, []);
 
   // Helper functions

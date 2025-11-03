@@ -25,13 +25,7 @@ const ReadingCompletionPopup = ({
 
   const { finalWPM, finalWPS, wordsRead, elapsedTime, averageWPM, averageWPS } = readingData || {};
 
-  // Debug logging
-  console.log('ReadingCompletionPopup Debug:', {
-    finalWPM,
-    averageWPM,
-    wordsRead,
-    elapsedTime
-  });
+  
 
   // Use finalWPM (accurate calculation) over averageWPM (smoothed)
   // finalWPM is calculated as: wordsRead / (elapsedTime / 60)
