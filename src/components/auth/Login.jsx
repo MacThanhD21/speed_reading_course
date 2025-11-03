@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FaLock, FaEnvelope, FaEye, FaEyeSlash, FaUser, FaBookOpen } from 'react-icons/fa';
+import { FaEnvelope, FaEye, FaEyeSlash, FaFacebook } from 'react-icons/fa';
+import { FcGoogle } from 'react-icons/fc';
 import { useAuth } from '../../context/AuthContext';
+import AuthLayout from './AuthLayout';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -14,7 +16,6 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [focusedField, setFocusedField] = useState(null);
 
   const handleChange = (e) => {
     setFormData({
@@ -54,229 +55,159 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center p-4 py-12 md:py-20 relative overflow-hidden">
-      {/* Background decorative elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
-        <div className="absolute top-0 right-1/4 w-96 h-96 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
-        <div className="absolute -bottom-8 left-1/3 w-96 h-96 bg-indigo-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
-      </div>
+    <AuthLayout mode="login">
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Email Field */}
+        <div>
+          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+            Email Address
+          </label>
+          <div className="relative">
+            <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm" />
+            <input
+              type="email"
+              id="email"
+              name="email"
+              required
+              value={formData.email}
+              onChange={handleChange}
+              className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg bg-gray-50 focus:bg-white focus:border-[#1A66CC] focus:ring-2 focus:ring-[#1A66CC]/20 outline-none transition-all text-sm text-gray-800 placeholder-gray-400"
+              placeholder="Enter your email"
+              style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+            />
+          </div>
+        </div>
 
-      <div className="w-full max-w-6xl grid md:grid-cols-2 gap-8 items-center relative z-10">
-        {/* Left side - Branding */}
-        <motion.div
-          initial={{ opacity: 0, x: -30 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6 }}
-          className="hidden md:block text-center md:text-left"
-        >
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-            className="mb-8"
-          >
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-lg mb-6">
-              <FaBookOpen className="text-white text-4xl" />
-            </div>
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              Chào mừng trở lại
-            </h1>
-            <p className="text-lg text-gray-600 leading-relaxed">
-              Tiếp tục hành trình cải thiện kỹ năng đọc nhanh của bạn. 
-              Đăng nhập để truy cập các tính năng học tập thông minh.
-            </p>
-          </motion.div>
+        {/* Password Field */}
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              Password
+            </label>
+            <Link
+              to="/forgot-password"
+              className="text-sm text-[#1A66CC] hover:text-[#1A66CC]/80 hover:underline"
+              style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+            >
+              Forgot Password?
+            </Link>
+          </div>
+          <div className="relative">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              id="password"
+              name="password"
+              required
+              value={formData.password}
+              onChange={handleChange}
+              className="w-full pl-4 pr-12 py-2.5 border border-gray-300 rounded-lg bg-gray-50 focus:bg-white focus:border-[#1A66CC] focus:ring-2 focus:ring-[#1A66CC]/20 outline-none transition-all text-sm text-gray-800 placeholder-gray-400"
+              placeholder="Enter your password"
+              style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none"
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+            >
+              {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+            </button>
+          </div>
+        </div>
 
-          {/* Features list */}
+        {/* reCAPTCHA Placeholder */}
+        <div className="flex items-center gap-2 p-2.5 border border-gray-300 rounded-lg bg-gray-50">
+          <input
+            type="checkbox"
+            id="recaptcha"
+            className="w-4 h-4 rounded border-gray-300 text-[#1A66CC] focus:ring-[#1A66CC]"
+          />
+          <label htmlFor="recaptcha" className="flex items-center gap-1.5 text-xs text-gray-700 cursor-pointer">
+            <span>I'm not a robot</span>
+            <span className="text-xs text-gray-500">reCAPTCHA</span>
+          </label>
+        </div>
+
+        {/* Error Message */}
+        {error && (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="space-y-4"
+            className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm"
+            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
           >
-            {[
-              { icon: '📊', text: 'Theo dõi tiến độ học tập' },
-              { icon: '🎯', text: 'Luyện tập với SmartRead' },
-              { icon: '📈', text: 'Xem thống kê chi tiết' },
-            ].map((feature, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.5 + idx * 0.1 }}
-                className="flex items-center space-x-3 text-gray-700"
-              >
-                <span className="text-2xl">{feature.icon}</span>
-                <span className="text-base">{feature.text}</span>
-              </motion.div>
-            ))}
+            {error}
           </motion.div>
-        </motion.div>
+        )}
 
-        {/* Right side - Login Form */}
-        <motion.div
-          initial={{ opacity: 0, x: 30 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6 }}
-          className="w-full"
+        {/* Login Button */}
+        <motion.button
+          type="submit"
+          disabled={isLoading}
+          whileHover={{ scale: isLoading ? 1 : 1.01 }}
+          whileTap={{ scale: isLoading ? 1 : 0.99 }}
+          className="w-full bg-[#1A66CC] hover:bg-[#1555B0] text-white font-semibold py-2.5 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-sm"
+          style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
         >
-          <motion.div
-            initial={{ scale: 0.95 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.2 }}
-            className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl p-8 md:p-10 border border-white/20"
+          {isLoading ? (
+            <span className="flex items-center justify-center gap-2">
+              <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Logging in...
+            </span>
+          ) : (
+            'Login'
+          )}
+        </motion.button>
+
+        {/* Separator */}
+        <div className="relative my-4">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-300"></div>
+          </div>
+          <div className="relative flex justify-center text-xs">
+            <span className="px-2 bg-white text-gray-500" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              Or continue with
+            </span>
+          </div>
+        </div>
+
+        {/* Social Login Buttons */}
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            type="button"
+            className="flex items-center justify-center gap-1.5 px-3 py-2 border-2 border-gray-300 rounded-lg hover:border-gray-400 hover:bg-gray-50 transition-all text-gray-700 font-medium text-xs"
+            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
           >
-            {/* Header */}
-            <div className="text-center mb-8">
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.3, type: 'spring', stiffness: 200 }}
-                className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-lg mb-4"
-              >
-                <FaLock className="text-white text-2xl" />
-              </motion.div>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
-                Đăng nhập
-              </h2>
-              <p className="text-gray-600">Nhập thông tin để tiếp tục</p>
-            </div>
+            <FcGoogle size={16} />
+            <span className="text-xs">Continue with Google</span>
+          </button>
+          <button
+            type="button"
+            className="flex items-center justify-center gap-1.5 px-3 py-2 bg-[#1877F2] hover:bg-[#166FE5] text-white rounded-lg transition-all font-medium text-xs"
+            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+          >
+            <FaFacebook size={16} />
+            <span className="text-xs">Continue with Facebook</span>
+          </button>
+        </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Email Field */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-              >
-                <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
-                  Email
-                </label>
-                <div className="relative group">
-                  <div className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-lg transition-all duration-300 ${
-                    focusedField === 'email' ? 'bg-gradient-to-b from-blue-500 to-indigo-600' : 'bg-transparent'
-                  }`}></div>
-                  <FaEnvelope className={`absolute left-4 top-1/2 transform -translate-y-1/2 transition-colors duration-300 ${
-                    focusedField === 'email' ? 'text-blue-500' : 'text-gray-400'
-                  }`} />
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    required
-                    value={formData.email}
-                    onChange={handleChange}
-                    onFocus={() => setFocusedField('email')}
-                    onBlur={() => setFocusedField(null)}
-                    className="w-full pl-12 pr-4 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-300 bg-gray-50 focus:bg-white text-gray-800 placeholder-gray-400"
-                    placeholder="example@email.com"
-                  />
-                </div>
-              </motion.div>
-
-              {/* Password Field */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
-              >
-                <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
-                  Mật khẩu
-                </label>
-                <div className="relative group">
-                  <div className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-lg transition-all duration-300 ${
-                    focusedField === 'password' ? 'bg-gradient-to-b from-blue-500 to-indigo-600' : 'bg-transparent'
-                  }`}></div>
-                  <FaLock className={`absolute left-4 top-1/2 transform -translate-y-1/2 transition-colors duration-300 ${
-                    focusedField === 'password' ? 'text-blue-500' : 'text-gray-400'
-                  }`} />
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    id="password"
-                    name="password"
-                    required
-                    value={formData.password}
-                    onChange={handleChange}
-                    onFocus={() => setFocusedField('password')}
-                    onBlur={() => setFocusedField(null)}
-                    className="w-full pl-12 pr-12 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-300 bg-gray-50 focus:bg-white text-gray-800 placeholder-gray-400"
-                    placeholder="••••••••"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors duration-200 focus:outline-none"
-                    aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
-                  >
-                    {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
-                  </button>
-                </div>
-              </motion.div>
-
-              {/* Error Message */}
-              {error && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-red-50 border-l-4 border-red-500 text-red-700 px-4 py-3 rounded-lg flex items-start space-x-2"
-                >
-                  <span className="text-red-500 mt-0.5">⚠️</span>
-                  <p className="text-sm font-medium">{error}</p>
-                </motion.div>
-              )}
-
-              {/* Submit Button */}
-              <motion.button
-                type="submit"
-                disabled={isLoading}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none relative overflow-hidden group"
-              >
-                <span className="relative z-10 flex items-center justify-center space-x-2">
-                  {isLoading ? (
-                    <>
-                      <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      <span>Đang đăng nhập...</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>Đăng nhập</span>
-                      <FaUser className="text-sm" />
-                    </>
-                  )}
-                </span>
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-              </motion.button>
-            </form>
-
-            {/* Footer Links */}
-            <div className="mt-8 space-y-4 text-center">
-              <p className="text-sm text-gray-600">
-                Chưa có tài khoản?{' '}
-                <Link 
-                  to="/register" 
-                  className="text-blue-600 hover:text-blue-700 font-semibold transition-colors duration-200 hover:underline"
-                >
-                  Đăng ký ngay
-                </Link>
-              </p>
-              <Link 
-                to="/admin/login" 
-                className="block text-sm text-gray-500 hover:text-gray-700 transition-colors duration-200 hover:underline"
-              >
-                Đăng nhập Admin →
-              </Link>
-            </div>
-          </motion.div>
-        </motion.div>
-      </div>
-
-    </div>
+        {/* Admin Login Link */}
+        <div className="text-center mt-4">
+          <p className="text-xs text-gray-500" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            Are you an administrator?{' '}
+            <Link
+              to="/admin/login"
+              className="text-[#1A66CC] hover:text-[#1555B0] hover:underline font-medium"
+            >
+              Admin Login
+            </Link>
+          </p>
+        </div>
+      </form>
+    </AuthLayout>
   );
 };
 

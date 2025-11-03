@@ -54,10 +54,10 @@ const FAQ = () => {
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-[#1A66CC] mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             Câu hỏi thường gặp
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             Những thắc mắc phổ biến về khóa học Kỹ Thuật Đọc Nhanh
           </p>
         </motion.div>
@@ -78,7 +78,7 @@ const FAQ = () => {
                   onClick={() => toggleFAQ(index)}
                 >
                   <div className="flex items-center space-x-3">
-                    <HiQuestionMarkCircle className="w-5 h-5 text-primary-600 flex-shrink-0" />
+                    <HiQuestionMarkCircle className="w-5 h-5 text-[#1A66CC] flex-shrink-0" />
                     <span className="font-semibold text-gray-900">{faq.question}</span>
                   </div>
                   <motion.div
@@ -111,47 +111,6 @@ const FAQ = () => {
           </div>
         </div>
 
-        {/* Contact Info */}
-        <motion.div 
-          className="mt-16 text-center bg-gradient-to-r from-primary-50 to-accent-50 rounded-2xl p-8 md:p-12"
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-        >
-          <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">
-            Vẫn còn thắc mắc?
-          </h3>
-          <p className="text-lg text-gray-600 mb-6 max-w-2xl mx-auto">
-            Đội ngũ tư vấn của chúng tôi luôn sẵn sàng hỗ trợ bạn 24/7
-          </p>
-          
-          <div className="grid md:grid-cols-3 gap-6">
-            <div className="text-center">
-              <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                <span className="text-primary-600 font-bold">📞</span>
-              </div>
-              <h4 className="font-semibold text-gray-900 mb-1">Hotline</h4>
-              <p className="text-primary-600 font-medium">0982316213</p>
-            </div>
-            
-            <div className="text-center">
-              <div className="w-12 h-12 bg-accent-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                <span className="text-accent-600 font-bold">💬</span>
-              </div>
-              <h4 className="font-semibold text-gray-900 mb-1">Zalo</h4>
-              <p className="text-accent-600 font-medium">https://chat.zalo.me/0982316213</p>
-            </div>
-            
-            <div className="text-center">
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                <span className="text-green-600 font-bold">✉️</span>
-              </div>
-              <h4 className="font-semibold text-gray-900 mb-1">Email</h4>
-              <p className="text-green-600 font-medium">macthanhkmhd2003@gmail.com</p>
-            </div>
-          </div>
-        </motion.div>
       </div>
     </section>
   )

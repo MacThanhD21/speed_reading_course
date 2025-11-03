@@ -1,10 +1,8 @@
-import geminiService from './geminiService';
+import apiService from './apiService';
 import logger from '../utils/logger.js';
 
 class ReadingTipsService {
-  constructor() {
-    this.geminiService = geminiService;
-  }
+  constructor() {}
 
   // Tạo câu hỏi 5W1H cho phần học tập
   async generate5W1HQuestions(content) {
@@ -17,18 +15,9 @@ class ReadingTipsService {
         contentKeys: content ? Object.keys(content) : []
       });
       
-      const prompt = this.create5W1HPrompt(content);
-      const response = await this.geminiService.generateContent(prompt, {
-        temperature: 0.3,
-        maxOutputTokens: 1500
-      });
-      
-      if (!response || typeof response !== 'string') {
-        logger.warn('READING_TIPS', 'No valid response from Gemini API for 5W1H, using fallback questions');
-        return this.generateLocal5W1HQuestions(content);
-      }
-      
-      const questions = this.parse5W1HResponse(response, content);
+      // Call backend to generate 5W1H
+      const resp = await apiService.generateFiveWOneH({ title: content?.title || 'Bài viết', text: content?.content || content || '' });
+      const questions = Array.isArray(resp?.questions) ? resp.questions : this.generateLocal5W1HQuestions(content);
       logger.info('READING_TIPS', 'Generated 5W1H questions successfully', {
         questionCount: questions?.length || 0,
         questionTypes: questions?.map(q => q.type) || []
@@ -576,29 +565,33 @@ ${contentPreview || textContent}
   // Đánh giá câu trả lời tự luận 5W1H
   async evaluateEssayAnswers(questions, answers, content) {
     try {
-      logger.info('READING_TIPS', 'Evaluating essay answers', {
+      logger.info('READING_TIPS', 'Evaluating essay answers via backend API', {
         questionCount: questions.length,
         answerCount: Object.keys(answers).length
       });
       
-      const prompt = this.createEvaluationPrompt(questions, answers, content);
-      const response = await this.geminiService.generateContent(prompt, {
-        temperature: 0.3,
-        maxOutputTokens: 4000
-      });
+      // Call backend API to evaluate essay answers using Gemini AI
+      const payload = { questions, answers, content };
+      const evaluation = await apiService.evaluateEssayAnswers(payload);
       
-      const evaluation = this.parseEvaluationResponse(response);
-      logger.info('READING_TIPS', 'Generated evaluation successfully', {
-        overallScore: evaluation.overallScore,
-        totalQuestions: evaluation.totalQuestions
-      });
+      if (evaluation && evaluation.success !== false && evaluation.evaluations) {
+        logger.info('READING_TIPS', 'Evaluation from backend API successful', {
+          overallScore: evaluation.overallScore,
+          totalQuestions: evaluation.totalQuestions
+        });
+        return evaluation;
+      }
       
-      return evaluation;
+      // Fallback to local evaluation if API fails
+      logger.warn('READING_TIPS', 'Backend evaluation failed, using local fallback');
+      return this.generateLocalEvaluation(questions, answers);
+      
     } catch (error) {
       logger.error('READING_TIPS', 'Error evaluating essay answers', {
         error: error.message,
         errorType: error.constructor.name
       });
+      // Fallback to local evaluation on error
       return this.generateLocalEvaluation(questions, answers);
     }
   }
@@ -727,39 +720,83 @@ ${qaPairs}
 
   // Fallback: Generate local evaluation
   generateLocalEvaluation(questions = [], answers = {}) {
-    const evaluations = questions.map((q, index) => ({
-      questionId: q.id,
-      question: q.question,
-      answer: answers[q.id] || 'Không có câu trả lời',
-      score: Math.floor(Math.random() * 3) + 7,
-      maxScore: 10,
-      feedback: 'Câu trả lời khá tốt, thể hiện sự hiểu biết về nội dung bài viết.',
-      evidence: {
-        correctPoints: ['Đã nêu được nội dung chính của bài viết', 'Trình bày có logic và mạch lạc'],
-        missingPoints: ['Có thể bổ sung thêm chi tiết cụ thể', 'Nên đưa ra ví dụ minh họa'],
-        incorrectPoints: [],
-        quotes: ['"Nội dung chính được đề cập trong bài viết"', '"Thông tin quan trọng được trình bày rõ ràng"']
-      },
-      strengths: ['Hiểu được nội dung chính', 'Trình bày rõ ràng và có cấu trúc'],
-      improvements: ['Cần chi tiết hơn với dẫn chứng cụ thể', 'Cần ví dụ minh họa để làm rõ ý'],
-      accuracy: 'Khá chính xác',
-      completeness: 'Khá đầy đủ',
-      quality: 'Khá'
-    }));
-    
-    const totalScore = evaluations.reduce((sum, evaluation) => sum + evaluation.score, 0);
+    const tokenize = (s) => (s || '')
+      .toLowerCase()
+      .normalize('NFC')
+      .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+      .split(/\s+/)
+      .filter(Boolean);
+
+    const evaluations = questions.map((q, index) => {
+      const userAnswer = String(answers[q.id] || '').trim();
+      const answerTokens = tokenize(userAnswer);
+      const points = Array.isArray(q.keyPoints) ? q.keyPoints : [];
+      const pointTokens = points.flatMap(p => tokenize(p));
+
+      // Heuristics
+      const lengthScore = Math.min(answerTokens.length / 25, 1); // 0..1
+      const overlap = answerTokens.filter(t => pointTokens.includes(t));
+      const overlapRatio = pointTokens.length > 0 ? Math.min(overlap.length / Math.max(pointTokens.length, 1), 1) : 0;
+
+      // Penalize empty or very short answers
+      let base = 0;
+      if (userAnswer.length === 0) base = 0.1;
+      else if (answerTokens.length < 5) base = 0.25;
+      else base = 0.4;
+
+      const score01 = Math.max(0, Math.min(1, base * 0.2 + lengthScore * 0.35 + overlapRatio * 0.45));
+      const score10 = Math.round(score01 * 10 * 10) / 10;
+
+      const feedback = [];
+      if (!userAnswer) feedback.push('Chưa có câu trả lời. Hãy trả lời ngắn gọn dựa trên điểm chính.');
+      if (answerTokens.length < 10) feedback.push('Câu trả lời quá ngắn, cần bổ sung chi tiết và dẫn chứng.');
+      if (overlapRatio < 0.3 && points.length > 0) feedback.push('Chưa đề cập đủ các ý chính gợi ý.');
+
+      const accuracy = score01 >= 0.8 ? 'Chính xác' : score01 >= 0.6 ? 'Khá chính xác' : score01 >= 0.4 ? 'Trung bình' : 'Cần cải thiện';
+      const completeness = lengthScore >= 0.8 ? 'Đầy đủ' : lengthScore >= 0.5 ? 'Khá đầy đủ' : 'Thiếu sót';
+      const quality = overlapRatio >= 0.7 ? 'Tốt' : overlapRatio >= 0.5 ? 'Khá' : 'Cần cải thiện';
+
+      return {
+        questionId: q.id || index + 1,
+        question: q.question,
+        answer: userAnswer || 'Không có câu trả lời',
+        score: Math.max(0, Math.min(10, score10)),
+        maxScore: 10,
+        feedback: feedback.join(' ') || 'Hãy bám sát các điểm chính và thêm dẫn chứng từ nội dung.',
+        evidence: {
+          correctPoints: overlapRatio > 0 ? ['Đã đề cập một phần điểm chính.'] : [],
+          missingPoints: points.filter(p => !tokenize(p).some(t => answerTokens.includes(t))).slice(0, 3),
+          incorrectPoints: [],
+          quotes: []
+        },
+        strengths: overlapRatio >= 0.5 ? ['Bám sát nội dung chính'] : [],
+        improvements: [
+          ...(answerTokens.length < 15 ? ['Mở rộng câu trả lời với chi tiết cụ thể.'] : []),
+          ...(overlapRatio < 0.5 ? ['Đề cập đầy đủ các điểm chính được gợi ý.'] : [])
+        ],
+        accuracy,
+        completeness,
+        quality
+      };
+    });
+
+    const totalScore = evaluations.reduce((sum, e) => sum + e.score, 0);
     const averageScore = evaluations.length > 0 ? totalScore / evaluations.length : 0;
-    
+
     return {
       overallScore: Math.round(averageScore * 10) / 10,
       totalQuestions: questions.length,
       evaluations,
       summary: {
-        overallFeedback: 'Bạn đã hiểu khá tốt nội dung bài viết. Hãy tiếp tục phát triển kỹ năng phân tích và trình bày với dẫn chứng cụ thể hơn.',
-        strengths: ['Hiểu được nội dung chính', 'Trình bày có logic và cấu trúc'],
-        improvements: ['Cần chi tiết hơn với dẫn chứng từ bài viết', 'Cần liên hệ thực tế và ví dụ cụ thể'],
-        recommendations: ['Đọc kỹ hơn để nắm bắt chi tiết', 'Tập viết nhiều hơn với dẫn chứng', 'Tham khảo thêm tài liệu liên quan'],
-        nextSteps: ['Luyện tập trả lời câu hỏi với dẫn chứng cụ thể', 'Đọc thêm bài viết tương tự để mở rộng kiến thức']
+        overallFeedback: averageScore >= 8
+          ? 'Bài làm tốt. Hãy bổ sung dẫn chứng cụ thể.'
+          : averageScore >= 6
+            ? 'Khá. Cần bám sát điểm chính và viết đầy đủ hơn.'
+            : 'Cần cải thiện. Hãy bám sát các điểm chính và trả lời có dẫn chứng.',
+        strengths: averageScore >= 7 ? ['Nắm được ý chính.'] : [],
+        improvements: averageScore >= 7 ? ['Bổ sung dẫn chứng, ví dụ.'] : ['Cần bám sát điểm chính và viết dài hơn.'],
+        recommendations: ['Đọc kỹ điểm chính trước khi trả lời', 'Viết có cấu trúc: ý chính → chi tiết → ví dụ'],
+        nextSteps: ['Luyện trả lời tối thiểu 3-5 câu mỗi ý', 'Đánh dấu từ khóa quan trọng trong nội dung']
       }
     };
   }
@@ -773,22 +810,32 @@ ${qaPairs}
         readingProgress: readingData.progress || 'start'
       });
       
-      const prompt = this.createComprehensivePrompt(content, readingData);
-      const response = await this.geminiService.generateContent(prompt, {
-        temperature: 0.7,
-        maxOutputTokens: 3000
-      });
+      // Call backend to get comprehensive learning data (concepts, statistics, preview questions)
+      const resp = await apiService.generateComprehensiveLearning({ content, readingData });
       
-      if (!response) {
-        logger.warn('READING_TIPS', 'No response received from AI. Using fallback data.');
-        return this.generateFallbackComprehensiveData(content, readingData);
-      }
+      // Use backend data if available, otherwise fallback
+      const data = {
+        readingTips: this.getFixedReadingTips(), // Tips are fixed/hardcoded
+        conceptsAndTerms: Array.isArray(resp?.conceptsAndTerms) && resp.conceptsAndTerms.length > 0
+          ? resp.conceptsAndTerms
+          : this.generateFallbackComprehensiveData(content, readingData).conceptsAndTerms,
+        statistics: Array.isArray(resp?.statistics) && resp.statistics.length > 0
+          ? resp.statistics
+          : this.generateFallbackComprehensiveData(content, readingData).statistics,
+        previewQuestions: Array.isArray(resp?.previewQuestions) && resp.previewQuestions.length > 0
+          ? resp.previewQuestions
+          : this.generateFallbackComprehensiveData(content, readingData).previewQuestions
+      };
       
-      const data = this.parseComprehensiveResponse(response);
       logger.info('READING_TIPS', 'Generated comprehensive learning data successfully', {
         conceptsCount: data.conceptsAndTerms?.length || 0,
         statisticsCount: data.statistics?.length || 0,
-        questionsCount: data.previewQuestions?.length || 0
+        questionsCount: data.previewQuestions?.length || 0,
+        fromAPI: {
+          concepts: Array.isArray(resp?.conceptsAndTerms) && resp.conceptsAndTerms.length > 0,
+          statistics: Array.isArray(resp?.statistics) && resp.statistics.length > 0,
+          questions: Array.isArray(resp?.previewQuestions) && resp.previewQuestions.length > 0
+        }
       });
       
       return data;
@@ -798,6 +845,7 @@ ${qaPairs}
         errorType: error.constructor.name
       });
       
+      // Fallback to local data on error
       return this.generateFallbackComprehensiveData(content, readingData);
     }
   }

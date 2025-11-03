@@ -13,6 +13,11 @@ import Testimonials from './components/Testimonials'
 import FAQ from './components/FAQ'
 import CTA from './components/CTA'
 import Footer from './components/Footer'
+import TrustBadges from './components/marketing/TrustBadges'
+import ROICalculator from './components/marketing/ROICalculator'
+import SocialProofWidget from './components/marketing/SocialProofWidget'
+import ExitIntentPopup from './components/marketing/ExitIntentPopup'
+import FloatingContact from './components/marketing/FloatingContact'
 import SmartReadRouter from './components/smartread/SmartReadRouter'
 import Login from './components/auth/Login'
 import Register from './components/auth/Register'
@@ -60,6 +65,20 @@ const AuthProtectedRoute = ({ children }) => {
 };
 
 function HomePage() {
+  const [showExitPopup, setShowExitPopup] = React.useState(false);
+
+  React.useEffect(() => {
+    // Exit intent detection
+    const handleMouseLeave = (e) => {
+      if (e.clientY <= 0 && !localStorage.getItem('exitIntentShown')) {
+        setShowExitPopup(true);
+      }
+    };
+
+    document.addEventListener('mouseleave', handleMouseLeave);
+    return () => document.removeEventListener('mouseleave', handleMouseLeave);
+  }, []);
+
   return (
     <div className="App">
       <Header />
@@ -67,14 +86,26 @@ function HomePage() {
         <Hero />
         <PainPoints />
         <Solution />
+        <ROICalculator />
         <Timeline />
         <Outcomes />
+        <TrustBadges />
         <Pricing />
         <Testimonials />
         <FAQ />
         <CTA />
       </main>
       <Footer />
+      <FloatingContact />
+      <SocialProofWidget />
+      {showExitPopup && (
+        <ExitIntentPopup 
+          onClose={() => {
+            setShowExitPopup(false);
+            localStorage.setItem('exitIntentShown', 'true');
+          }}
+        />
+      )}
     </div>
   )
 }

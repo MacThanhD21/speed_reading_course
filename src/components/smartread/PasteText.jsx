@@ -80,7 +80,7 @@ const PasteText = ({ onStartReading }) => {
               <button
                 onClick={handlePasteClick}
                 disabled={isPasting}
-                className="inline-flex items-center px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center px-4 py-2 bg-blue-50 hover:bg-blue-100 text-[#1A66CC] rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 title="Dán từ clipboard"
               >
                 <FaPaste className="mr-2" />
@@ -101,7 +101,7 @@ const PasteText = ({ onStartReading }) => {
                 }, 0);
               }}
               placeholder="Dán nội dung bài đọc vào đây hoặc click nút 'Dán' ở trên..."
-              className="smartread-text smartread-content w-full h-80 p-4 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-shadow"
+              className="smartread-text smartread-content w-full h-80 p-4 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-[#1A66CC] focus:border-transparent outline-none transition-shadow"
               autoFocus
             />
             
@@ -133,7 +133,7 @@ const PasteText = ({ onStartReading }) => {
               whileTap={canStart ? { scale: 0.98 } : {}}
               className={`inline-flex items-center px-8 py-4 text-lg font-semibold rounded-xl shadow-lg transition-all ${
                 canStart
-                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white'
+                  ? 'bg-gradient-to-r from-[#1A66CC] to-[#124A9D] hover:from-[#1555B0] hover:to-[#0F3F87] text-white'
                   : 'bg-gray-300 text-gray-500 cursor-not-allowed'
               }`}
             >

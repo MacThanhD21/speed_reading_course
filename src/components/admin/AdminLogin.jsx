@@ -112,7 +112,7 @@ const AdminLogin = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-[#1A66CC] hover:bg-[#1555B0] text-white font-semibold py-3 px-6 rounded-lg transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? 'Đang đăng nhập...' : 'Đăng nhập'}
           </button>

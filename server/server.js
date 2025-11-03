@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path, { dirname } from 'path';
+import { fileURLToPath } from 'url';
 import connectDB from './config/database.js';
 import authRoutes from './routes/authRoutes.js';
 import contactRoutes from './routes/contactRoutes.js';
@@ -8,8 +10,10 @@ import adminRoutes from './routes/adminRoutes.js';
 import smartReadRoutes from './routes/smartReadRoutes.js';
 import { errorHandler, notFound } from './middleware/errorMiddleware.js';
 
-// Load environment variables
-dotenv.config();
+// Load environment variables (always load .env next to this file)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+dotenv.config({ path: path.join(__dirname, '.env') });
 
 // Validate required environment variables
 const requiredEnvVars = ['MONGODB_URI', 'JWT_SECRET'];

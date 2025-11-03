@@ -227,12 +227,12 @@ const QuizPanel = ({
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-4 text-white">
+          <div className="bg-gradient-to-r from-[#1A66CC] to-[#124A9D] p-4 text-white">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-xl font-bold">Bài kiểm tra hiểu biết</h2>
                 {quiz && (
-                  <p className="text-sm text-blue-100">
+                  <p className="text-sm text-blue-50">
                     Câu {currentQuestionIndex + 1}/{totalQuestions} 
                     {answeredCount < totalQuestions && ` • Đã trả lời: ${answeredCount}/${totalQuestions}`}
                   </p>
@@ -248,7 +248,7 @@ const QuizPanel = ({
             
             {/* Progress bar */}
             {quiz && (
-              <div className="mt-3 h-2 bg-blue-300 rounded-full overflow-hidden">
+              <div className="mt-3 h-2 bg-blue-200 rounded-full overflow-hidden">
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${progress}%` }}
@@ -262,7 +262,7 @@ const QuizPanel = ({
           <div className="flex-1 overflow-y-auto p-6">
             {isLoading ? (
               <div className="flex flex-col items-center justify-center py-12">
-                <FaSpinner className="text-4xl text-blue-600 animate-spin mb-4" />
+                <FaSpinner className="text-4xl text-[#1A66CC] animate-spin mb-4" />
                 <p className="text-gray-600">Đang tạo câu hỏi...</p>
               </div>
             ) : result ? (
@@ -289,7 +289,7 @@ const QuizPanel = ({
                 {/* Stats */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="bg-blue-50 rounded-lg p-4 text-center">
-                    <FaChartLine className="text-2xl text-blue-600 mx-auto mb-2" />
+                    <FaChartLine className="text-2xl text-[#1A66CC] mx-auto mb-2" />
                     <div className="text-2xl font-bold text-gray-800">
                       {result.comprehensionPercent}%
                     </div>
@@ -297,7 +297,7 @@ const QuizPanel = ({
                   </div>
                   
                   <div className="bg-green-50 rounded-lg p-4 text-center">
-                    <FaCheckCircle className="text-2xl text-green-600 mx-auto mb-2" />
+                    <FaCheckCircle className="text-2xl text-[#34D399] mx-auto mb-2" />
                     <div className="text-2xl font-bold text-gray-800">
                       {result.correctCount}/{result.totalQuestions}
                     </div>
@@ -414,10 +414,10 @@ const QuizPanel = ({
                                 ? isCorrect
                                   ? 'bg-green-100 border-green-500'
                                   : 'bg-red-100 border-red-500'
-                                : 'bg-blue-100 border-blue-500'
+                                : 'bg-blue-100 border-[#1A66CC]'
                               : result && isCorrect
                                 ? 'bg-green-50 border-green-300'
-                                : 'bg-gray-50 border-gray-200 hover:border-blue-300'
+                                : 'bg-gray-50 border-gray-200 hover:border-[#1A66CC]'
                           } ${result ? 'cursor-default' : 'cursor-pointer'}`}
                         >
                           <div className="flex items-center gap-3">
@@ -427,14 +427,14 @@ const QuizPanel = ({
                                   ? isCorrect
                                     ? 'bg-green-500 text-white'
                                     : 'bg-red-500 text-white'
-                                  : 'bg-blue-500 text-white'
+                                  : 'bg-[#1A66CC] text-white'
                                 : 'bg-gray-200 text-gray-700'
                             }`}>
                               {optionLetter}
                             </div>
                             <div className="flex-1">{option}</div>
                             {result && isCorrect && (
-                              <FaCheckCircle className="text-green-600 text-xl" />
+                              <FaCheckCircle className="text-[#34D399] text-xl" />
                             )}
                             {result && isSelected && !isCorrect && (
                               <FaTimesCircle className="text-red-600 text-xl" />
@@ -446,7 +446,7 @@ const QuizPanel = ({
                   </div>
 
                   {result && (
-                    <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+                    <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-100">
                       <div className="font-semibold text-gray-800 mb-1">Giải thích:</div>
                       <div className="text-gray-700">
                         {currentQuestion?.explanation || ''}
@@ -475,7 +475,7 @@ const QuizPanel = ({
                   <button
                     onClick={handleSubmit}
                     disabled={isSubmitting}
-                    className="px-6 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    className="px-6 py-2 rounded-lg bg-gradient-to-r from-[#1A66CC] to-[#124A9D] text-white hover:from-[#1555B0] hover:to-[#0F3F87] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   >
                     {isSubmitting ? (
                       <>
@@ -516,7 +516,7 @@ const QuizPanel = ({
             <div className="border-t p-4 bg-gray-50 flex items-center justify-center gap-3">
               <button
                 onClick={handleReset}
-                className="px-6 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors flex items-center gap-2"
+                className="px-6 py-2 rounded-lg bg-[#1A66CC] text-white hover:bg-[#1555B0] transition-colors flex items-center gap-2"
               >
                 <FaRedo />
                 Làm lại

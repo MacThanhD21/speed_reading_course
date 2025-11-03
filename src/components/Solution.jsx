@@ -40,11 +40,11 @@ const Solution = () => {
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-[#1A66CC] mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             Giải pháp hoàn hảo cho bạn
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Khoá học áp dụng <span className="font-semibold text-primary-600">3 kỹ thuật cốt lõi</span> giúp bạn bứt phá tốc độ đọc
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            Khoá học áp dụng <span className="font-semibold text-[#1A66CC]">3 kỹ thuật cốt lõi</span> giúp bạn bứt phá tốc độ đọc
           </p>
         </motion.div>
 

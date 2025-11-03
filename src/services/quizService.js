@@ -1,104 +1,20 @@
 /**
  * Quiz Service - Service để tạo và chấm quiz
  * 
- * - Generate Quiz: Gọi trực tiếp Gemini API qua geminiService
+ * - Generate Quiz: Gọi backend API để tạo quiz (backend xử lý Gemini)
  * - Grade Quiz: Sử dụng local grading (so sánh trực tiếp, không cần AI)
  */
 
 import logger from '../utils/logger.js';
-import geminiService from './geminiService.js';
+import apiService from './apiService.js';
 
 class QuizService {
   constructor() {
-    // Quiz service gọi trực tiếp Gemini API qua geminiService
-    // Không sử dụng proxy/serverless functions nữa
+    // Quiz service gọi backend API để tạo quiz
   }
 
   /**
-   * Tạo quiz prompt cho Gemini
-   */
-  createQuizPrompt(textId, textContent, n = 12) {
-    return `Bạn là một AI tạo đề trắc nghiệm cho bài đọc. 
-
-Đầu vào: textId="${textId}", textContent="${textContent.substring(0, 2000)}" (một đoạn văn ~300-500 từ).
-
-Yêu cầu tạo quiz:
-
-- Trả về JSON hợp lệ duy nhất, không thêm chú thích.
-
-- Tạo ${n} câu hỏi trắc nghiệm (MCQ) với n trong [10,15].
-
-- Mỗi câu gồm: qid (chuỗi), type="mcq", prompt (tiếng Việt, ngắn gọn), options (mảng 4 phương án chữ A,B,C,D), correct (chữ A/B/C/D), explanation (1 câu ngắn giải thích đáp án đúng).
-
-- Tỉ lệ câu: ~70% nhận biết (fact), ~30% suy luận/ý chính.
-
-- Tránh câu quá mẹo; đảm bảo mỗi câu có một đáp án rõ ràng.
-
-- Kèm theo meta: textId, quizId, generatedAt (ISO8601).
-
-Ví dụ output JSON:
-
-{
-  "quizId":"quiz_xyz",
-  "textId":"${textId}",
-  "generatedAt":"${new Date().toISOString()}",
-  "questions":[
-    {"qid":"q1","type":"mcq","prompt":"...","options":["A ...","B ...","C ...","D ..."],"correct":"B","explanation":"..."},
-    ...
-  ]
-}
-
-QUAN TRỌNG: Chỉ trả về JSON, không thêm text giải thích bên ngoài.`;
-  }
-
-  /**
-   * Parse JSON từ Gemini response
-   */
-  parseQuizJSON(text) {
-    if (!text || typeof text !== 'string') return null;
-
-    // 1) Clean common wrappers and noise
-    let cleaned = text
-      .replace(/^\uFEFF/, '') // BOM
-      .replace(/```json[\s\S]*?```/gi, (m) => m.replace(/```json|```/gi, '')) // strip fenced json
-      .replace(/```[\s\S]*?```/g, (m) => m.replace(/```/g, '')) // strip generic fences
-      .replace(/[“”]/g, '"')
-      .replace(/[‘’]/g, "'")
-      .trim();
-
-    // 2) Keep only the largest JSON object substring
-    const start = cleaned.indexOf('{');
-    const end = cleaned.lastIndexOf('}');
-    if (start >= 0 && end > start) {
-      cleaned = cleaned.slice(start, end + 1);
-    }
-
-    // 3) Remove trailing commas before } or ] that break strict JSON
-    cleaned = cleaned.replace(/,\s*(\}|\])/g, '$1');
-
-    // 4) Attempt parse
-    try {
-      return JSON.parse(cleaned);
-    } catch (primaryError) {
-      logger.error('QUIZ_SERVICE', 'JSON parse error', { error: primaryError.message });
-
-      // 5) Last-resort: try to match a JSON object by regex and parse
-      const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        try {
-          const attempt = jsonMatch[0].replace(/,\s*(\}|\])/g, '$1');
-          return JSON.parse(attempt);
-        } catch (secondaryError) {
-          logger.error('QUIZ_SERVICE', 'JSON parse fallback failed', { error: secondaryError.message });
-        }
-      }
-    }
-
-    return null;
-  }
-
-  /**
-   * Tạo quiz từ textContent - Gọi trực tiếp Gemini API
+   * Tạo quiz từ textContent - Gọi backend (Railway) để gọi Gemini an toàn
    * @param {string} textId - ID của text
    * @param {string} textContent - Nội dung text (300-500 từ)
    * @param {number} n - Số câu hỏi (10-15, mặc định 12)
@@ -106,41 +22,10 @@ QUAN TRỌNG: Chỉ trả về JSON, không thêm text giải thích bên ngoài
    */
   async generateQuiz(textId, textContent, n = 12) {
     try {
-      logger.info('QUIZ_SERVICE', 'Generating quiz via Gemini API', { textId, n });
-      
-      // Gọi trực tiếp Gemini API
-      const prompt = this.createQuizPrompt(textId, textContent, n);
-      const responseText = await geminiService.generateContent(prompt, {
-        temperature: 0.2,
-        maxOutputTokens: 4000
-      });
-      
-      const quizData = this.parseQuizJSON(responseText);
-      
-      if (!quizData || !quizData.questions) {
-        throw new Error('Invalid quiz format from Gemini API');
-      }
-
-      // Đảm bảo có đủ fields
-      const quiz = {
-        quizId: quizData.quizId || `quiz_${Date.now()}`,
-        textId: textId,
-        generatedAt: quizData.generatedAt || new Date().toISOString(),
-        questions: quizData.questions.map((q, idx) => ({
-          qid: q.qid || `q${idx + 1}`,
-          type: q.type || 'mcq',
-          prompt: q.prompt || '',
-          options: q.options || [],
-          correct: q.correct || 'A',
-          explanation: q.explanation || ''
-        }))
-      };
-
-      logger.info('QUIZ_SERVICE', 'Quiz generated successfully', { 
-        quizId: quiz.quizId, 
-        questionCount: quiz.questions.length 
-      });
-
+      logger.info('QUIZ_SERVICE', 'Generating quiz via backend', { textId, n });
+      const payload = { textId, textContent, n };
+      const quiz = await apiService.generateQuiz(payload);
+      logger.info('QUIZ_SERVICE', 'Quiz generated successfully', { quizId: quiz.quizId, questionCount: quiz.questions?.length || 0 });
       return quiz;
       
     } catch (error) {

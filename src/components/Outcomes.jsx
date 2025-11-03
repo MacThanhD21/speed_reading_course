@@ -156,10 +156,10 @@ const Outcomes = () => {
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-[#1A66CC] mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             Kết quả đạt được sau khóa học
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             Những lợi ích thiết thực mà bạn sẽ nhận được khi hoàn thành khóa học Kỹ Thuật Đọc Nhanh
           </p>
         </motion.div>

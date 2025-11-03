@@ -5,7 +5,6 @@ import {
   FaTimes, FaSpinner, FaEye, FaGraduationCap, FaRocket, FaClock, FaRedo, FaChartBar,
   FaTrophy, FaPaperPlane
 } from 'react-icons/fa';
-import stepByStepAnalysisService from '../../services/stepByStepAnalysisService';
 import readingTipsService from '../../services/readingTipsService';
 import logger from '../../utils/logger.js';
 
@@ -398,7 +397,7 @@ const LearningPanel = ({ title, content, isVisible, onClose, readingProgress = '
               </div>
           <div>
                 <h2 className="text-lg font-bold">Panel Học Tập</h2>
-                <p className="text-blue-100 text-xs">{title}</p>
+                <p className="text-blue-50 text-xs">{title}</p>
           </div>
         </div>
         <button
@@ -420,9 +419,9 @@ const LearningPanel = ({ title, content, isVisible, onClose, readingProgress = '
                     disabled={!tab.isAvailable}
                 className={`flex items-center px-3 py-2 rounded-lg font-medium transition-all duration-200 whitespace-nowrap text-sm ${
                       activeTab === tab.id
-                    ? 'bg-blue-600 text-white shadow-md transform scale-105'
+                    ? 'bg-[#1A66CC] text-white shadow-md transform scale-105'
                         : tab.isAvailable
-                    ? 'bg-white text-gray-600 hover:bg-blue-50 hover:text-blue-600 border border-gray-200'
+                    ? 'bg-white text-gray-600 hover:bg-blue-50 hover:text-[#1A66CC] border border-gray-200'
                     : 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200'
                     }`}
                   >
@@ -519,27 +518,27 @@ const LearningPanel = ({ title, content, isVisible, onClose, readingProgress = '
             {/* Compact Info Section */}
             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4">
               <div className="flex items-start space-x-3">
-                <div className="bg-blue-500 rounded-lg p-2 flex-shrink-0">
+                <div className="bg-[#1A66CC] rounded-lg p-2 flex-shrink-0">
                   <FaGraduationCap className="text-lg text-white" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-blue-800 mb-3">Lưu ý quan trọng</h4>
+                  <h4 className="font-bold text-[#1A66CC] mb-3">Lưu ý quan trọng</h4>
                   <div className="grid gap-2 md:grid-cols-2">
                     <div className="flex items-start space-x-2">
-                      <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                      <p className="text-blue-700 text-xs">Mẹo đọc được tối ưu hóa cho hiệu quả tối đa</p>
+                      <div className="w-1.5 h-1.5 bg-[#1A66CC] rounded-full mt-2 flex-shrink-0"></div>
+                      <p className="text-[#1555B0] text-xs">Mẹo đọc được tối ưu hóa cho hiệu quả tối đa</p>
                     </div>
                     <div className="flex items-start space-x-2">
-                      <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                      <p className="text-blue-700 text-xs">Phù hợp với mọi loại nội dung và tốc độ đọc</p>
+                      <div className="w-1.5 h-1.5 bg-[#1A66CC] rounded-full mt-2 flex-shrink-0"></div>
+                      <p className="text-[#1555B0] text-xs">Phù hợp với mọi loại nội dung và tốc độ đọc</p>
                     </div>
                     <div className="flex items-start space-x-2">
-                      <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                      <p className="text-blue-700 text-xs">Được thiết kế dựa trên nghiên cứu khoa học</p>
+                      <div className="w-1.5 h-1.5 bg-[#1A66CC] rounded-full mt-2 flex-shrink-0"></div>
+                      <p className="text-[#1555B0] text-xs">Được thiết kế dựa trên nghiên cứu khoa học</p>
                     </div>
                     <div className="flex items-start space-x-2">
-                      <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                      <p className="text-blue-700 text-xs">Áp dụng các mẹo này để cải thiện hiệu quả đọc</p>
+                      <div className="w-1.5 h-1.5 bg-[#1A66CC] rounded-full mt-2 flex-shrink-0"></div>
+                      <p className="text-[#1555B0] text-xs">Áp dụng các mẹo này để cải thiện hiệu quả đọc</p>
                     </div>
                   </div>
                 </div>

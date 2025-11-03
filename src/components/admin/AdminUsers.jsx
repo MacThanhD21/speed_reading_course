@@ -209,17 +209,17 @@ const AdminUsers = () => {
   return (
     <div className="space-y-6">
       {/* Header Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl shadow-lg p-6 text-white">
+      <div className="bg-gradient-to-r from-[#1A66CC] to-[#124A9D] rounded-xl shadow-lg p-6 text-white">
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold mb-2">👥 Quản lý người dùng</h1>
-            <p className="text-blue-100">Quản lý tất cả người dùng và quyền truy cập của hệ thống</p>
+            <p className="text-blue-50">Quản lý tất cả người dùng và quyền truy cập của hệ thống</p>
           </div>
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handleCreateUser}
-            className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold flex items-center gap-2 shadow-lg hover:shadow-xl transition-shadow"
+            className="bg-white text-[#1A66CC] px-6 py-3 rounded-lg font-semibold flex items-center gap-2 shadow-lg hover:shadow-xl transition-shadow"
           >
             <FaPlus />
             Tạo người dùng mới
@@ -240,7 +240,7 @@ const AdminUsers = () => {
                 setSearch(e.target.value);
                 setPagination(prev => ({ ...prev, page: 1 }));
               }}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1A66CC] focus:border-[#1A66CC] transition-all"
             />
           </div>
           <select
@@ -249,7 +249,7 @@ const AdminUsers = () => {
               setRoleFilter(e.target.value);
               setPagination(prev => ({ ...prev, page: 1 }));
             }}
-            className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+            className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1A66CC] focus:border-[#1A66CC] transition-all"
           >
             <option value="">Tất cả vai trò</option>
             <option value="user">User</option>
@@ -262,7 +262,7 @@ const AdminUsers = () => {
       <div className="bg-white rounded-xl shadow-lg overflow-hidden">
         {loading ? (
           <div className="flex justify-center items-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1A66CC]"></div>
           </div>
         ) : users.length === 0 ? (
           <div className="text-center py-20 text-gray-500">
@@ -306,7 +306,7 @@ const AdminUsers = () => {
                           <div className={`flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center text-white font-bold ${
                             user.role === 'admin' 
                               ? 'bg-gradient-to-br from-purple-500 to-indigo-600' 
-                              : 'bg-gradient-to-br from-blue-500 to-cyan-600'
+                              : 'bg-gradient-to-br from-[#1A66CC] to-[#1555B0]'
                           }`}>
                             {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
                           </div>
@@ -322,7 +322,7 @@ const AdminUsers = () => {
                           className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium transition-all hover:shadow-md ${
                             user.role === 'admin'
                               ? 'bg-gradient-to-r from-purple-100 to-indigo-100 text-purple-800 border border-purple-300'
-                              : 'bg-gradient-to-r from-blue-100 to-cyan-100 text-blue-800 border border-blue-300'
+                              : 'bg-gradient-to-r from-blue-100 to-cyan-100 text-[#1A66CC] border border-blue-300'
                           }`}
                         >
                           {user.role === 'admin' ? (
@@ -342,7 +342,7 @@ const AdminUsers = () => {
                           }`}
                         >
                           <div className={`w-2 h-2 rounded-full mr-2 ${
-                            user.isActive ? 'bg-green-500' : 'bg-red-500'
+                            user.isActive ? 'bg-[#34D399]' : 'bg-red-500'
                           }`}></div>
                           {user.isActive ? 'Hoạt động' : 'Vô hiệu'}
                         </button>
@@ -360,7 +360,7 @@ const AdminUsers = () => {
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
                             onClick={() => handleEditUser(user)}
-                            className="text-blue-600 hover:text-blue-900 p-2 hover:bg-blue-50 rounded-lg transition-colors"
+                            className="text-[#1A66CC] hover:text-[#1555B0] p-2 hover:bg-blue-50 rounded-lg transition-colors"
                             title="Chỉnh sửa"
                           >
                             <FaEdit />
@@ -401,7 +401,7 @@ const AdminUsers = () => {
                 >
                   Trước
                 </motion.button>
-                <span className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium">
+                <span className="px-4 py-2 bg-[#1A66CC] text-white rounded-lg font-medium">
                   {pagination.page} / {pagination.pages || 1}
                 </span>
                 <motion.button
@@ -453,7 +453,7 @@ const AdminUsers = () => {
                     type="text"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#1A66CC] focus:border-[#1A66CC] transition-all ${
                       formErrors.name ? 'border-red-500' : 'border-gray-300'
                     }`}
                     placeholder="Nhập tên người dùng"
@@ -469,7 +469,7 @@ const AdminUsers = () => {
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#1A66CC] focus:border-[#1A66CC] transition-all ${
                       formErrors.email ? 'border-red-500' : 'border-gray-300'
                     }`}
                     placeholder="user@example.com"
@@ -580,7 +580,7 @@ const AdminUsers = () => {
                     type="text"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#1A66CC] focus:border-[#1A66CC] transition-all ${
                       formErrors.name ? 'border-red-500' : 'border-gray-300'
                     }`}
                   />
@@ -595,7 +595,7 @@ const AdminUsers = () => {
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#1A66CC] focus:border-[#1A66CC] transition-all ${
                       formErrors.email ? 'border-red-500' : 'border-gray-300'
                     }`}
                   />
@@ -649,7 +649,7 @@ const AdminUsers = () => {
                       type="checkbox"
                       checked={formData.isActive}
                       onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                      className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      className="w-5 h-5 text-[#1A66CC] border-gray-300 rounded focus:ring-[#1A66CC]"
                     />
                     <span className="text-sm font-medium text-gray-700">Tài khoản hoạt động</span>
                   </label>

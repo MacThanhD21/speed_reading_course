@@ -10,7 +10,7 @@ const Timeline = () => {
       description: "Nhận diện và loại bỏ những thói quen đọc chậm, học cách đặt mục tiêu rõ ràng.",
       target: "250 WPM",
       icon: HiCheck,
-      color: "from-blue-500 to-blue-600"
+      color: "from-[#1A66CC] to-[#1555B0]"
     },
     {
       session: "Buổi 2",
@@ -18,7 +18,7 @@ const Timeline = () => {
       description: "Học kỹ thuật Hand Pacing cơ bản, thực hành với tài liệu đơn giản.",
       target: "400 WPM",
       icon: HiTrendingUp,
-      color: "from-green-500 to-green-600"
+      color: "from-[#34D399] to-[#10B981]"
     },
     {
       session: "Buổi 3",

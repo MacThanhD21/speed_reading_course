@@ -56,7 +56,7 @@ const ReadingCompletionPopup = ({
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header - Compact */}
-          <div className="relative bg-gradient-to-r from-blue-600 to-purple-600 rounded-t-2xl p-4 sm:p-5 flex-shrink-0">
+          <div className="relative bg-gradient-to-r from-[#1A66CC] to-[#124A9D] rounded-t-2xl p-4 sm:p-5 flex-shrink-0">
             <button
               onClick={onClose}
               className="absolute top-3 right-3 sm:top-4 sm:right-4 text-white hover:text-gray-200 transition-colors z-10"
@@ -74,7 +74,7 @@ const ReadingCompletionPopup = ({
                 🎉
               </motion.div>
               <h2 className="text-xl sm:text-2xl font-bold mb-1">Hoàn thành đọc!</h2>
-              <p className="text-blue-100 text-sm">Chúc mừng bạn đã hoàn thành bài đọc</p>
+              <p className="text-blue-50 text-sm">Chúc mừng bạn đã hoàn thành bài đọc</p>
             </div>
           </div>
 
@@ -95,7 +95,7 @@ const ReadingCompletionPopup = ({
                 transition={{ delay: 0.3 }}
                 className="bg-gray-50 rounded-lg p-3 text-center"
               >
-                <FaBook className="text-xl sm:text-2xl text-blue-600 mx-auto mb-1.5" />
+                <FaBook className="text-xl sm:text-2xl text-[#1A66CC] mx-auto mb-1.5" />
                 <div className="text-lg sm:text-xl font-bold text-gray-800">{wordsRead || 0}</div>
                 <div className="text-xs sm:text-sm text-gray-600">Từ đã đọc</div>
               </motion.div>
@@ -106,7 +106,7 @@ const ReadingCompletionPopup = ({
                 transition={{ delay: 0.4 }}
                 className="bg-gray-50 rounded-lg p-3 text-center"
               >
-                <FaClock className="text-xl sm:text-2xl text-green-600 mx-auto mb-1.5" />
+                <FaClock className="text-xl sm:text-2xl text-[#34D399] mx-auto mb-1.5" />
                 <div className="text-lg sm:text-xl font-bold text-gray-800">{formatTime(elapsedTime || 0)}</div>
                 <div className="text-xs sm:text-sm text-gray-600">Thời gian</div>
               </motion.div>
@@ -120,7 +120,7 @@ const ReadingCompletionPopup = ({
               className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg p-3 mb-4"
             >
               <h3 className="font-semibold text-gray-800 mb-2 flex items-center text-sm sm:text-base">
-                <FaChartLine className="mr-2 text-green-600 text-sm" />
+                <FaChartLine className="mr-2 text-[#34D399] text-sm" />
                 Phân tích hiệu suất
               </h3>
               <div className="space-y-1.5 text-xs sm:text-sm">
@@ -162,7 +162,7 @@ const ReadingCompletionPopup = ({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.65 }}
                 onClick={onGoToLearningPanel}
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-3 px-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-[1.02] shadow-lg flex items-center justify-center"
+                className="w-full bg-gradient-to-r from-[#1A66CC] to-[#124A9D] hover:from-[#1555B0] hover:to-[#0F3F87] text-white py-3 px-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-[1.02] shadow-lg flex items-center justify-center"
               >
                 <FaGraduationCap className="mr-2 sm:mr-3 text-lg sm:text-xl flex-shrink-0" />
                 <div className="text-left flex-1 min-w-0">

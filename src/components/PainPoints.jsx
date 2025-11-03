@@ -41,10 +41,10 @@ const PainPoints = () => {
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-[#1A66CC] mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             Bạn có đang gặp những vấn đề này?
           </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             Những khó khăn phổ biến khiến việc đọc trở nên chậm chạp và kém hiệu quả
           </p>
         </motion.div>
@@ -81,7 +81,7 @@ const PainPoints = () => {
           viewport={{ once: true }}
         >
           <HiExclamation className="w-16 h-16 text-accent-500 mx-auto mb-6" />
-          <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
+          <h3 className="text-2xl md:text-3xl font-bold text-[#1A66CC] mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             Đừng lo lắng! Đã có giải pháp
           </h3>
           <p className="text-lg text-gray-600 mb-6 max-w-2xl mx-auto">

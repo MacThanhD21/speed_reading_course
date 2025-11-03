@@ -168,7 +168,7 @@ const AdminApiKeys = () => {
   const getStatusIcon = (status) => {
     switch (status) {
       case 'healthy':
-        return <FaCheckCircle className="text-green-500" />;
+        return <FaCheckCircle className="text-[#34D399]" />;
       case 'rate_limited':
         return <FaExclamationTriangle className="text-yellow-500" />;
       case 'error':
@@ -210,13 +210,13 @@ const AdminApiKeys = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl shadow-lg p-6 text-white">
+      <div className="bg-gradient-to-r from-[#1A66CC] to-[#124A9D] rounded-xl shadow-lg p-6 text-white">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold mb-2 flex items-center gap-3">
               <FaKey /> Quản lý API Keys
             </h1>
-            <p className="text-blue-100">Quản lý và kiểm tra sức khỏe của Gemini API keys</p>
+            <p className="text-blue-50">Quản lý và kiểm tra sức khỏe của Gemini API keys</p>
           </div>
           <div className="flex gap-3">
             <button
@@ -229,7 +229,7 @@ const AdminApiKeys = () => {
             </button>
             <button
               onClick={() => handleOpenModal()}
-              className="px-4 py-2 bg-white text-blue-600 rounded-lg hover:bg-blue-50 transition-colors flex items-center gap-2 font-semibold"
+              className="px-4 py-2 bg-white text-[#1A66CC] rounded-lg hover:bg-blue-50 transition-colors flex items-center gap-2 font-semibold"
             >
               <FaPlus /> Thêm API Key
             </button>
@@ -249,7 +249,7 @@ const AdminApiKeys = () => {
               <p className="text-gray-600 text-sm mb-1">Tổng số</p>
               <p className="text-2xl font-bold text-gray-800">{stats.total}</p>
             </div>
-            <FaKey className="text-2xl text-blue-500" />
+            <FaKey className="text-2xl text-[#1A66CC]" />
           </div>
         </motion.div>
 
@@ -262,9 +262,9 @@ const AdminApiKeys = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-600 text-sm mb-1">Đang hoạt động</p>
-              <p className="text-2xl font-bold text-green-600">{stats.active}</p>
+              <p className="text-2xl font-bold text-[#34D399]">{stats.active}</p>
             </div>
-            <FaCheckCircle className="text-2xl text-green-500" />
+            <FaCheckCircle className="text-2xl text-[#34D399]" />
           </div>
         </motion.div>
 
@@ -277,9 +277,9 @@ const AdminApiKeys = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-600 text-sm mb-1">Hoạt động tốt</p>
-              <p className="text-2xl font-bold text-blue-600">{stats.healthy}</p>
+              <p className="text-2xl font-bold text-[#1A66CC]">{stats.healthy}</p>
             </div>
-            <FaCheckCircle className="text-2xl text-blue-500" />
+            <FaCheckCircle className="text-2xl text-[#1A66CC]" />
           </div>
         </motion.div>
 

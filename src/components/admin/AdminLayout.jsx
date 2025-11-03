@@ -19,11 +19,11 @@ const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const menuItems = [
-    { path: '/admin/dashboard', label: 'Dashboard', icon: FaTachometerAlt, color: 'from-blue-500 to-cyan-500' },
-    { path: '/admin/users', label: 'Người dùng', icon: FaUsers, color: 'from-purple-500 to-pink-500' },
-    { path: '/admin/contacts', label: 'Liên hệ', icon: FaEnvelope, color: 'from-green-500 to-emerald-500' },
-    { path: '/admin/smartread', label: 'SmartRead', icon: FaBook, color: 'from-orange-500 to-red-500' },
-    { path: '/admin/api-keys', label: 'API Keys', icon: FaKey, color: 'from-indigo-500 to-purple-500' },
+    { path: '/admin/dashboard', label: 'Dashboard', icon: FaTachometerAlt, color: 'from-[#1A66CC] to-[#1555B0]' },
+    { path: '/admin/users', label: 'Người dùng', icon: FaUsers, color: 'from-[#1A66CC] to-[#124A9D]' },
+    { path: '/admin/contacts', label: 'Liên hệ', icon: FaEnvelope, color: 'from-[#34D399] to-[#10B981]' },
+    { path: '/admin/smartread', label: 'SmartRead', icon: FaBook, color: 'from-[#1A66CC] to-[#1555B0]' },
+    { path: '/admin/api-keys', label: 'API Keys', icon: FaKey, color: 'from-[#1A66CC] to-[#124A9D]' },
   ];
 
   const handleLogout = () => {
@@ -54,7 +54,7 @@ const AdminLayout = () => {
           <div className="p-6 border-b border-gray-700">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-3 rounded-xl">
+                <div className="bg-gradient-to-br from-[#1A66CC] to-[#1555B0] p-3 rounded-xl">
                   <FaChartBar className="text-xl" />
                 </div>
                 <div>

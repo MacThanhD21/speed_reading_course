@@ -19,8 +19,8 @@ const ConfirmDialog = ({ isOpen, onClose, onConfirm, title, message, confirmText
         };
       default:
         return {
-          icon: 'text-blue-500',
-          button: 'bg-blue-600 hover:bg-blue-700',
+          icon: 'text-[#1A66CC]',
+          button: 'bg-[#1A66CC] hover:bg-[#1555B0]',
         };
     }
   };

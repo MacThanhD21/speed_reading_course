@@ -28,7 +28,7 @@ const AdminDashboard = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1A66CC]"></div>
       </div>
     );
   }
@@ -87,9 +87,9 @@ const AdminDashboard = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl shadow-lg p-6 text-white">
+      <div className="bg-gradient-to-r from-[#1A66CC] to-[#124A9D] rounded-xl shadow-lg p-6 text-white">
         <h1 className="text-3xl font-bold mb-2">📊 Dashboard</h1>
-        <p className="text-blue-100">Tổng quan về hoạt động của hệ thống</p>
+        <p className="text-blue-50">Tổng quan về hoạt động của hệ thống</p>
       </div>
 
       {/* Stats Cards */}

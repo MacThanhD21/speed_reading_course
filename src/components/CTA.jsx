@@ -48,7 +48,7 @@ const CTA = () => {
   }
 
   return (
-    <section id="cta" className="section-padding bg-gradient-to-br from-primary-600 to-primary-800 text-white">
+    <section id="cta" className="section-padding bg-gradient-to-br from-[#1A66CC] to-[#1555B0] text-white">
       <div className="container-custom">
         <motion.div 
           className="text-center mb-16"
@@ -57,12 +57,24 @@ const CTA = () => {
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-3xl md:text-5xl font-bold mb-6">
+          <h2 className="text-3xl md:text-5xl font-bold mb-6" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             Sẵn sàng bứt phá tốc độ đọc?
           </h2>
-          <p className="text-xl md:text-2xl text-primary-100 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-xl md:text-2xl text-blue-100 max-w-3xl mx-auto leading-relaxed mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             Tham gia cùng 500+ học viên đã thành công và trở thành người đọc nhanh chuyên nghiệp
           </p>
+          {/* Trust badges in CTA */}
+          <div className="flex flex-wrap justify-center items-center gap-4 text-sm text-blue-100">
+            <span className="flex items-center gap-1">
+              <span>✅</span> Đảm bảo hoàn tiền
+            </span>
+            <span className="flex items-center gap-1">
+              <span>✅</span> Chứng chỉ uy tín
+            </span>
+            <span className="flex items-center gap-1">
+              <span>✅</span> 98% thành công
+            </span>
+          </div>
         </motion.div>
 
         <div className="max-w-2xl mx-auto">
@@ -158,7 +170,8 @@ const CTA = () => {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full bg-primary-600 hover:bg-primary-700 text-white font-semibold py-4 px-6 rounded-lg transition duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                    className="w-full bg-[#1A66CC] hover:bg-[#1555B0] text-white font-semibold py-4 px-6 rounded-lg transition duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                    style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                   >
                     {isSubmitting ? (
                       <>

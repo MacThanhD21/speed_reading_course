@@ -56,8 +56,8 @@ const Header = () => {
             whileTap={{ scale: 0.95 }}
             onClick={() => scrollToSection('hero')}
           >
-            <HiBookOpen className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-primary-600 flex-shrink-0" />
-            <span className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-primary-600 whitespace-nowrap">
+            <HiBookOpen className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-[#1A66CC] flex-shrink-0" />
+            <span className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-[#1A66CC] whitespace-nowrap" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
               Đọc Nhanh
             </span>
           </motion.div>
@@ -66,31 +66,36 @@ const Header = () => {
           <nav className="hidden md:flex items-center space-x-4 lg:space-x-6 xl:space-x-8">
             <button 
               onClick={() => scrollToSection('hero')}
-              className="text-gray-700 hover:text-primary-600 transition-colors duration-300 font-medium text-sm lg:text-base whitespace-nowrap"
+              className="text-gray-700 hover:text-[#1A66CC] transition-colors duration-300 font-medium text-sm lg:text-base whitespace-nowrap"
+              style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
             >
               Trang chủ
             </button>
             <button 
               onClick={() => scrollToSection('solution')}
-              className="text-gray-700 hover:text-primary-600 transition-colors duration-300 font-medium text-sm lg:text-base whitespace-nowrap"
+              className="text-gray-700 hover:text-[#1A66CC] transition-colors duration-300 font-medium text-sm lg:text-base whitespace-nowrap"
+              style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
             >
               Giải pháp
             </button>
             <button 
               onClick={() => scrollToSection('timeline')}
-              className="text-gray-700 hover:text-primary-600 transition-colors duration-300 font-medium text-sm lg:text-base whitespace-nowrap"
+              className="text-gray-700 hover:text-[#1A66CC] transition-colors duration-300 font-medium text-sm lg:text-base whitespace-nowrap"
+              style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
             >
               Lộ trình
             </button>
             <button 
               onClick={() => scrollToSection('pricing')}
-              className="text-gray-700 hover:text-primary-600 transition-colors duration-300 font-medium text-sm lg:text-base whitespace-nowrap"
+              className="text-gray-700 hover:text-[#1A66CC] transition-colors duration-300 font-medium text-sm lg:text-base whitespace-nowrap"
+              style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
             >
               Học phí
             </button>
             <Link 
               to="/smartread"
-              className="bg-green-600 hover:bg-green-700 text-white font-semibold py-1.5 px-3 lg:py-2 lg:px-4 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl text-sm lg:text-base whitespace-nowrap"
+              className="bg-[#34D399] hover:bg-[#10B981] text-white font-semibold py-1.5 px-3 lg:py-2 lg:px-4 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl text-sm lg:text-base whitespace-nowrap"
+              style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
             >
               SmartRead
             </Link>
@@ -102,13 +107,15 @@ const Header = () => {
               <>
                 <Link 
                   to="/login"
-                  className="text-gray-700 hover:text-primary-600 transition-colors duration-300 font-medium text-sm lg:text-base whitespace-nowrap"
+                  className="text-gray-700 hover:text-[#1A66CC] transition-colors duration-300 font-medium text-sm lg:text-base whitespace-nowrap"
+                  style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                 >
                   Đăng nhập
                 </Link>
                 <Link 
                   to="/register"
-                  className="btn-primary text-sm lg:text-base whitespace-nowrap ml-2"
+                  className="bg-[#1A66CC] hover:bg-[#1555B0] text-white font-semibold py-1.5 px-3 lg:py-2 lg:px-4 rounded-lg transition-all duration-300 text-sm lg:text-base whitespace-nowrap ml-2"
+                  style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                 >
                   Đăng ký
                 </Link>
@@ -119,7 +126,7 @@ const Header = () => {
           {/* Mobile/Tablet menu button */}
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="md:hidden p-2 rounded-md text-gray-700 hover:text-primary-600 hover:bg-gray-100 transition-colors duration-300 flex-shrink-0"
+            className="md:hidden p-2 rounded-md text-gray-700 hover:text-[#1A66CC] hover:bg-gray-100 transition-colors duration-300 flex-shrink-0"
             aria-label="Toggle menu"
           >
             {isOpen ? <HiX className="w-6 h-6" /> : <HiMenu className="w-6 h-6" />}
@@ -139,32 +146,37 @@ const Header = () => {
           <div className="py-4 space-y-2 border-t border-gray-200 mt-2">
             <button 
               onClick={() => scrollToSection('hero')}
-              className="block w-full text-left px-4 py-3 text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md transition-colors duration-300 font-medium"
+              className="block w-full text-left px-4 py-3 text-gray-700 hover:text-[#1A66CC] hover:bg-gray-50 rounded-md transition-colors duration-300 font-medium"
+              style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
             >
               Trang chủ
             </button>
             <button 
               onClick={() => scrollToSection('solution')}
-              className="block w-full text-left px-4 py-3 text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md transition-colors duration-300 font-medium"
+              className="block w-full text-left px-4 py-3 text-gray-700 hover:text-[#1A66CC] hover:bg-gray-50 rounded-md transition-colors duration-300 font-medium"
+              style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
             >
               Giải pháp
             </button>
             <button 
               onClick={() => scrollToSection('timeline')}
-              className="block w-full text-left px-4 py-3 text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md transition-colors duration-300 font-medium"
+              className="block w-full text-left px-4 py-3 text-gray-700 hover:text-[#1A66CC] hover:bg-gray-50 rounded-md transition-colors duration-300 font-medium"
+              style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
             >
               Lộ trình
             </button>
             <button 
               onClick={() => scrollToSection('pricing')}
-              className="block w-full text-left px-4 py-3 text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md transition-colors duration-300 font-medium"
+              className="block w-full text-left px-4 py-3 text-gray-700 hover:text-[#1A66CC] hover:bg-gray-50 rounded-md transition-colors duration-300 font-medium"
+              style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
             >
               Học phí
             </button>
             <Link 
               to="/smartread"
-              className="block w-full mx-4 mt-3 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-300 text-center shadow-md"
+              className="block w-full mx-4 mt-3 bg-[#34D399] hover:bg-[#10B981] text-white font-semibold py-3 px-4 rounded-lg transition-all duration-300 text-center shadow-md"
               onClick={() => setIsOpen(false)}
+              style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
             >
               SmartRead
             </Link>
@@ -176,15 +188,17 @@ const Header = () => {
               <>
                 <Link 
                   to="/login"
-                  className="block w-full mx-4 mt-2 text-center px-4 py-3 text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md transition-colors font-medium"
+                  className="block w-full mx-4 mt-2 text-center px-4 py-3 text-gray-700 hover:text-[#1A66CC] hover:bg-gray-50 rounded-md transition-colors font-medium"
                   onClick={() => setIsOpen(false)}
+                  style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                 >
                   Đăng nhập
                 </Link>
                 <Link 
                   to="/register"
-                  className="block w-full mx-4 mt-2 btn-primary text-center"
+                  className="block w-full mx-4 mt-2 bg-[#1A66CC] hover:bg-[#1555B0] text-white font-semibold py-3 px-4 rounded-lg transition-all duration-300 text-center"
                   onClick={() => setIsOpen(false)}
+                  style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                 >
                   Đăng ký
                 </Link>

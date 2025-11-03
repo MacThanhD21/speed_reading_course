@@ -192,6 +192,46 @@ class ApiService {
     return this.request('/smartread/stats');
   }
 
+  // SmartRead - AI Quiz
+  async generateQuiz(payload) {
+    return this.request('/smartread/generate-quiz', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  // SmartRead - 5W1H
+  async generateFiveWOneH(payload) {
+    return this.request('/smartread/fivewoneh', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  // SmartRead - Reading Tips
+  async generateReadingTips(payload) {
+    return this.request('/smartread/reading-tips', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  // SmartRead - Comprehensive Learning (Concepts, Statistics, Preview Questions)
+  async generateComprehensiveLearning(payload) {
+    return this.request('/smartread/comprehensive-learning', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  // SmartRead - Evaluate Essay Answers (5W1H)
+  async evaluateEssayAnswers(payload) {
+    return this.request('/smartread/evaluate-essay', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
   // Admin SmartRead APIs
   async getUsersWithSmartReadStats(params = {}) {
     const queryString = new URLSearchParams(params).toString();

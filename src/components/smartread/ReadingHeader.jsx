@@ -72,7 +72,7 @@ const ReadingHeader = ({
             
             <button
               onClick={onShowLearningPanel}
-              className="flex items-center px-3 lg:px-4 py-2 lg:py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl transition-all duration-200 shadow-md hover:shadow-lg text-sm lg:text-base whitespace-nowrap"
+              className="flex items-center px-3 lg:px-4 py-2 lg:py-2.5 bg-gradient-to-r from-[#1A66CC] to-[#1555B0] hover:from-[#1555B0] hover:to-[#124A9D] text-white rounded-xl transition-all duration-200 shadow-md hover:shadow-lg text-sm lg:text-base whitespace-nowrap"
             >
               <FaGraduationCap className="mr-1 lg:mr-2 text-xs lg:text-sm" />
               <span className="hidden xl:inline">Học tập</span>
@@ -138,7 +138,7 @@ const ReadingHeader = ({
             {!isReading ? (
               <button
                 onClick={onStartReading}
-                className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white px-4 lg:px-6 py-2 lg:py-3 rounded-lg lg:rounded-xl font-semibold transition-all duration-200 flex items-center shadow-lg hover:shadow-xl transform hover:scale-105 text-sm lg:text-base whitespace-nowrap"
+                className="bg-gradient-to-r from-[#34D399] to-[#10B981] hover:from-[#10B981] hover:to-[#059669] text-white px-4 lg:px-6 py-2 lg:py-3 rounded-lg lg:rounded-xl font-semibold transition-all duration-200 flex items-center shadow-lg hover:shadow-xl transform hover:scale-105 text-sm lg:text-base whitespace-nowrap"
               >
                 <FaPlay className="mr-1.5 lg:mr-2 text-xs lg:text-sm" />
                 <span className="hidden xl:inline">Bắt đầu đọc</span>
@@ -156,7 +156,7 @@ const ReadingHeader = ({
                 </button>
                 <button
                   onClick={onFinishReading}
-                  className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-3 lg:px-5 py-2 lg:py-3 rounded-lg lg:rounded-xl font-semibold transition-all duration-200 flex items-center shadow-lg hover:shadow-xl transform hover:scale-105 text-sm lg:text-base whitespace-nowrap"
+                  className="bg-gradient-to-r from-[#1A66CC] to-[#1555B0] hover:from-[#1555B0] hover:to-[#124A9D] text-white px-3 lg:px-5 py-2 lg:py-3 rounded-lg lg:rounded-xl font-semibold transition-all duration-200 flex items-center shadow-lg hover:shadow-xl transform hover:scale-105 text-sm lg:text-base whitespace-nowrap"
                 >
                   <FaCheck className="mr-1.5 lg:mr-2 text-xs lg:text-sm" />
                   <span className="hidden xl:inline">Hoàn thành</span>
@@ -190,7 +190,7 @@ const ReadingHeader = ({
             
             <button
               onClick={onShowLearningPanel}
-              className="flex items-center px-2 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl transition-all duration-200 shadow-md hover:shadow-lg text-xs"
+              className="flex items-center px-2 py-2 bg-gradient-to-r from-[#1A66CC] to-[#1555B0] hover:from-[#1555B0] hover:to-[#124A9D] text-white rounded-xl transition-all duration-200 shadow-md hover:shadow-lg text-xs"
             >
               <FaGraduationCap className="mr-1" />
               Học tập
@@ -296,7 +296,7 @@ const ReadingHeader = ({
               onClick={onToggleReadingMode}
               className={`w-8 h-6 flex items-center justify-center rounded transition-colors ${
                 readingSettings.readingMode 
-                  ? 'bg-blue-600 text-white' 
+                  ? 'bg-[#1A66CC] text-white' 
                   : 'bg-gray-200 text-gray-600'
               }`}
               title="Chế độ đọc"
@@ -310,7 +310,7 @@ const ReadingHeader = ({
             {!isReading ? (
               <button
                 onClick={onStartReading}
-                className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center shadow-lg hover:shadow-xl"
+                className="bg-gradient-to-r from-[#34D399] to-[#10B981] hover:from-[#10B981] hover:to-[#059669] text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center shadow-lg hover:shadow-xl"
               >
                 <FaPlay className="mr-2" />
                 Bắt đầu đọc
@@ -326,7 +326,7 @@ const ReadingHeader = ({
                 </button>
                 <button
                   onClick={onFinishReading}
-                  className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-4 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center shadow-lg hover:shadow-xl"
+                  className="bg-gradient-to-r from-[#1A66CC] to-[#1555B0] hover:from-[#1555B0] hover:to-[#124A9D] text-white px-4 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center shadow-lg hover:shadow-xl"
                 >
                   <FaCheck className="mr-2" />
                   Hoàn thành

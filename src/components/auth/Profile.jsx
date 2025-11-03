@@ -84,7 +84,7 @@ const Profile = () => {
 
           <div className="bg-white rounded-2xl shadow-2xl p-8">
             <div className="text-center mb-8">
-              <div className="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-3xl mx-auto mb-4">
+              <div className="w-20 h-20 bg-[#1A66CC] rounded-full flex items-center justify-center text-white font-bold text-3xl mx-auto mb-4">
                 {user.name?.charAt(0)?.toUpperCase() || user.email?.charAt(0)?.toUpperCase() || 'U'}
               </div>
               <h1 className="text-3xl font-bold text-gray-800 mb-2">Hồ sơ của tôi</h1>
@@ -105,7 +105,7 @@ const Profile = () => {
                     required
                     value={formData.name}
                     onChange={handleChange}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1A66CC] focus:border-transparent outline-none"
                     placeholder="Nhập họ và tên"
                   />
                 </div>
@@ -124,7 +124,7 @@ const Profile = () => {
                     required
                     value={formData.email}
                     onChange={handleChange}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1A66CC] focus:border-transparent outline-none"
                     placeholder="example@email.com"
                   />
                 </div>
@@ -133,7 +133,7 @@ const Profile = () => {
               <div className="bg-gray-50 rounded-lg p-4">
                 <p className="text-sm text-gray-600">
                   <strong>Vai trò:</strong>{' '}
-                  <span className={`font-semibold ${user.role === 'admin' ? 'text-purple-600' : 'text-blue-600'}`}>
+                  <span className={`font-semibold ${user.role === 'admin' ? 'text-purple-600' : 'text-[#1A66CC]'}`}>
                     {user.role === 'admin' ? 'Quản trị viên' : 'Người dùng'}
                   </span>
                 </p>

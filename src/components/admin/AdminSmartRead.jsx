@@ -94,7 +94,7 @@ const AdminSmartRead = () => {
   if (loading && !stats) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1A66CC]"></div>
       </div>
     );
   }
@@ -224,13 +224,13 @@ const AdminSmartRead = () => {
               setSearch(e.target.value);
               setPagination(prev => ({ ...prev, page: 1 }));
             }}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1A66CC] focus:border-[#1A66CC]"
           />
         </div>
 
         {loading ? (
           <div className="text-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1A66CC] mx-auto"></div>
           </div>
         ) : users.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
@@ -279,7 +279,7 @@ const AdminSmartRead = () => {
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center">
                               <div className="bg-blue-100 p-2 rounded-full mr-3">
-                                <FaUser className="text-blue-600" />
+                                <FaUser className="text-[#1A66CC]" />
                               </div>
                               <div>
                                 <div className="text-sm font-medium text-gray-900">{user.name || 'N/A'}</div>
@@ -308,7 +308,7 @@ const AdminSmartRead = () => {
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <button
                               onClick={() => handleToggleUser(user._id)}
-                              className="text-blue-600 hover:text-blue-900 flex items-center gap-2"
+                              className="text-[#1A66CC] hover:text-[#1555B0] flex items-center gap-2"
                             >
                               {isExpanded ? <FaChevronUp /> : <FaChevronDown />}
                               {isExpanded ? 'Thu gọn' : 'Mở rộng'}
@@ -340,7 +340,7 @@ const AdminSmartRead = () => {
 
                                   {loadingSessions[user._id] ? (
                                     <div className="text-center py-4">
-                                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
+                                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#1A66CC] mx-auto"></div>
                                     </div>
                                   ) : !userSessions[user._id] || userSessions[user._id].length === 0 ? (
                                     <div className="text-center py-4 text-gray-500">
