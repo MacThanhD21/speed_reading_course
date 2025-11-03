@@ -27,14 +27,6 @@ const FAQ = () => {
       answer: "Để duy trì và phát triển kỹ năng, bạn nên luyện tập 15-20 phút mỗi ngày trong 2-3 tuần đầu. Sau đó, kỹ năng sẽ trở thành thói quen tự nhiên."
     },
     {
-      question: "Có thể áp dụng cho việc đọc tiếng Anh không?",
-      answer: "Hoàn toàn có thể! Các kỹ thuật đọc nhanh có thể áp dụng cho mọi ngôn ngữ. Nhiều học viên đã thành công áp dụng để đọc tài liệu tiếng Anh nhanh hơn."
-    },
-    {
-      question: "Khoá học có cấp chứng chỉ không?",
-      answer: "Có! Sau khi hoàn thành khóa học, bạn sẽ nhận được chứng chỉ hoàn thành có giá trị quốc tế, có thể sử dụng trong CV và hồ sơ xin việc."
-    },
-    {
       question: "Có hỗ trợ sau khóa học không?",
       answer: "Có! Bạn sẽ được hỗ trợ trong 3 tháng sau khóa học thông qua nhóm Facebook, email và hotline. Chúng tôi luôn sẵn sàng giải đáp thắc mắc của bạn."
     }

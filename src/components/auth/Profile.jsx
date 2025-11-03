@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { FaUser, FaEnvelope, FaSave, FaArrowLeft } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import apiService from '../../services/apiService';
+import TestimonialForm from './TestimonialForm';
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -165,6 +166,11 @@ const Profile = () => {
                 {isLoading ? 'Đang lưu...' : 'Lưu thay đổi'}
               </button>
             </form>
+
+            {/* Testimonial Section */}
+            <div className="mt-12 pt-8 border-t border-gray-200">
+              <TestimonialForm />
+            </div>
           </div>
         </motion.div>
       </div>

@@ -1,25 +1,90 @@
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { HiCheck, HiPhone, HiMail, HiChat } from 'react-icons/hi'
+import { FaMapMarkerAlt } from 'react-icons/fa'
 import apiService from '../services/apiService'
+
+// Message templates
+const MESSAGE_TEMPLATES = [
+  {
+    id: 1,
+    text: 'Tôi muốn tìm hiểu về khóa học đọc nhanh',
+    icon: '📚'
+  },
+  {
+    id: 2,
+    text: 'Tôi cần tư vấn về khóa học và chương trình học',
+    icon: '💬'
+  },
+  {
+    id: 3,
+    text: 'Tôi muốn đăng ký tham gia khóa học',
+    icon: '🎯'
+  },
+  {
+    id: 4,
+    text: 'Tôi có câu hỏi về thời gian học và học phí',
+    icon: '💰'
+  },
+  {
+    id: 5,
+    text: 'Tôi muốn biết thêm về phương pháp giảng dạy',
+    icon: '✨'
+  }
+];
+
+// Phone validation for Vietnamese numbers
+const validateVietnamesePhone = (phone) => {
+  if (!phone) return { isValid: true, error: '' };
+  
+  const cleaned = phone.replace(/[\s\-\.]/g, '');
+  const phoneRegex = /^(0[3|5|7|8|9][0-9]{8}|01[2|6|8|9][0-9]{8}|02[0-9]{9})$/;
+  
+  if (!phoneRegex.test(cleaned)) {
+    return { 
+      isValid: false, 
+      error: 'Số điện thoại không hợp lệ. Vui lòng nhập số điện thoại Việt Nam (10-11 chữ số)' 
+    };
+  }
+  
+  return { isValid: true, error: '' };
+};
 
 const CTA = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
+    address: '',
     message: ''
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [error, setError] = useState('')
+  const [phoneError, setPhoneError] = useState('')
 
   const handleChange = (e) => {
+    const { name, value } = e.target;
+    
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [name]: value
     })
+    
     setError('') // Clear error on change
+    
+    // Validate phone in real-time
+    if (name === 'phone') {
+      const validation = validateVietnamesePhone(value);
+      setPhoneError(validation.error);
+    }
+  }
+
+  const handleTemplateClick = (templateText) => {
+    setFormData({
+      ...formData,
+      message: templateText
+    });
   }
 
   const handleSubmit = async (e) => {
@@ -34,7 +99,7 @@ const CTA = () => {
       })
       
       setIsSubmitted(true)
-      setFormData({ name: '', email: '', phone: '', message: '' })
+      setFormData({ name: '', email: '', phone: '', address: '', message: '' })
       
       // Reset success message after 5 seconds
       setTimeout(() => {
@@ -141,15 +206,61 @@ const CTA = () => {
                       name="phone"
                       value={formData.phone}
                       onChange={handleChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition text-gray-900 placeholder:text-gray-400 bg-white"
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition text-gray-900 placeholder:text-gray-400 bg-white ${
+                        phoneError ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20' : 'border-gray-300'
+                      }`}
                       placeholder="0901 234 567"
                     />
+                    {phoneError && (
+                      <p className="mt-1 text-xs text-red-600">{phoneError}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-2">
+                      Địa chỉ (Tùy chọn)
+                    </label>
+                    <div className="relative">
+                      <FaMapMarkerAlt className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm" />
+                      <input
+                        type="text"
+                        id="address"
+                        name="address"
+                        value={formData.address}
+                        onChange={handleChange}
+                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition text-gray-900 placeholder:text-gray-400 bg-white"
+                        placeholder="Nhập địa chỉ của bạn (ví dụ: Hải Phòng, Hà Nội)"
+                      />
+                    </div>
                   </div>
 
                   <div>
                     <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
                       Tin nhắn
                     </label>
+                    
+                    {/* Message Templates */}
+                    <div className="mb-3 flex flex-wrap gap-2">
+                      {MESSAGE_TEMPLATES.map((template) => (
+                        <motion.button
+                          key={template.id}
+                          type="button"
+                          onClick={() => handleTemplateClick(template.text)}
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          className={`px-3 py-1.5 text-xs rounded-lg border transition-all ${
+                            formData.message === template.text
+                              ? 'bg-[#1A66CC] text-white border-[#1A66CC]'
+                              : 'bg-gray-50 text-gray-700 border-gray-300 hover:border-[#1A66CC] hover:text-[#1A66CC]'
+                          }`}
+                          style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                        >
+                          <span className="mr-1">{template.icon}</span>
+                          {template.text.length > 35 ? `${template.text.substring(0, 35)}...` : template.text}
+                        </motion.button>
+                      ))}
+                    </div>
+                    
                     <textarea
                       id="message"
                       name="message"
@@ -157,7 +268,7 @@ const CTA = () => {
                       value={formData.message}
                       onChange={handleChange}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition resize-none text-gray-900 placeholder:text-gray-400 bg-white"
-                      placeholder="Nhập tin nhắn của bạn..."
+                      placeholder="Nhập tin nhắn của bạn hoặc chọn một mẫu ở trên..."
                     />
                   </div>
 

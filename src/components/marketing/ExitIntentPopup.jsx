@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaTimes, FaGift, FaEnvelope, FaPhone } from 'react-icons/fa';
+import { FaTimes, FaGift, FaEnvelope, FaPhone, FaMapMarkerAlt } from 'react-icons/fa';
 import apiService from '../../services/apiService';
 
 const ExitIntentPopup = ({ onClose, onRegister }) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    phone: ''
+    phone: '',
+    address: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -177,6 +178,23 @@ const ExitIntentPopup = ({ onClose, onRegister }) => {
                     className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1A66CC] focus:border-transparent outline-none text-gray-900"
                     placeholder="0901 234 567"
                   />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Địa chỉ (Tùy chọn)
+                  </label>
+                  <div className="relative">
+                    <FaMapMarkerAlt className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm" />
+                    <input
+                      type="text"
+                      name="address"
+                      value={formData.address}
+                      onChange={handleChange}
+                      className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1A66CC] focus:border-transparent outline-none text-gray-900"
+                      placeholder="Nhập địa chỉ (ví dụ: Hải Phòng, Hà Nội)"
+                    />
+                  </div>
                 </div>
 
                 {error && (

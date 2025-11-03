@@ -1,34 +1,33 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { HiStar } from 'react-icons/hi'
+import apiService from '../services/apiService'
 
 const Testimonials = () => {
-  const testimonials = [
-    {
-      name: "Nguyễn Thị Anh",
-      role: "Sinh viên Đại học",
-      avatar: "👩‍🎓",
-      quote: "Mình tăng tốc độ đọc từ 250 lên 800 từ/phút sau 6 tuần. Không còn nỗi ám ảnh đọc chậm khi ôn thi nữa!",
-      rating: 5,
-      improvement: "250 → 800 WPM"
-    },
-    {
-      name: "Trần Văn Bình",
-      role: "Nhân viên văn phòng",
-      avatar: "👨‍💼",
-      quote: "Trước đây mình mất cả ngày để đọc báo cáo. Giờ chỉ cần 2-3 tiếng là xong. Hiệu quả thật sự rõ rệt!",
-      rating: 5,
-      improvement: "200 → 750 WPM"
-    },
-    {
-      name: "Lê Thị Cẩm",
-      role: "Giáo viên",
-      avatar: "👩‍🏫",
-      quote: "Kỹ thuật đọc nhanh giúp mình xử lý tài liệu giảng dạy nhanh hơn nhiều. Học viên cũng thấy mình chuyên nghiệp hơn.",
-      rating: 5,
-      improvement: "300 → 900 WPM"
+  const [testimonials, setTestimonials] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    const fetchTestimonials = async () => {
+      try {
+        setLoading(true)
+        const response = await apiService.getTestimonials()
+        if (response.success && response.data) {
+          setTestimonials(response.data)
+        }
+      } catch (err) {
+        console.error('Error fetching testimonials:', err)
+        setError('Không thể tải đánh giá')
+        // Fallback to empty array, component will handle gracefully
+        setTestimonials([])
+      } finally {
+        setLoading(false)
+      }
     }
-  ]
+
+    fetchTestimonials()
+  }, [])
 
   return (
     <section className="section-padding gradient-bg">
@@ -48,10 +47,24 @@ const Testimonials = () => {
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-          {testimonials.map((testimonial, index) => (
+        {loading ? (
+          <div className="text-center py-12">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#1A66CC]"></div>
+            <p className="mt-4 text-gray-600">Đang tải đánh giá...</p>
+          </div>
+        ) : error ? (
+          <div className="text-center py-12">
+            <p className="text-red-600">{error}</p>
+          </div>
+        ) : testimonials.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-gray-600">Chưa có đánh giá nào</p>
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+            {testimonials.map((testimonial, index) => (
             <motion.div
-              key={index}
+              key={testimonial._id || testimonial.id || index}
               className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 card-hover"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -74,11 +87,13 @@ const Testimonials = () => {
               </blockquote>
 
               {/* Improvement */}
-              <div className="bg-primary-50 rounded-lg p-3 mb-4">
-                <p className="text-sm text-primary-700 font-semibold text-center">
-                  Tăng tốc độ: {testimonial.improvement}
-                </p>
-              </div>
+              {testimonial.improvement && (
+                <div className="bg-primary-50 rounded-lg p-3 mb-4">
+                  <p className="text-sm text-primary-700 font-semibold text-center">
+                    Tăng tốc độ: {testimonial.improvement}
+                  </p>
+                </div>
+              )}
 
               {/* Author */}
               <div className="flex items-center space-x-3">
@@ -89,8 +104,9 @@ const Testimonials = () => {
                 </div>
               </div>
             </motion.div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
         {/* Statistics */}
         <motion.div 

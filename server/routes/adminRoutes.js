@@ -18,6 +18,13 @@ import {
   testApiKey,
   testAllApiKeys,
 } from '../controllers/apiKeyController.js';
+import {
+  getAllTestimonials,
+  getTestimonialById,
+  createTestimonial,
+  updateTestimonial,
+  deleteTestimonial,
+} from '../controllers/testimonialController.js';
 import { protect, admin } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -47,6 +54,13 @@ router.put('/api-keys/:id', updateApiKey);
 router.delete('/api-keys/:id', deleteApiKey);
 router.post('/api-keys/:id/test', testApiKey);
 router.post('/api-keys/test-all', testAllApiKeys);
+
+// Testimonials management routes
+router.get('/testimonials', getAllTestimonials);
+router.get('/testimonials/:id', getTestimonialById);
+router.post('/testimonials', createTestimonial);
+router.put('/testimonials/:id', updateTestimonial);
+router.delete('/testimonials/:id', deleteTestimonial);
 
 export default router;
 

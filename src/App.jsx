@@ -29,6 +29,7 @@ import AdminUsers from './components/admin/AdminUsers'
 import AdminContacts from './components/admin/AdminContacts'
 import AdminSmartRead from './components/admin/AdminSmartRead'
 import AdminApiKeys from './components/admin/AdminApiKeys'
+import AdminTestimonials from './components/admin/AdminTestimonials'
 
 // Protected Route component for admin
 const ProtectedRoute = ({ children }) => {
@@ -137,6 +138,7 @@ function App() {
           <Route path="contacts" element={<AdminContacts />} />
           <Route path="smartread" element={<AdminSmartRead />} />
           <Route path="api-keys" element={<AdminApiKeys />} />
+          <Route path="testimonials" element={<AdminTestimonials />} />
           </Route>
         </Routes>
       </Router>

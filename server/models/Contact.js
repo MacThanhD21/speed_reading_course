@@ -21,6 +21,10 @@ const contactSchema = mongoose.Schema(
       type: String,
       trim: true,
     },
+    address: {
+      type: String,
+      trim: true,
+    },
     message: {
       type: String,
       trim: true,

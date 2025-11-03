@@ -108,6 +108,14 @@ class ApiService {
     });
   }
 
+  async getRecentRegistrations(limit = 10) {
+    return this.request(`/auth/recent-registrations?limit=${limit}`);
+  }
+
+  async getRecentContacts(limit = 10) {
+    return this.request(`/contacts/recent?limit=${limit}`);
+  }
+
   // Contact APIs
   async createContact(contactData) {
     return this.request('/contacts', {
@@ -281,6 +289,60 @@ class ApiService {
   async testAllApiKeys() {
     return this.request('/admin/api-keys/test-all', {
       method: 'POST',
+    });
+  }
+
+  // Testimonials APIs (Public)
+  async getTestimonials() {
+    return this.request('/testimonials');
+  }
+
+  // Testimonials User APIs (Authenticated)
+  async createTestimonial(testimonialData) {
+    return this.request('/testimonials', {
+      method: 'POST',
+      body: JSON.stringify(testimonialData),
+    });
+  }
+
+  async getMyTestimonial() {
+    return this.request('/testimonials/my-testimonial');
+  }
+
+  async updateMyTestimonial(testimonialData) {
+    return this.request('/testimonials/my-testimonial', {
+      method: 'PUT',
+      body: JSON.stringify(testimonialData),
+    });
+  }
+
+  // Testimonials Admin APIs
+  async getAdminTestimonials(params = {}) {
+    const queryString = new URLSearchParams(params).toString();
+    return this.request(`/admin/testimonials${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async getTestimonial(testimonialId) {
+    return this.request(`/admin/testimonials/${testimonialId}`);
+  }
+
+  async createAdminTestimonial(testimonialData) {
+    return this.request('/admin/testimonials', {
+      method: 'POST',
+      body: JSON.stringify(testimonialData),
+    });
+  }
+
+  async updateAdminTestimonial(testimonialId, testimonialData) {
+    return this.request(`/admin/testimonials/${testimonialId}`, {
+      method: 'PUT',
+      body: JSON.stringify(testimonialData),
+    });
+  }
+
+  async deleteTestimonial(testimonialId) {
+    return this.request(`/admin/testimonials/${testimonialId}`, {
+      method: 'DELETE',
     });
   }
 }

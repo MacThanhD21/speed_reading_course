@@ -10,7 +10,8 @@ import {
   FaTimes,
   FaBook,
   FaChartBar,
-  FaKey
+  FaKey,
+  FaStar
 } from 'react-icons/fa';
 
 const AdminLayout = () => {
@@ -22,6 +23,7 @@ const AdminLayout = () => {
     { path: '/admin/dashboard', label: 'Dashboard', icon: FaTachometerAlt, color: 'from-[#1A66CC] to-[#1555B0]' },
     { path: '/admin/users', label: 'Người dùng', icon: FaUsers, color: 'from-[#1A66CC] to-[#124A9D]' },
     { path: '/admin/contacts', label: 'Liên hệ', icon: FaEnvelope, color: 'from-[#34D399] to-[#10B981]' },
+    { path: '/admin/testimonials', label: 'Đánh giá', icon: FaStar, color: 'from-[#F59E0B] to-[#D97706]' },
     { path: '/admin/smartread', label: 'SmartRead', icon: FaBook, color: 'from-[#1A66CC] to-[#1555B0]' },
     { path: '/admin/api-keys', label: 'API Keys', icon: FaKey, color: 'from-[#1A66CC] to-[#124A9D]' },
   ];

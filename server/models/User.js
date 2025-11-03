@@ -19,6 +19,10 @@ const userSchema = mongoose.Schema(
         'Vui lòng nhập email hợp lệ',
       ],
     },
+    address: {
+      type: String,
+      trim: true,
+    },
     password: {
       type: String,
       required: [true, 'Vui lòng nhập mật khẩu'],

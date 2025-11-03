@@ -6,7 +6,7 @@ import generateToken from '../utils/generateToken.js';
 // @access  Public
 export const register = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, address } = req.body;
 
     // Check if user exists
     const userExists = await User.findOne({ email });
@@ -23,6 +23,7 @@ export const register = async (req, res) => {
       name,
       email,
       password,
+      address,
     });
 
     if (user) {
@@ -109,6 +110,61 @@ export const getMe = async (req, res) => {
     res.status(500).json({
       success: false,
       message: error.message || 'Lỗi server',
+    });
+  }
+};
+
+// @desc    Get recent registrations for social proof
+// @route   GET /api/auth/recent-registrations
+// @access  Public
+export const getRecentRegistrations = async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 10;
+    
+    const users = await User.find({
+      address: { $exists: true, $ne: '' }
+    })
+      .select('name address createdAt')
+      .sort({ createdAt: -1 })
+      .limit(limit);
+
+    const registrations = users.map(user => {
+      const now = new Date();
+      const createdAt = new Date(user.createdAt);
+      const diffMs = now - createdAt;
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMs / 3600000);
+      const diffDays = Math.floor(diffMs / 86400000);
+
+      let timeAgo;
+      if (diffMins < 1) {
+        timeAgo = 'Vừa xong';
+      } else if (diffMins < 60) {
+        timeAgo = `${diffMins} phút trước`;
+      } else if (diffHours < 24) {
+        timeAgo = `${diffHours} giờ trước`;
+      } else {
+        timeAgo = `${diffDays} ngày trước`;
+      }
+
+      return {
+        id: user._id.toString(),
+        name: user.name,
+        address: user.address,
+        timeAgo,
+        createdAt: user.createdAt,
+      };
+    });
+
+    res.json({
+      success: true,
+      data: registrations,
+    });
+  } catch (error) {
+    console.error('Get recent registrations error:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Lỗi server khi lấy danh sách đăng ký',
     });
   }
 };
