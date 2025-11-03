@@ -44,9 +44,15 @@ VITE_API_URL=https://api.yourdomain.com/api
 # Server Configuration
 PORT=5000
 HOST=0.0.0.0
+NODE_ENV=development
 # BASE_URL cho development (optional)
 # Trong production, đặt URL thực tế của server
 BASE_URL=https://api.yourdomain.com
+
+# Duplicate Check Configuration (Development only)
+# Set to 'true' to disable duplicate email/phone check for easier testing
+# WARNING: Never set this to 'true' in production!
+DISABLE_DUPLICATE_CHECK=false
 
 # Database
 MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/speedreading_admin

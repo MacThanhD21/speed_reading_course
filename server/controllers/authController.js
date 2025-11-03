@@ -1,5 +1,6 @@
 import User from '../models/User.js';
 import generateToken from '../utils/generateToken.js';
+import { initializeUserEmailSequence } from '../utils/emailQueueManager.js';
 
 // @desc    Register new user
 // @route   POST /api/auth/register
@@ -27,6 +28,12 @@ export const register = async (req, res) => {
     });
 
     if (user) {
+      // Initialize email marketing sequence (non-blocking)
+      initializeUserEmailSequence(user).catch(err => {
+        console.error('Error initializing user email sequence:', err);
+        // Don't fail the request if email queue fails
+      });
+
       res.status(201).json({
         success: true,
         message: 'Đăng ký thành công',

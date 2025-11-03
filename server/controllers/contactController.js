@@ -1,4 +1,5 @@
 import Contact from '../models/Contact.js';
+import { initializeContactEmailSequence } from '../utils/emailQueueManager.js';
 
 // Validation helpers
 const validateEmail = (email) => {
@@ -127,6 +128,12 @@ export const createContact = async (req, res) => {
       source: source || 'homepage',
       ipAddress,
       userAgent,
+    });
+
+    // Initialize email marketing sequence (non-blocking)
+    initializeContactEmailSequence(contact).catch(err => {
+      console.error('Error initializing email sequence:', err);
+      // Don't fail the request if email queue fails
     });
 
     res.status(201).json({

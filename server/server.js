@@ -9,6 +9,7 @@ import contactRoutes from './routes/contactRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import smartReadRoutes from './routes/smartReadRoutes.js';
 import testimonialRoutes from './routes/testimonialRoutes.js';
+import emailRoutes from './routes/emailRoutes.js';
 import { errorHandler, notFound } from './middleware/errorMiddleware.js';
 
 // Load environment variables (always load .env next to this file)
@@ -112,6 +113,7 @@ app.use('/api/contacts', contactRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/smartread', smartReadRoutes);
 app.use('/api/testimonials', testimonialRoutes);
+app.use('/api/admin/emails', emailRoutes);
 
 // Error handling middleware
 app.use(notFound);

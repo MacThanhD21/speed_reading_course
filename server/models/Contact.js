@@ -32,7 +32,7 @@ const contactSchema = mongoose.Schema(
     source: {
       type: String,
       default: 'homepage',
-      enum: ['homepage', 'contact', 'other'],
+      enum: ['homepage', 'contact', 'lead_magnet', 'exit_intent_popup', 'other'],
     },
     status: {
       type: String,
