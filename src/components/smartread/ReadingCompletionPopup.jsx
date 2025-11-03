@@ -33,8 +33,9 @@ const ReadingCompletionPopup = ({
     elapsedTime
   });
 
-  // Use the same WPM value for consistency
-  const displayWPM = averageWPM || finalWPM || 0;
+  // Use finalWPM (accurate calculation) over averageWPM (smoothed)
+  // finalWPM is calculated as: wordsRead / (elapsedTime / 60)
+  const displayWPM = finalWPM || averageWPM || 0;
 
   // Calculate performance metrics
   const formatTime = (seconds) => {
@@ -138,8 +139,8 @@ const ReadingCompletionPopup = ({
                   <span className="font-medium">{(averageWPS || 0).toFixed(1)} WPS</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Từ/phút:</span>
-                  <span className="font-medium">{Math.round((wordsRead || 0) / ((elapsedTime || 1) / 60))} WPM</span>
+                  <span className="text-gray-600">Tốc độ cuối:</span>
+                  <span className="font-medium">{finalWPM || 0} WPM</span>
                 </div>
               </div>
             </motion.div>

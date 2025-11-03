@@ -55,19 +55,45 @@ QUAN TRỌNG: Chỉ trả về JSON, không thêm text giải thích bên ngoài
    * Parse JSON từ Gemini response
    */
   parseQuizJSON(text) {
-    // Xóa markdown code blocks nếu có
-    let cleaned = text.trim();
-    
-    // Tìm JSON object
-    const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      try {
-        return JSON.parse(jsonMatch[0]);
-      } catch (e) {
-        logger.error('QUIZ_SERVICE', 'JSON parse error', { error: e.message });
+    if (!text || typeof text !== 'string') return null;
+
+    // 1) Clean common wrappers and noise
+    let cleaned = text
+      .replace(/^\uFEFF/, '') // BOM
+      .replace(/```json[\s\S]*?```/gi, (m) => m.replace(/```json|```/gi, '')) // strip fenced json
+      .replace(/```[\s\S]*?```/g, (m) => m.replace(/```/g, '')) // strip generic fences
+      .replace(/[“”]/g, '"')
+      .replace(/[‘’]/g, "'")
+      .trim();
+
+    // 2) Keep only the largest JSON object substring
+    const start = cleaned.indexOf('{');
+    const end = cleaned.lastIndexOf('}');
+    if (start >= 0 && end > start) {
+      cleaned = cleaned.slice(start, end + 1);
+    }
+
+    // 3) Remove trailing commas before } or ] that break strict JSON
+    cleaned = cleaned.replace(/,\s*(\}|\])/g, '$1');
+
+    // 4) Attempt parse
+    try {
+      return JSON.parse(cleaned);
+    } catch (primaryError) {
+      logger.error('QUIZ_SERVICE', 'JSON parse error', { error: primaryError.message });
+
+      // 5) Last-resort: try to match a JSON object by regex and parse
+      const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        try {
+          const attempt = jsonMatch[0].replace(/,\s*(\}|\])/g, '$1');
+          return JSON.parse(attempt);
+        } catch (secondaryError) {
+          logger.error('QUIZ_SERVICE', 'JSON parse fallback failed', { error: secondaryError.message });
+        }
       }
     }
-    
+
     return null;
   }
 

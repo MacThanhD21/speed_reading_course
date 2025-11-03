@@ -95,24 +95,6 @@ const ReadingHeader = ({
 
           {/* Center Section - Reading Stats */}
           <div className="flex items-center space-x-3 lg:space-x-4 xl:space-x-6 flex-1 justify-center mx-2 lg:mx-4">
-            {/* WPM Card */}
-            <div className={`rounded-lg lg:rounded-xl p-2.5 md:p-3 lg:p-4 min-w-[70px] md:min-w-[80px] lg:min-w-[100px] border transition-all duration-300 ${
-              readingSettings.theme === 'dark' || readingSettings.theme === 'focus'
-                ? 'bg-gradient-to-br from-blue-900/50 to-blue-800/50 border-blue-700'
-                : 'bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200'
-            }`}>
-              <div className="text-center">
-                <div className={`text-xl md:text-2xl lg:text-3xl font-bold mb-0.5 md:mb-1 ${
-                  readingSettings.theme === 'dark' || readingSettings.theme === 'focus' ? 'text-blue-300' : 'text-blue-700'
-                }`}>
-                  {isReading && !isNaN(smoothedWPM) ? smoothedWPM : (finalWPM || 0)}
-                </div>
-                <div className={`text-[10px] md:text-xs font-medium uppercase tracking-wide ${
-                  readingSettings.theme === 'dark' || readingSettings.theme === 'focus' ? 'text-blue-400' : 'text-blue-600'
-                }`}>WPM</div>
-              </div>
-            </div>
-
             {/* Time Card */}
             <div className={`rounded-lg lg:rounded-xl p-2.5 md:p-3 lg:p-4 min-w-[70px] md:min-w-[80px] lg:min-w-[100px] border transition-all duration-300 ${
               readingSettings.theme === 'dark' || readingSettings.theme === 'focus'
@@ -217,24 +199,6 @@ const ReadingHeader = ({
 
           {/* Stats Row */}
           <div className="flex justify-between items-center mb-2 gap-2">
-            {/* WPM Card */}
-            <div className={`rounded-lg p-2 sm:p-3 flex-1 border transition-all duration-300 ${
-              readingSettings.theme === 'dark' || readingSettings.theme === 'focus'
-                ? 'bg-gradient-to-br from-blue-900/50 to-blue-800/50 border-blue-700'
-                : 'bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200'
-            }`}>
-              <div className="text-center">
-                <div className={`text-lg sm:text-xl font-bold mb-0.5 sm:mb-1 ${
-                  readingSettings.theme === 'dark' || readingSettings.theme === 'focus' ? 'text-blue-300' : 'text-blue-700'
-                }`}>
-                  {isReading && !isNaN(smoothedWPM) ? smoothedWPM : (finalWPM || 0)}
-                </div>
-                <div className={`text-[10px] sm:text-xs font-medium uppercase tracking-wide ${
-                  readingSettings.theme === 'dark' || readingSettings.theme === 'focus' ? 'text-blue-400' : 'text-blue-600'
-                }`}>WPM</div>
-              </div>
-            </div>
-
             {/* Time Card */}
             <div className={`rounded-lg p-2 sm:p-3 flex-1 border transition-all duration-300 ${
               readingSettings.theme === 'dark' || readingSettings.theme === 'focus'

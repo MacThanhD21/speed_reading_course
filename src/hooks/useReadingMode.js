@@ -75,24 +75,25 @@ export const useReadingState = (content) => {
 
   // Update WPM and WPS calculation
   const updateWPM = useCallback(() => {
-    if (!isReading || isPaused || !startTime) return;
+    if (!isReading || isPaused) return;
 
-    const now = Date.now();
-    const elapsed = (now - startTime) / 60000; // Convert to minutes
-    const elapsedSeconds = (now - startTime) / 1000; // Convert to seconds
+    // Use elapsedTime (in seconds) which is already correctly updated with pause/resume
+    const elapsedSeconds = elapsedTime || 0;
+    const elapsedMinutes = elapsedSeconds / 60;
     
-    if (elapsed > 0) {
+    if (elapsedSeconds > 0) {
       const currentWordsRead = calculateWordsRead();
       
       // Always update words read
       setWordsRead(currentWordsRead);
       
-      // Calculate WPM based on actual reading time
-      const instantWPM = currentWordsRead / elapsed;
+      // Calculate WPM based on actual reading time (words per minute)
+      // Formula: (words read / seconds elapsed) * 60
+      const instantWPM = elapsedMinutes > 0 ? (currentWordsRead / elapsedMinutes) : 0;
       setCurrentWPM(isNaN(instantWPM) ? 0 : instantWPM);
       
-      // Calculate WPS based on actual reading time
-      const instantWPS = currentWordsRead / elapsedSeconds;
+      // Calculate WPS based on actual reading time (words per second)
+      const instantWPS = elapsedSeconds > 0 ? (currentWordsRead / elapsedSeconds) : 0;
       setCurrentWPS(isNaN(instantWPS) ? 0 : instantWPS);
       
       // Apply exponential moving average for smoothing WPM
@@ -108,14 +109,15 @@ export const useReadingState = (content) => {
       
       console.log('WPM/WPS Update:', {
         currentWordsRead,
-        elapsed: elapsed.toFixed(2),
+        elapsedSeconds: elapsedSeconds.toFixed(1),
+        elapsedMinutes: elapsedMinutes.toFixed(3),
         instantWPM: instantWPM.toFixed(1),
         smoothedWPM: Math.round(newSmoothedWPM),
         instantWPS: instantWPS.toFixed(2),
         smoothedWPS: (Math.round(newSmoothedWPS * 10) / 10).toFixed(1)
       });
     }
-  }, [isReading, isPaused, startTime, calculateWordsRead]);
+  }, [isReading, isPaused, elapsedTime, calculateWordsRead]);
 
   // Timer effect
   useEffect(() => {
@@ -207,8 +209,16 @@ export const useReadingState = (content) => {
       intervalRef.current = null;
     }
     
-    const finalWPM = elapsedTime > 0 && wordsRead > 0 ? Math.round(wordsRead / (elapsedTime / 60)) : 0;
-    const finalWPS = elapsedTime > 0 && wordsRead > 0 ? Math.round((wordsRead / elapsedTime) * 10) / 10 : 0;
+    // Calculate final WPM: words per minute = (words read / seconds elapsed) * 60
+    // This is the most accurate calculation
+    const finalWPM = elapsedTime > 0 && wordsRead > 0 
+      ? Math.round((wordsRead / elapsedTime) * 60) 
+      : 0;
+    
+    // Calculate final WPS: words per second = words read / seconds elapsed
+    const finalWPS = elapsedTime > 0 && wordsRead > 0 
+      ? Math.round((wordsRead / elapsedTime) * 10) / 10 
+      : 0;
     
     onFinishReading({
       finalWPM: finalWPM || 0,
