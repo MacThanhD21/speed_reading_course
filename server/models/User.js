@@ -25,9 +25,22 @@ const userSchema = mongoose.Schema(
     },
     password: {
       type: String,
-      required: [true, 'Vui lòng nhập mật khẩu'],
+      required: function() {
+        // Password chỉ required nếu không phải OAuth login
+        return !this.googleId;
+      },
       minlength: [6, 'Mật khẩu phải có ít nhất 6 ký tự'],
       select: false, // Không trả về password mặc định
+    },
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true, // Cho phép null và chỉ unique khi có giá trị
+    },
+    provider: {
+      type: String,
+      enum: ['local', 'google'],
+      default: 'local',
     },
     role: {
       type: String,
@@ -47,13 +60,15 @@ const userSchema = mongoose.Schema(
   }
 );
 
-// Hash password trước khi lưu
+// Hash password trước khi lưu (chỉ khi có password)
 userSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) {
-    next();
+  // Skip nếu không có password (OAuth login)
+  if (!this.password || !this.isModified('password')) {
+    return next();
   }
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
+  next();
 });
 
 // Method để so sánh password

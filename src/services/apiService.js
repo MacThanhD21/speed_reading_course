@@ -97,6 +97,13 @@ class ApiService {
     });
   }
 
+  async googleLogin(credential) {
+    return this.request('/auth/google', {
+      method: 'POST',
+      body: JSON.stringify({ credential }),
+    });
+  }
+
   async getMe() {
     return this.request('/auth/me');
   }

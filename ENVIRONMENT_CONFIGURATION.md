@@ -54,6 +54,11 @@ BASE_URL=https://api.yourdomain.com
 # WARNING: Never set this to 'true' in production!
 DISABLE_DUPLICATE_CHECK=false
 
+# Google OAuth Configuration
+# Get this from Google Cloud Console > APIs & Services > Credentials
+# Create OAuth 2.0 Client ID for Web application
+GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
+
 # Database
 MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/speedreading_admin
 

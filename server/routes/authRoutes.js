@@ -2,6 +2,7 @@ import express from 'express';
 import {
   register,
   login,
+  googleLogin,
   getMe,
   updateProfile,
   getRecentRegistrations,
@@ -13,6 +14,7 @@ const router = express.Router();
 // Routes
 router.post('/register', register);
 router.post('/login', login);
+router.post('/google', googleLogin);
 router.get('/me', protect, getMe);
 router.put('/profile', protect, updateProfile);
 router.get('/recent-registrations', getRecentRegistrations);

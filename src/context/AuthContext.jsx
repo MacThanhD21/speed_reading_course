@@ -143,6 +143,21 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const googleLogin = async (credential) => {
+    try {
+      const response = await apiService.googleLogin(credential);
+      if (response.success && response.data) {
+        localStorage.setItem('token', response.data.token);
+        localStorage.setItem('user', JSON.stringify(response.data));
+        setUser(response.data);
+        return { success: true, data: response.data };
+      }
+      return { success: false, message: response.message };
+    } catch (error) {
+      return { success: false, message: error.message || 'Đăng nhập Google thất bại' };
+    }
+  };
+
   const logout = () => {
     clearAuthData();
     // Don't set loading to false here to avoid race conditions
@@ -163,6 +178,7 @@ export const AuthProvider = ({ children }) => {
         loading,
         login,
         register,
+        googleLogin,
         logout,
         isAuthenticated,
         isAdmin,
