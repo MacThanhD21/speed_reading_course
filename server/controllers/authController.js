@@ -2,6 +2,7 @@ import User from '../models/User.js';
 import generateToken from '../utils/generateToken.js';
 import { initializeUserEmailSequence } from '../utils/emailQueueManager.js';
 import { OAuth2Client } from 'google-auth-library';
+import { createNotification } from './notificationController.js';
 
 // @desc    Register new user
 // @route   POST /api/auth/register
@@ -34,6 +35,19 @@ export const register = async (req, res) => {
         console.error('Error initializing user email sequence:', err);
         // Don't fail the request if email queue fails
       });
+
+      // Create notification for admin (only for regular users, not admins)
+      if (user.role === 'user') {
+        createNotification(
+          'new_user',
+          'Người dùng mới',
+          `${name} đã đăng ký tài khoản mới`,
+          `/admin/users`,
+          { userId: user._id, email }
+        ).catch(err => {
+          console.error('Error creating notification:', err);
+        });
+      }
 
       res.status(201).json({
         success: true,
@@ -289,6 +303,17 @@ export const googleLogin = async (req, res) => {
         // Initialize email marketing sequence (non-blocking)
         initializeUserEmailSequence(user).catch(err => {
           console.error('Error initializing user email sequence:', err);
+        });
+
+        // Create notification for admin
+        createNotification(
+          'new_user',
+          'Người dùng mới',
+          `${name || 'Google User'} đã đăng ký tài khoản mới qua Google`,
+          `/admin/users`,
+          { userId: user._id, email, provider: 'google' }
+        ).catch(err => {
+          console.error('Error creating notification:', err);
         });
 
         res.status(201).json({

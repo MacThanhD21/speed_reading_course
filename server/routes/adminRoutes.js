@@ -25,6 +25,11 @@ import {
   updateTestimonial,
   deleteTestimonial,
 } from '../controllers/testimonialController.js';
+import {
+  getNotifications,
+  markNotificationAsRead,
+  markAllNotificationsAsRead,
+} from '../controllers/notificationController.js';
 import { protect, admin } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -61,6 +66,11 @@ router.get('/testimonials/:id', getTestimonialById);
 router.post('/testimonials', createTestimonial);
 router.put('/testimonials/:id', updateTestimonial);
 router.delete('/testimonials/:id', deleteTestimonial);
+
+// Notifications routes
+router.get('/notifications', getNotifications);
+router.put('/notifications/:id/read', markNotificationAsRead);
+router.put('/notifications/read-all', markAllNotificationsAsRead);
 
 export default router;
 

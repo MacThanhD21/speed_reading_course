@@ -1,5 +1,6 @@
 import Contact from '../models/Contact.js';
 import { initializeContactEmailSequence } from '../utils/emailQueueManager.js';
+import { createNotification } from './notificationController.js';
 
 // Validation helpers
 const validateEmail = (email) => {
@@ -134,6 +135,17 @@ export const createContact = async (req, res) => {
     initializeContactEmailSequence(contact).catch(err => {
       console.error('Error initializing email sequence:', err);
       // Don't fail the request if email queue fails
+    });
+
+    // Create notification for admin
+    createNotification(
+      'new_contact',
+      'Liên hệ mới',
+      `${name} đã gửi thông tin liên hệ`,
+      `/admin/contacts`,
+      { contactId: contact._id, email, phone: normalizedPhone || phone }
+    ).catch(err => {
+      console.error('Error creating notification:', err);
     });
 
     res.status(201).json({

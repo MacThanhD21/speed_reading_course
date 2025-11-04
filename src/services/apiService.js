@@ -352,6 +352,23 @@ class ApiService {
       method: 'DELETE',
     });
   }
+
+  // Notification methods
+  async getNotifications(unreadOnly = false, limit = 50) {
+    return this.request(`/admin/notifications?unreadOnly=${unreadOnly}&limit=${limit}`);
+  }
+
+  async markNotificationAsRead(notificationId) {
+    return this.request(`/admin/notifications/${notificationId}/read`, {
+      method: 'PUT',
+    });
+  }
+
+  async markAllNotificationsAsRead() {
+    return this.request('/admin/notifications/read-all', {
+      method: 'PUT',
+    });
+  }
 }
 
 export default new ApiService();

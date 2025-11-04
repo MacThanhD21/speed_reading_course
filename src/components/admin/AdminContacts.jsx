@@ -68,10 +68,10 @@ const AdminContacts = () => {
 
   const getStatusBadge = (status) => {
     const statusConfig = {
-      new: { label: 'Mới', color: 'bg-blue-100 text-[#1A66CC]' },
-      contacted: { label: 'Đã liên hệ', color: 'bg-yellow-100 text-yellow-800' },
-      completed: { label: 'Hoàn thành', color: 'bg-green-100 text-green-800' },
-      archived: { label: 'Lưu trữ', color: 'bg-gray-100 text-gray-800' },
+      new: { label: 'Mới', color: 'bg-blue-100 dark:bg-blue-900 text-[#1A66CC] dark:text-blue-300' },
+      contacted: { label: 'Đã liên hệ', color: 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-300' },
+      completed: { label: 'Hoàn thành', color: 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300' },
+      archived: { label: 'Lưu trữ', color: 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300' },
     };
     const config = statusConfig[status] || statusConfig.new;
     return (
@@ -82,14 +82,14 @@ const AdminContacts = () => {
   };
 
   if (loading) {
-    return <div className="text-center">Đang tải...</div>;
+    return <div className="text-center text-gray-900 dark:text-white">Đang tải...</div>;
   }
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold text-gray-800">Quản lý liên hệ</h2>
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Quản lý liên hệ</h2>
           <div className="flex space-x-2">
             <select
               value={statusFilter}
@@ -97,7 +97,7 @@ const AdminContacts = () => {
                 setStatusFilter(e.target.value);
                 setPagination(prev => ({ ...prev, page: 1 }));
               }}
-              className="px-4 py-2 border border-gray-300 rounded-lg"
+              className="px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white"
             >
               <option value="">Tất cả trạng thái</option>
               <option value="new">Mới</option>
@@ -113,35 +113,35 @@ const AdminContacts = () => {
                 setSearch(e.target.value);
                 setPagination(prev => ({ ...prev, page: 1 }));
               }}
-              className="px-4 py-2 border border-gray-300 rounded-lg"
+              className="px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white"
             />
           </div>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-700">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tên</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Số điện thoại</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tin nhắn</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Trạng thái</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ngày gửi</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Thao tác</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Tên</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Email</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Số điện thoại</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Tin nhắn</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Trạng thái</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Ngày gửi</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Thao tác</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {contacts.map((contact) => (
                 <tr key={contact._id}>
-                  <td className="px-6 py-4 whitespace-nowrap">{contact.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{contact.email}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{contact.phone || '-'}</td>
-                  <td className="px-6 py-4 max-w-xs truncate">{contact.message || '-'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-white">{contact.name}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-white">{contact.email}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-white">{contact.phone || '-'}</td>
+                  <td className="px-6 py-4 max-w-xs truncate text-gray-900 dark:text-white">{contact.message || '-'}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {getStatusBadge(contact.status)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                     {new Date(contact.createdAt).toLocaleDateString('vi-VN')}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
@@ -151,14 +151,14 @@ const AdminContacts = () => {
                                          contact.status === 'contacted' ? 'completed' : 'archived';
                         handleUpdateContact(contact._id, { status: newStatus });
                       }}
-                      className="text-green-600 hover:text-green-900"
+                      className="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300"
                       title="Cập nhật trạng thái"
                     >
                       <FaCheck />
                     </button>
                     <button
                       onClick={() => handleDeleteContact(contact._id)}
-                      className="text-red-600 hover:text-red-900"
+                      className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300"
                     >
                       <FaTrash />
                     </button>
@@ -171,21 +171,21 @@ const AdminContacts = () => {
 
         {/* Pagination */}
         <div className="mt-4 flex justify-between items-center">
-          <p className="text-sm text-gray-700">
+          <p className="text-sm text-gray-700 dark:text-gray-300">
             Trang {pagination.page} / {pagination.pages || 1}
           </p>
           <div className="space-x-2">
             <button
               onClick={() => setPagination(prev => ({ ...prev, page: Math.max(1, prev.page - 1) }))}
               disabled={pagination.page === 1}
-              className="px-4 py-2 bg-gray-200 rounded-lg disabled:opacity-50"
+              className="px-4 py-2 bg-gray-200 dark:bg-gray-600 rounded-lg text-gray-900 dark:text-white disabled:opacity-50"
             >
               Trước
             </button>
             <button
               onClick={() => setPagination(prev => ({ ...prev, page: Math.min(prev.pages || 1, prev.page + 1) }))}
               disabled={pagination.page >= (pagination.pages || 1)}
-              className="px-4 py-2 bg-gray-200 rounded-lg disabled:opacity-50"
+              className="px-4 py-2 bg-gray-200 dark:bg-gray-600 rounded-lg text-gray-900 dark:text-white disabled:opacity-50"
             >
               Sau
             </button>

@@ -161,7 +161,7 @@ const AdminApiKeys = () => {
       case 'error':
         return 'bg-red-100 text-red-800 border-red-300';
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-300';
+        return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300 border-gray-300 dark:border-gray-600';
     }
   };
 
@@ -174,7 +174,7 @@ const AdminApiKeys = () => {
       case 'error':
         return <FaTimesCircle className="text-red-500" />;
       default:
-        return <FaClock className="text-gray-500" />;
+        return <FaClock className="text-gray-500 dark:text-gray-400" />;
     }
   };
 
@@ -229,7 +229,7 @@ const AdminApiKeys = () => {
             </button>
             <button
               onClick={() => handleOpenModal()}
-              className="px-4 py-2 bg-white text-[#1A66CC] rounded-lg hover:bg-blue-50 transition-colors flex items-center gap-2 font-semibold"
+              className="px-4 py-2 bg-white dark:bg-gray-700 text-[#1A66CC] dark:text-blue-400 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900 transition-colors flex items-center gap-2 font-semibold"
             >
               <FaPlus /> Thêm API Key
             </button>
@@ -242,12 +242,12 @@ const AdminApiKeys = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-xl shadow-lg p-4 border border-gray-100"
+          className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 border border-gray-100 dark:border-gray-700"
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-600 text-sm mb-1">Tổng số</p>
-              <p className="text-2xl font-bold text-gray-800">{stats.total}</p>
+              <p className="text-gray-600 dark:text-gray-400 text-sm mb-1">Tổng số</p>
+              <p className="text-2xl font-bold text-gray-800 dark:text-white">{stats.total}</p>
             </div>
             <FaKey className="text-2xl text-[#1A66CC]" />
           </div>
@@ -257,11 +257,11 @@ const AdminApiKeys = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-white rounded-xl shadow-lg p-4 border border-gray-100"
+          className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 border border-gray-100 dark:border-gray-700"
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-600 text-sm mb-1">Đang hoạt động</p>
+              <p className="text-gray-600 dark:text-gray-400 text-sm mb-1">Đang hoạt động</p>
               <p className="text-2xl font-bold text-[#34D399]">{stats.active}</p>
             </div>
             <FaCheckCircle className="text-2xl text-[#34D399]" />
@@ -272,11 +272,11 @@ const AdminApiKeys = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-white rounded-xl shadow-lg p-4 border border-gray-100"
+          className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 border border-gray-100 dark:border-gray-700"
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-600 text-sm mb-1">Hoạt động tốt</p>
+              <p className="text-gray-600 dark:text-gray-400 text-sm mb-1">Hoạt động tốt</p>
               <p className="text-2xl font-bold text-[#1A66CC]">{stats.healthy}</p>
             </div>
             <FaCheckCircle className="text-2xl text-[#1A66CC]" />
@@ -287,11 +287,11 @@ const AdminApiKeys = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="bg-white rounded-xl shadow-lg p-4 border border-gray-100"
+          className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 border border-gray-100 dark:border-gray-700"
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-600 text-sm mb-1">Có lỗi</p>
+              <p className="text-gray-600 dark:text-gray-400 text-sm mb-1">Có lỗi</p>
               <p className="text-2xl font-bold text-red-600">{stats.error}</p>
             </div>
             <FaTimesCircle className="text-2xl text-red-500" />
@@ -302,11 +302,11 @@ const AdminApiKeys = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="bg-white rounded-xl shadow-lg p-4 border border-gray-100"
+          className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 border border-gray-100 dark:border-gray-700"
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-600 text-sm mb-1">Rate Limited</p>
+              <p className="text-gray-600 dark:text-gray-400 text-sm mb-1">Rate Limited</p>
               <p className="text-2xl font-bold text-yellow-600">{stats.rateLimited}</p>
             </div>
             <FaExclamationTriangle className="text-2xl text-yellow-500" />
@@ -315,23 +315,23 @@ const AdminApiKeys = () => {
       </div>
 
       {/* API Keys Table */}
-      <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
               <tr>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Tên</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">API Key</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Trạng thái</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Thống kê</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Kiểm tra</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Thao tác</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Tên</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">API Key</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Trạng thái</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Thống kê</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Kiểm tra</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Thao tác</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {apiKeys.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan="6" className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
                     Chưa có API key nào. Hãy thêm API key mới!
                   </td>
                 </tr>
@@ -341,18 +341,18 @@ const AdminApiKeys = () => {
                     key={key._id}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="hover:bg-gray-50 transition-colors"
+                    className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                   >
                     <td className="px-6 py-4">
                       <div>
-                        <p className="font-medium text-gray-900">{key.name || 'Unnamed'}</p>
+                        <p className="font-medium text-gray-900 dark:text-white">{key.name || 'Unnamed'}</p>
                         {key.description && (
-                          <p className="text-sm text-gray-500 mt-1">{key.description}</p>
+                          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{key.description}</p>
                         )}
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <code className="text-sm bg-gray-100 px-2 py-1 rounded text-gray-800 font-mono">
+                      <code className="text-sm bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-gray-800 dark:text-gray-300 font-mono">
                         {key.key || key.fullKey || 'N/A'}
                       </code>
                     </td>
@@ -362,27 +362,27 @@ const AdminApiKeys = () => {
                           {getStatusIcon(key.healthStatus)}
                           {getStatusText(key.healthStatus)}
                         </span>
-                        <span className={`px-2 py-1 rounded text-xs ${key.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                        <span className={`px-2 py-1 rounded text-xs ${key.isActive ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300'}`}>
                           {key.isActive ? 'Active' : 'Inactive'}
                         </span>
                       </div>
                       {key.lastChecked && (
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                           Kiểm tra: {new Date(key.lastChecked).toLocaleString('vi-VN')}
                         </p>
                       )}
                     </td>
                     <td className="px-6 py-4">
                       <div className="text-sm space-y-1">
-                        <p className="text-gray-600">
+                        <p className="text-gray-600 dark:text-gray-400">
                           <FaChartLine className="inline mr-1" />
                           Requests: {key.stats?.totalRequests || 0}
                         </p>
-                        <p className="text-gray-600">
-                          Thành công: <span className="text-green-600">{key.stats?.successfulRequests || 0}</span>
+                        <p className="text-gray-600 dark:text-gray-400">
+                          Thành công: <span className="text-green-600 dark:text-green-400">{key.stats?.successfulRequests || 0}</span>
                         </p>
-                        <p className="text-gray-600">
-                          Thất bại: <span className="text-red-600">{key.stats?.failedRequests || 0}</span>
+                        <p className="text-gray-600 dark:text-gray-400">
+                          Thất bại: <span className="text-red-600 dark:text-red-400">{key.stats?.failedRequests || 0}</span>
                         </p>
                       </div>
                     </td>
@@ -398,13 +398,13 @@ const AdminApiKeys = () => {
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => handleOpenModal(key)}
-                          className="p-2 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                          className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900 rounded transition-colors"
                         >
                           <FaEdit />
                         </button>
                         <button
                           onClick={() => handleDelete(key._id)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded transition-colors"
+                          className="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900 rounded transition-colors"
                         >
                           <FaTrash />
                         </button>
@@ -432,16 +432,16 @@ const AdminApiKeys = () => {
               initial={{ y: -50, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: -50, opacity: 0 }}
-              className="bg-white rounded-xl shadow-xl w-full max-w-md p-6"
+              className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md p-6"
               onClick={(e) => e.stopPropagation()}
             >
-              <h3 className="text-2xl font-bold text-gray-800 mb-6">
+              <h3 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">
                 {currentKey ? 'Chỉnh sửa API Key' : 'Thêm API Key mới'}
               </h3>
               <form onSubmit={handleSubmit} className="space-y-4">
                 {!currentKey && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       API Key <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -450,29 +450,29 @@ const AdminApiKeys = () => {
                       value={formData.key}
                       onChange={(e) => setFormData({ ...formData, key: e.target.value })}
                       placeholder="AIzaSy..."
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
-                    <p className="text-xs text-gray-500 mt-1">API key phải bắt đầu bằng "AIza"</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">API key phải bắt đầu bằng "AIza"</p>
                   </div>
                 )}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Tên</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tên</label>
                   <input
                     type="text"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     placeholder="Tên API key"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Mô tả</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Mô tả</label>
                   <textarea
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     placeholder="Mô tả (optional)"
                     rows="3"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div className="flex items-center">
@@ -483,7 +483,7 @@ const AdminApiKeys = () => {
                     onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
-                  <label htmlFor="isActive" className="ml-2 block text-sm text-gray-900">
+                  <label htmlFor="isActive" className="ml-2 block text-sm text-gray-900 dark:text-white">
                     Kích hoạt
                   </label>
                 </div>
@@ -491,7 +491,7 @@ const AdminApiKeys = () => {
                   <button
                     type="button"
                     onClick={handleCloseModal}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                    className="px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"
                   >
                     Hủy
                   </button>
@@ -522,22 +522,22 @@ const AdminApiKeys = () => {
               initial={{ y: -50, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: -50, opacity: 0 }}
-              className="bg-white rounded-xl shadow-xl w-full max-w-md p-6"
+              className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md p-6"
               onClick={(e) => e.stopPropagation()}
             >
-              <h3 className="text-2xl font-bold text-gray-800 mb-4">Kết quả kiểm tra</h3>
+              <h3 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">Kết quả kiểm tra</h3>
               {testing ? (
                 <div className="flex items-center justify-center py-8">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
                 </div>
               ) : testResult ? (
                 <div className="space-y-4">
-                  <div className={`p-4 rounded-lg ${testResult.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
-                    <p className={`font-medium ${testResult.success ? 'text-green-800' : 'text-red-800'}`}>
+                  <div className={`p-4 rounded-lg ${testResult.success ? 'bg-green-50 dark:bg-green-900 border border-green-200 dark:border-green-700' : 'bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-700'}`}>
+                    <p className={`font-medium ${testResult.success ? 'text-green-800 dark:text-green-300' : 'text-red-800 dark:text-red-300'}`}>
                       {testResult.message || testResult.data?.message}
                     </p>
                     {testResult.data?.healthStatus && (
-                      <p className="text-sm text-gray-600 mt-2">
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
                         Trạng thái: <span className="font-semibold">{getStatusText(testResult.data.healthStatus)}</span>
                       </p>
                     )}

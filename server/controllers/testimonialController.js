@@ -1,4 +1,5 @@
 import Testimonial from '../models/Testimonial.js';
+import { createNotification } from './notificationController.js';
 
 // @desc    Get all active testimonials (Public)
 // @route   GET /api/testimonials
@@ -60,6 +61,17 @@ export const createUserTestimonial = async (req, res) => {
       user: req.user._id,
       isActive: false, // Default inactive, admin needs to approve
       createdAtBy: req.user._id,
+    });
+
+    // Create notification for admin
+    createNotification(
+      'new_testimonial',
+      'Đánh giá mới',
+      `${req.user.name} đã gửi đánh giá mới cần duyệt`,
+      `/admin/testimonials`,
+      { testimonialId: testimonial._id, userId: req.user._id, userName: req.user.name }
+    ).catch(err => {
+      console.error('Error creating notification:', err);
     });
 
     res.status(201).json({

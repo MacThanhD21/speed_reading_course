@@ -219,7 +219,7 @@ const AdminUsers = () => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handleCreateUser}
-            className="bg-white text-[#1A66CC] px-6 py-3 rounded-lg font-semibold flex items-center gap-2 shadow-lg hover:shadow-xl transition-shadow"
+            className="bg-white dark:bg-gray-700 text-[#1A66CC] dark:text-blue-400 px-6 py-3 rounded-lg font-semibold flex items-center gap-2 shadow-lg hover:shadow-xl transition-shadow"
           >
             <FaPlus />
             Tạo người dùng mới
@@ -228,10 +228,10 @@ const AdminUsers = () => {
       </div>
 
       {/* Filters Section */}
-      <div className="bg-white rounded-xl shadow-lg p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1 relative">
-            <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" />
             <input
               type="text"
               placeholder="Tìm kiếm theo tên hoặc email..."
@@ -240,7 +240,7 @@ const AdminUsers = () => {
                 setSearch(e.target.value);
                 setPagination(prev => ({ ...prev, page: 1 }));
               }}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1A66CC] focus:border-[#1A66CC] transition-all"
+              className="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-[#1A66CC] focus:border-[#1A66CC] transition-all"
             />
           </div>
           <select
@@ -249,7 +249,7 @@ const AdminUsers = () => {
               setRoleFilter(e.target.value);
               setPagination(prev => ({ ...prev, page: 1 }));
             }}
-            className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1A66CC] focus:border-[#1A66CC] transition-all"
+            className="px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-[#1A66CC] focus:border-[#1A66CC] transition-all"
           >
             <option value="">Tất cả vai trò</option>
             <option value="user">User</option>
@@ -259,47 +259,47 @@ const AdminUsers = () => {
       </div>
 
       {/* Users Table */}
-      <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
         {loading ? (
           <div className="flex justify-center items-center py-20">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1A66CC]"></div>
           </div>
         ) : users.length === 0 ? (
-          <div className="text-center py-20 text-gray-500">
-            <FaUser className="text-6xl mx-auto mb-4 text-gray-300" />
+          <div className="text-center py-20 text-gray-500 dark:text-gray-400">
+            <FaUser className="text-6xl mx-auto mb-4 text-gray-300 dark:text-gray-600" />
             <p className="text-xl">Không tìm thấy người dùng nào</p>
           </div>
         ) : (
           <>
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-700">
                   <tr>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                       Người dùng
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                       Vai trò
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                       Trạng thái
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                       Ngày tạo
                     </th>
-                    <th className="px-6 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-right text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                       Thao tác
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                   {users.map((user, index) => (
                     <motion.tr
                       key={user._id}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.05 }}
-                      className="hover:bg-gray-50 transition-colors"
+                      className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
@@ -311,8 +311,8 @@ const AdminUsers = () => {
                             {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
                           </div>
                           <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">{user.name || 'N/A'}</div>
-                            <div className="text-sm text-gray-500">{user.email}</div>
+                            <div className="text-sm font-medium text-gray-900 dark:text-white">{user.name || 'N/A'}</div>
+                            <div className="text-sm text-gray-500 dark:text-gray-400">{user.email}</div>
                           </div>
                         </div>
                       </td>
@@ -347,7 +347,7 @@ const AdminUsers = () => {
                           {user.isActive ? 'Hoạt động' : 'Vô hiệu'}
                         </button>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                         {new Date(user.createdAt).toLocaleDateString('vi-VN', {
                           year: 'numeric',
                           month: 'short',
@@ -383,8 +383,8 @@ const AdminUsers = () => {
             </div>
 
             {/* Pagination */}
-            <div className="bg-gray-50 px-6 py-4 flex justify-between items-center border-t border-gray-200">
-              <p className="text-sm text-gray-700">
+            <div className="bg-gray-50 dark:bg-gray-700 px-6 py-4 flex justify-between items-center border-t border-gray-200 dark:border-gray-600">
+              <p className="text-sm text-gray-700 dark:text-gray-300">
                 Hiển thị <span className="font-semibold">{(pagination.page - 1) * pagination.limit + 1}</span> -{' '}
                 <span className="font-semibold">
                   {Math.min(pagination.page * pagination.limit, pagination.total)}
@@ -397,7 +397,7 @@ const AdminUsers = () => {
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setPagination(prev => ({ ...prev, page: Math.max(1, prev.page - 1) }))}
                   disabled={pagination.page === 1}
-                  className="px-4 py-2 bg-white border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors font-medium"
+                  className="px-4 py-2 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-lg text-gray-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-500 transition-colors font-medium"
                 >
                   Trước
                 </motion.button>
@@ -409,7 +409,7 @@ const AdminUsers = () => {
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setPagination(prev => ({ ...prev, page: Math.min(prev.pages || 1, prev.page + 1) }))}
                   disabled={pagination.page >= (pagination.pages || 1)}
-                  className="px-4 py-2 bg-white border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors font-medium"
+                  className="px-4 py-2 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-lg text-gray-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-500 transition-colors font-medium"
                 >
                   Sau
                 </motion.button>
@@ -434,13 +434,13 @@ const AdminUsers = () => {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6"
+              className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-6"
             >
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-800">Tạo người dùng mới</h2>
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Tạo người dùng mới</h2>
                 <button
                   onClick={() => setShowCreateModal(false)}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                  className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                 >
                   <FaTimes className="text-xl" />
                 </button>
@@ -448,13 +448,13 @@ const AdminUsers = () => {
 
               <form onSubmit={handleSubmitCreate} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Tên *</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tên *</label>
                   <input
                     type="text"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#1A66CC] focus:border-[#1A66CC] transition-all ${
-                      formErrors.name ? 'border-red-500' : 'border-gray-300'
+                    className={`w-full px-4 py-3 bg-white dark:bg-gray-700 border rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-[#1A66CC] focus:border-[#1A66CC] transition-all ${
+                      formErrors.name ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                     }`}
                     placeholder="Nhập tên người dùng"
                   />
@@ -480,7 +480,7 @@ const AdminUsers = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Mật khẩu *</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Mật khẩu *</label>
                   <div className="relative">
                     <input
                       type={showPassword ? 'text' : 'password'}
@@ -509,7 +509,7 @@ const AdminUsers = () => {
                   <select
                     value={formData.role}
                     onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                    className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                   >
                     <option value="user">User</option>
                     <option value="admin">Admin</option>
@@ -522,7 +522,7 @@ const AdminUsers = () => {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => setShowCreateModal(false)}
-                    className="flex-1 px-4 py-3 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                    className="flex-1 px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
                   >
                     Hủy
                   </motion.button>
@@ -561,13 +561,13 @@ const AdminUsers = () => {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6"
+              className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-6"
             >
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-800">Chỉnh sửa người dùng</h2>
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Chỉnh sửa người dùng</h2>
                 <button
                   onClick={() => setShowEditModal(false)}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                  className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                 >
                   <FaTimes className="text-xl" />
                 </button>
@@ -636,7 +636,7 @@ const AdminUsers = () => {
                   <select
                     value={formData.role}
                     onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                    className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                   >
                     <option value="user">User</option>
                     <option value="admin">Admin</option>
@@ -651,7 +651,7 @@ const AdminUsers = () => {
                       onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
                       className="w-5 h-5 text-[#1A66CC] border-gray-300 rounded focus:ring-[#1A66CC]"
                     />
-                    <span className="text-sm font-medium text-gray-700">Tài khoản hoạt động</span>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Tài khoản hoạt động</span>
                   </label>
                 </div>
 
@@ -661,7 +661,7 @@ const AdminUsers = () => {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => setShowEditModal(false)}
-                    className="flex-1 px-4 py-3 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                    className="flex-1 px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
                   >
                     Hủy
                   </motion.button>

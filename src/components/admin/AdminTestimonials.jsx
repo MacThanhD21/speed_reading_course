@@ -112,28 +112,28 @@ const AdminTestimonials = () => {
       {/* Header */}
       <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Quản lý Đánh giá</h2>
-          <p className="text-gray-600 mt-1">Duyệt và quản lý đánh giá từ học viên</p>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Quản lý Đánh giá</h2>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">Duyệt và quản lý đánh giá từ học viên</p>
         </div>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Tổng số</p>
-              <p className="text-2xl font-bold text-gray-900">{testimonials.length}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Tổng số</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{testimonials.length}</p>
             </div>
             <div className="bg-blue-100 p-3 rounded-full">
               <FaStar className="text-blue-600 text-xl" />
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Chờ duyệt</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Chờ duyệt</p>
               <p className="text-2xl font-bold text-yellow-600">{pendingCount}</p>
             </div>
             <div className="bg-yellow-100 p-3 rounded-full">
@@ -141,10 +141,10 @@ const AdminTestimonials = () => {
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Đã duyệt</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Đã duyệt</p>
               <p className="text-2xl font-bold text-green-600">{activeCount}</p>
             </div>
             <div className="bg-green-100 p-3 rounded-full">
@@ -155,7 +155,7 @@ const AdminTestimonials = () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow p-4 mb-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-6">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1">
             <input
@@ -163,13 +163,13 @@ const AdminTestimonials = () => {
               placeholder="Tìm kiếm theo tên, vai trò, nội dung..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1A66CC] focus:border-transparent outline-none"
+              className="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-[#1A66CC] focus:border-transparent outline-none"
             />
           </div>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1A66CC] focus:border-transparent outline-none"
+            className="px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-[#1A66CC] focus:border-transparent outline-none"
           >
             <option value="">Tất cả trạng thái</option>
             <option value="active">Đã duyệt</option>
@@ -179,11 +179,11 @@ const AdminTestimonials = () => {
       </div>
 
       {/* Testimonials List */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
         {testimonials.length === 0 ? (
           <div className="text-center py-12">
-            <FaStar className="mx-auto text-4xl text-gray-300 mb-4" />
-            <p className="text-gray-600">Chưa có đánh giá nào</p>
+            <FaStar className="mx-auto text-4xl text-gray-300 dark:text-gray-600 mb-4" />
+            <p className="text-gray-600 dark:text-gray-400">Chưa có đánh giá nào</p>
           </div>
         ) : (
           <div className="divide-y divide-gray-200">
@@ -192,7 +192,7 @@ const AdminTestimonials = () => {
                 key={testimonial._id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="p-6 hover:bg-gray-50 transition-colors"
+                className="p-6 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
                 {editingTestimonial?._id === testimonial._id ? (
                   <EditTestimonialForm
@@ -218,7 +218,7 @@ const AdminTestimonials = () => {
                             />
                           ))}
                         </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                           <FaUser className="w-3 h-3" />
                           <span>{testimonial.name}</span>
                         </div>
@@ -228,19 +228,19 @@ const AdminTestimonials = () => {
                     {/* Content */}
                     <div className="flex-1">
                       <div className="mb-2">
-                        <span className="inline-block px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded">
+                        <span className="inline-block px-2 py-1 text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-300 rounded">
                           {testimonial.role}
                         </span>
                         {testimonial.improvement && (
-                          <span className="ml-2 inline-block px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded">
+                          <span className="ml-2 inline-block px-2 py-1 text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300 rounded">
                             {testimonial.improvement}
                           </span>
                         )}
                       </div>
-                      <blockquote className="text-gray-700 italic mb-2">
+                      <blockquote className="text-gray-700 dark:text-gray-300 italic mb-2">
                         "{testimonial.quote}"
                       </blockquote>
-                      <div className="flex items-center gap-2 text-xs text-gray-500">
+                      <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
                         <span>
                           {testimonial.user?.email || 'N/A'}
                         </span>
@@ -257,8 +257,8 @@ const AdminTestimonials = () => {
                         onClick={() => handleToggleActive(testimonial)}
                         className={`p-2 rounded-lg transition-colors ${
                           testimonial.isActive
-                            ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
-                            : 'bg-green-100 text-green-700 hover:bg-green-200'
+                            ? 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-200 dark:hover:bg-yellow-800'
+                            : 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-800'
                         }`}
                         title={testimonial.isActive ? 'Ẩn đánh giá' : 'Duyệt đánh giá'}
                       >
@@ -266,14 +266,14 @@ const AdminTestimonials = () => {
                       </button>
                       <button
                         onClick={() => setEditingTestimonial(testimonial)}
-                        className="p-2 rounded-lg bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors"
+                        className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors"
                         title="Chỉnh sửa"
                       >
                         <FaEdit />
                       </button>
                       <button
                         onClick={() => handleDelete(testimonial)}
-                        className="p-2 rounded-lg bg-red-100 text-red-700 hover:bg-red-200 transition-colors"
+                        className="p-2 rounded-lg bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-800 transition-colors"
                         title="Xóa"
                       >
                         <FaTrash />
