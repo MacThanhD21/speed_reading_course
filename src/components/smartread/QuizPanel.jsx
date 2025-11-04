@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   FaCheckCircle, 
@@ -9,7 +9,8 @@ import {
   FaSpinner,
   FaArrowRight,
   FaArrowLeft,
-  FaRedo
+  FaRedo,
+  FaExclamationTriangle
 } from 'react-icons/fa';
 import quizService from '../../services/quizService';
 import logger from '../../utils/logger';
@@ -39,6 +40,262 @@ const QuizPanel = ({
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null);
   const [unansweredCount, setUnansweredCount] = useState(0);
+  
+  // Anti-cheat states
+  const [questionTimeLeft, setQuestionTimeLeft] = useState(30); // 30 seconds per question
+  const [showWarning, setShowWarning] = useState(false);
+  const [warningMessage, setWarningMessage] = useState('');
+  const [warningCount, setWarningCount] = useState(0);
+  const [isTabActive, setIsTabActive] = useState(true);
+  const [timedOutQuestions, setTimedOutQuestions] = useState(new Set()); // Track questions that timed out
+  const warningTimeoutRef = useRef(null);
+  const timerIntervalRef = useRef(null);
+  const lastMousePositionRef = useRef({ x: 0, y: 0 });
+  const isTimeUpRef = useRef(false); // Track if time is up to prevent double navigation
+
+  // Meme warning messages (30+ funny troll messages)
+  const MEME_WARNINGS = [
+    "🚨 Đợi đã! Bạn đang đi đâu vậy? 🤔",
+    "👀 Hmm... bạn đang làm gì ở đó? 😏",
+    "🤨 Tôi thấy bạn rồi! Quay lại làm bài đi!",
+    "💭 'Để tôi Google câu này...' - Không được đâu bạn ơi! 😂",
+    "🎭 Diễn xuất hay lắm nhưng tôi biết bạn đang check GPT!",
+    "🧠 Dùng não của bạn, không phải Google!",
+    "🔍 Tìm kiếm gì vậy? Câu trả lời nằm trong bài đọc đó!",
+    "😎 Bạn nghĩ bạn khôn hơn tôi sao? Tôi biết bạn đang làm gì!",
+    "🎪 Có vẻ như bạn đang tìm kiếm 'đáp án' trên Google nhỉ?",
+    "🤡 Bạn đang làm gì ở tab khác vậy? Quay lại thôi!",
+    "🎯 Focus! Focus! Đừng phân tâm!",
+    "💡 Gợi ý: Câu trả lời nằm trong đầu bạn, không phải ChatGPT!",
+    "🚫 Không, không được check GPT đâu!",
+    "👮‍♂️ Tôi là cảnh sát quiz đây! Quay lại làm bài ngay!",
+    "🎭 Act tự nhiên thôi bạn, tôi biết bạn đang làm gì!",
+    "🤖 'Hey ChatGPT...' - Nope! Không được!",
+    "🕵️ Tôi phát hiện bạn rồi! Quay lại thôi!",
+    "🎪 Cuộc sống không phải là Google, câu trả lời nằm trong bạn!",
+    "😤 Bạn nghĩ tôi không biết bạn đang làm gì sao?",
+    "🎬 Đây không phải phim, bạn không thể 'pause' để check đáp án!",
+    "🧐 Bạn đang tìm kiếm điều gì? Tôi tò mò quá!",
+    "🎯 Mục tiêu: Hoàn thành quiz mà không cần Google!",
+    "🤔 Bạn đang nghĩ về điều gì ở tab khác vậy?",
+    "🎨 Sáng tạo quá! Nhưng không được check đáp án đâu!",
+    "🚀 Tập trung! Bạn gần đến đích rồi!",
+    "🎭 Phim hay nhưng phải quay lại làm bài!",
+    "🤖 AI không thể giúp bạn đâu, tự tin lên!",
+    "💪 Bạn làm được mà! Không cần Google!",
+    "🎯 Mục tiêu: Đạt điểm cao mà không cần cheat!",
+    "😎 Cool! Nhưng quay lại làm bài đi!",
+    "🎪 Bạn đang làm gì ở đó? Tò mò quá!",
+    "🤡 Không được check đáp án! Tôi biết bạn đang làm gì!",
+    "🎬 Đây là quiz, không phải game bạn có thể 'hack'!",
+    "🔍 Tìm kiếm gì? Câu trả lời nằm trong bài đọc!",
+    "💡 Insight: Bạn đã đọc bài rồi, tự tin vào bản thân đi!",
+    "🎯 Focus! Bạn đang làm quiz chứ không phải lướt web!",
+    "🚨 Cảnh báo: Tôi biết bạn đang làm gì!",
+    "🎪 Show hay nhưng phải quay lại làm bài!",
+    "🤖 ChatGPT không thể giúp bạn trong quiz này!",
+    "💪 Bạn mạnh mẽ hơn bạn nghĩ! Không cần Google!",
+    "🎭 Act tự nhiên! Tôi biết bạn đang check GPT! 😂",
+    "🔍 Tìm kiếm gì? Tôi tò mò quá!",
+    "🎯 Mục tiêu: Hoàn thành quiz một cách trung thực!",
+    "🤔 Bạn đang nghĩ về điều gì? Quay lại làm bài!",
+    "🎨 Sáng tạo nhưng không được check đáp án!",
+    "🚀 Tập trung! Bạn gần đến đích rồi!",
+    "🎪 Phim hay nhưng phải quay lại làm bài!",
+    "🤖 AI không thể thay thế kiến thức của bạn!",
+    "💪 Bạn làm được mà! Tin vào bản thân!",
+    "🎯 Mục tiêu: Đạt điểm cao nhờ kiến thức thật!",
+  ];
+
+  // Get random warning message
+  const getRandomWarning = () => {
+    return MEME_WARNINGS[Math.floor(Math.random() * MEME_WARNINGS.length)];
+  };
+
+  // Format time display
+  const formatTime = (seconds) => {
+    return `${seconds.toString().padStart(2, '0')}`;
+  };
+
+  // Trigger warning
+  const triggerWarning = useCallback(() => {
+    if (showWarning) return; // Don't stack warnings
+    
+    const newCount = warningCount + 1;
+    setWarningCount(newCount);
+    setWarningMessage(getRandomWarning());
+    setShowWarning(true);
+
+    // Auto-hide after 3 seconds
+    if (warningTimeoutRef.current) {
+      clearTimeout(warningTimeoutRef.current);
+    }
+    
+    warningTimeoutRef.current = setTimeout(() => {
+      setShowWarning(false);
+    }, 3000);
+
+    // After 5 warnings, consider auto-submitting (optional)
+    if (newCount >= 5) {
+      logger.warn('QUIZ_PANEL', 'Multiple warnings detected', { count: newCount });
+    }
+  }, [showWarning, warningCount]);
+
+  // Timer effect - Countdown 30s per question
+  useEffect(() => {
+    if (quiz && !result && !isLoading) {
+      // Clear any existing timer first
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
+      }
+      
+      // Check if current question has timed out
+      const currentQuestion = quiz.questions[currentQuestionIndex];
+      const currentQid = currentQuestion?.qid;
+      
+      if (currentQid && timedOutQuestions.has(currentQid)) {
+        // Question already timed out, don't start timer
+        setQuestionTimeLeft(0);
+        isTimeUpRef.current = true;
+        return;
+      }
+      
+      // Reset timer and flags when question changes (only for non-timed-out questions)
+      setQuestionTimeLeft(30);
+      isTimeUpRef.current = false;
+      
+      // Start new timer only if question hasn't timed out
+      // Store currentQid in a variable to avoid closure issues
+      const qidForTimer = currentQid;
+      const currentIndexForTimer = currentQuestionIndex;
+      
+      timerIntervalRef.current = setInterval(() => {
+        setQuestionTimeLeft(prev => {
+          if (prev <= 1 && !isTimeUpRef.current) {
+            // Time's up! Mark as time up to prevent double trigger
+            isTimeUpRef.current = true;
+            
+            // Clear interval immediately
+            if (timerIntervalRef.current) {
+              clearInterval(timerIntervalRef.current);
+              timerIntervalRef.current = null;
+            }
+            
+            // Mark this question as timed out
+            if (qidForTimer) {
+              setTimedOutQuestions(prev => new Set(prev).add(qidForTimer));
+              
+              // Remove answer if exists (question is blank by default)
+              setAnswers(prev => {
+                const newAnswers = { ...prev };
+                delete newAnswers[qidForTimer];
+                return newAnswers;
+              });
+            }
+            
+            // Auto move to next question if not last question
+            if (quiz && currentIndexForTimer < quiz.questions.length - 1) {
+              // Use setTimeout to ensure state updates are processed
+              setTimeout(() => {
+                setCurrentQuestionIndex(prev => {
+                  // Double check to prevent jumping
+                  if (prev < quiz.questions.length - 1) {
+                    return prev + 1;
+                  }
+                  return prev;
+                });
+              }, 100);
+            } else {
+              // Last question - show warning
+              triggerWarning();
+              setQuestionTimeLeft(0);
+            }
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      return () => {
+        if (timerIntervalRef.current) {
+          clearInterval(timerIntervalRef.current);
+          timerIntervalRef.current = null;
+        }
+      };
+    } else {
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
+      }
+    }
+  }, [quiz, result, isLoading, currentQuestionIndex, triggerWarning, timedOutQuestions]);
+
+  // Anti-cheat detection
+  useEffect(() => {
+    if (!quiz || result || isLoading) return;
+
+    const handleMouseLeave = (e) => {
+      if (e.clientY <= 0 || e.clientX <= 0 || 
+          e.clientX >= window.innerWidth || e.clientY >= window.innerHeight) {
+        triggerWarning();
+      }
+    };
+
+    const handleMouseMove = (e) => {
+      lastMousePositionRef.current = { x: e.clientX, y: e.clientY };
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        setIsTabActive(false);
+        triggerWarning();
+      } else {
+        setIsTabActive(true);
+      }
+    };
+
+    const handleBlur = () => {
+      triggerWarning();
+    };
+
+    const handleContextMenu = (e) => {
+      e.preventDefault();
+      triggerWarning();
+      return false;
+    };
+
+    const handleKeyDown = (e) => {
+      // Block common shortcuts
+      if (e.ctrlKey || e.metaKey) {
+        if (e.key === 'c' || e.key === 'v' || e.key === 'a' || e.key === 'f') {
+          e.preventDefault();
+          triggerWarning();
+        }
+      }
+      // Block F12, Ctrl+Shift+I (DevTools)
+      if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I')) {
+        e.preventDefault();
+        triggerWarning();
+      }
+    };
+
+    document.addEventListener('mouseleave', handleMouseLeave);
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('blur', handleBlur);
+    document.addEventListener('contextmenu', handleContextMenu);
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('mouseleave', handleMouseLeave);
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('blur', handleBlur);
+      document.removeEventListener('contextmenu', handleContextMenu);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [quiz, result, isLoading, triggerWarning]);
 
   // Track time per question
   useEffect(() => {
@@ -78,6 +335,10 @@ const QuizPanel = ({
       setCurrentQuestionIndex(0);
       setResult(null);
       setTimePerQuestion({});
+      setQuestionTimeLeft(30);
+      setWarningCount(0);
+      setShowWarning(false);
+      setTimedOutQuestions(new Set()); // Reset timed out questions
       
       logger.info('QUIZ_PANEL', 'Quiz generated', { 
         quizId: quizData.quizId, 
@@ -93,6 +354,10 @@ const QuizPanel = ({
 
   // Handle answer selection
   const handleAnswerSelect = (qid, answer) => {
+    // Don't allow answer selection if question has timed out
+    if (timedOutQuestions.has(qid)) {
+      return;
+    }
     setAnswers(prev => ({
       ...prev,
       [qid]: answer
@@ -100,14 +365,38 @@ const QuizPanel = ({
   };
 
   // Navigate questions
-  const goToNext = () => {
+  const goToNext = useCallback(() => {
     if (quiz && currentQuestionIndex < quiz.questions.length - 1) {
+      // Check if next question has timed out
+      const nextQuestionIndex = currentQuestionIndex + 1;
+      const nextQuestion = quiz.questions[nextQuestionIndex];
+      const nextQid = nextQuestion?.qid;
+      
+      // If next question timed out, set flag as true
+      if (nextQid && timedOutQuestions.has(nextQid)) {
+        isTimeUpRef.current = true;
+      } else {
+        isTimeUpRef.current = false;
+      }
+      
       setCurrentQuestionIndex(prev => prev + 1);
     }
-  };
+  }, [quiz, currentQuestionIndex, timedOutQuestions]);
 
   const goToPrevious = () => {
     if (currentQuestionIndex > 0) {
+      // Check if previous question has timed out
+      const prevQuestionIndex = currentQuestionIndex - 1;
+      const prevQuestion = quiz?.questions?.[prevQuestionIndex];
+      const prevQid = prevQuestion?.qid;
+      
+      // If previous question timed out, keep flag as true
+      if (prevQid && timedOutQuestions.has(prevQid)) {
+        isTimeUpRef.current = true;
+      } else {
+        isTimeUpRef.current = false;
+      }
+      
       setCurrentQuestionIndex(prev => prev - 1);
     }
   };
@@ -198,8 +487,30 @@ const QuizPanel = ({
     setCurrentQuestionIndex(0);
     setResult(null);
     setTimePerQuestion({});
+    setQuestionTimeLeft(30);
+    setWarningCount(0);
+    setShowWarning(false);
+    setTimedOutQuestions(new Set()); // Reset timed out questions
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+    }
+    if (warningTimeoutRef.current) {
+      clearTimeout(warningTimeoutRef.current);
+    }
     generateQuiz();
   };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+      }
+      if (warningTimeoutRef.current) {
+        clearTimeout(warningTimeoutRef.current);
+      }
+    };
+  }, []);
 
   if (!isVisible) return null;
 
@@ -230,11 +541,32 @@ const QuizPanel = ({
           <div className="bg-gradient-to-r from-[#1A66CC] to-[#124A9D] p-4 text-white">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-bold">Bài kiểm tra hiểu biết</h2>
+                <div className="flex items-center gap-3">
+                  <h2 className="text-xl font-bold">Bài kiểm tra hiểu biết</h2>
+                  {quiz && !result && (
+                    <div className={`flex items-center gap-2 px-3 py-1 rounded-full transition-colors ${
+                      questionTimeLeft <= 10 
+                        ? 'bg-red-600 bg-opacity-90 animate-pulse' 
+                        : questionTimeLeft <= 15
+                        ? 'bg-yellow-600 bg-opacity-70'
+                        : 'bg-blue-600 bg-opacity-50'
+                    }`}>
+                      <FaClock className="text-sm" />
+                      <span className={`text-sm font-mono font-bold ${
+                        questionTimeLeft <= 10 ? 'text-white' : 'text-white'
+                      }`}>
+                        {formatTime(questionTimeLeft)}s
+                      </span>
+                    </div>
+                  )}
+                </div>
                 {quiz && (
-                  <p className="text-sm text-blue-50">
+                  <p className="text-sm text-blue-50 mt-1">
                     Câu {currentQuestionIndex + 1}/{totalQuestions} 
                     {answeredCount < totalQuestions && ` • Đã trả lời: ${answeredCount}/${totalQuestions}`}
+                    {warningCount > 0 && !result && (
+                      <span className="ml-2 text-yellow-300">⚠️ Cảnh báo: {warningCount}</span>
+                    )}
                   </p>
                 )}
               </div>
@@ -392,6 +724,16 @@ const QuizPanel = ({
                     {currentQuestion?.prompt || ''}
                   </h3>
                   
+                  {/* Time out warning */}
+                  {currentQuestion?.qid && timedOutQuestions.has(currentQuestion.qid) && (
+                    <div className="mb-4 p-4 bg-red-50 border-2 border-red-300 rounded-lg">
+                      <div className="flex items-center gap-2 text-red-700">
+                        <FaTimesCircle className="text-xl" />
+                        <span className="font-semibold">Đã hết thời gian cho câu hỏi này. Câu trả lời sẽ bỏ trống.</span>
+                      </div>
+                    </div>
+                  )}
+                  
                   <div className="space-y-3">
                     {currentQuestion?.options?.map((option, idx) => {
                       const optionLetter = String.fromCharCode(65 + idx); // A, B, C, D
@@ -400,16 +742,19 @@ const QuizPanel = ({
                       const showAnswer = result && result.perQuestion?.find(
                         q => q.qid === currentQuestion.qid
                       );
+                      const isTimedOut = currentQuestion?.qid && timedOutQuestions.has(currentQuestion.qid);
                       // Ensure unique key with question qid + option index
                       const uniqueKey = currentQuestion.qid ? `${currentQuestion.qid}-option-${idx}` : `q${currentQuestionIndex}-opt${idx}`;
 
                       return (
                         <button
                           key={uniqueKey}
-                          onClick={() => !result && handleAnswerSelect(currentQuestion.qid, optionLetter)}
-                          disabled={!!result}
+                          onClick={() => !result && !isTimedOut && handleAnswerSelect(currentQuestion.qid, optionLetter)}
+                          disabled={!!result || isTimedOut}
                           className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
-                            isSelected
+                            isTimedOut
+                              ? 'bg-gray-100 border-gray-300 opacity-60 cursor-not-allowed'
+                              : isSelected
                               ? result
                                 ? isCorrect
                                   ? 'bg-green-100 border-green-500'
@@ -418,11 +763,13 @@ const QuizPanel = ({
                               : result && isCorrect
                                 ? 'bg-green-50 border-green-300'
                                 : 'bg-gray-50 border-gray-200 hover:border-[#1A66CC]'
-                          } ${result ? 'cursor-default' : 'cursor-pointer'}`}
+                          } ${result || isTimedOut ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                         >
                           <div className="flex items-center gap-3">
                             <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${
-                              isSelected
+                              isTimedOut
+                                ? 'bg-gray-300 text-gray-500'
+                                : isSelected
                                 ? result
                                   ? isCorrect
                                     ? 'bg-green-500 text-white'
@@ -550,6 +897,48 @@ const QuizPanel = ({
           cancelText="Hủy"
           type="warning"
         />
+
+        {/* Anti-cheat Warning Popup */}
+        <AnimatePresence>
+          {showWarning && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8, y: -50 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.8, y: -50 }}
+              transition={{ type: "spring", damping: 20, stiffness: 300 }}
+              className="fixed top-4 left-1/2 transform -translate-x-1/2 z-[60] bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 p-4 rounded-2xl shadow-2xl max-w-md w-full mx-4 border-4 border-white"
+              style={{ boxShadow: '0 10px 40px rgba(0,0,0,0.3)' }}
+            >
+              <div className="bg-white rounded-xl p-6">
+                <div className="flex items-center gap-3 mb-3">
+                  <motion.div
+                    animate={{ rotate: [0, -10, 10, -10, 0] }}
+                    transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 1 }}
+                  >
+                    <FaExclamationTriangle className="text-3xl text-yellow-500" />
+                  </motion.div>
+                  <h3 className="text-xl font-bold text-gray-800">Cảnh báo!</h3>
+                </div>
+                <p className="text-gray-700 text-lg font-semibold mb-4">
+                  {warningMessage}
+                </p>
+                <div className="flex items-center justify-between text-sm text-gray-600">
+                  <span>⚠️ Quay lại làm bài ngay!</span>
+                  <span className="font-mono bg-gray-100 px-2 py-1 rounded">
+                    {formatTime(questionTimeLeft)}s
+                  </span>
+                </div>
+                {warningCount >= 3 && (
+                  <div className="mt-3 p-2 bg-red-50 border border-red-200 rounded-lg">
+                    <p className="text-sm text-red-700 font-semibold">
+                      ⚠️ Bạn đã nhận {warningCount} cảnh báo! Tiếp tục có thể bị tự động nộp bài.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
       )}
     </AnimatePresence>
