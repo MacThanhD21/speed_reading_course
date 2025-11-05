@@ -914,47 +914,57 @@ const QuizPanel = ({
           type="warning"
         />
 
-        {/* Anti-cheat Warning Popup */}
+        {/* Anti-cheat Warning Popup - Compact corner notification */}
         <AnimatePresence>
           {showWarning && (
             <motion.div
-              initial={{ opacity: 0, scale: 0.8, y: -50 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.8, y: -50 }}
+              initial={{ opacity: 0, scale: 0.8, x: 50, y: -20 }}
+              animate={{ opacity: 1, scale: 1, x: 0, y: 0 }}
+              exit={{ opacity: 0, scale: 0.8, x: 50, y: -20 }}
               transition={{ type: "spring", damping: 20, stiffness: 300 }}
-              className="fixed top-4 left-1/2 transform -translate-x-1/2 z-[60] bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 p-4 rounded-2xl shadow-2xl max-w-md w-full mx-4 border-4 border-white"
-              style={{ boxShadow: '0 10px 40px rgba(0,0,0,0.3)' }}
+              className="fixed top-4 right-4 z-[60] max-w-sm w-auto"
+              style={{ 
+                boxShadow: '0 10px 40px rgba(0,0,0,0.3)',
+                pointerEvents: 'auto'
+              }}
             >
-              <div className="bg-white rounded-xl p-6">
-                <div className="flex items-center gap-3 mb-3">
-                  <motion.div
-                    animate={{ rotate: [0, -10, 10, -10, 0] }}
-                    transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 1 }}
-                  >
-                    <FaExclamationTriangle className="text-3xl text-yellow-500" />
-                  </motion.div>
-                  <h3 className="text-xl font-bold text-gray-800">Cảnh báo!</h3>
-                </div>
-                <p className="text-gray-700 text-lg font-semibold mb-4">
-                  {warningMessage}
-                </p>
-                <div className="flex items-center justify-between text-sm text-gray-600">
-                  <span>⚠️ Quay lại làm bài ngay!</span>
-                  <span className="font-mono bg-gray-100 px-2 py-1 rounded">
-                    {formatTime(questionTimeLeft)}s
-                  </span>
-                </div>
-                {warningCount >= 3 && (
-                  <div className="mt-3 p-2 bg-red-50 border border-red-200 rounded-lg">
-                    <p className="text-sm text-red-700 font-semibold">
-                      ⚠️ Bạn đã nhận {warningCount} cảnh báo! Tiếp tục có thể bị tự động nộp bài.
-                    </p>
+              <div className="bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 p-1 rounded-xl shadow-2xl">
+                <div className="bg-white rounded-lg p-4">
+                  <div className="flex items-start gap-3">
+                    <motion.div
+                      animate={{ rotate: [0, -10, 10, -10, 0] }}
+                      transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 1 }}
+                      className="flex-shrink-0"
+                    >
+                      <FaExclamationTriangle className="text-2xl text-yellow-500" />
+                    </motion.div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-2">
+                        <h3 className="text-base font-bold text-gray-800">Cảnh báo!</h3>
+                        <span className="font-mono bg-red-100 text-red-700 px-2 py-0.5 rounded text-xs font-bold">
+                          {formatTime(questionTimeLeft)}s
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-700 font-medium mb-2 leading-relaxed">
+                        {warningMessage}
+                      </p>
+                      {warningCount >= 3 && (
+                        <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded">
+                          <p className="text-xs text-red-700 font-semibold">
+                            ⚠️ Đã {warningCount} cảnh báo! Có thể tự động nộp bài.
+                          </p>
+                        </div>
+                      )}
+                      <div className="mt-2 text-xs text-gray-500">
+                        ⚠️ Quay lại làm bài ngay!
+                      </div>
+                    </div>
                   </div>
-                )}
+                </div>
               </div>
             </motion.div>
           )}
-          </AnimatePresence>
+        </AnimatePresence>
         </motion.div>
         )}
       </AnimatePresence>
