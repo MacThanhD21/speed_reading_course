@@ -10,7 +10,8 @@ import {
   FaArrowRight,
   FaArrowLeft,
   FaRedo,
-  FaExclamationTriangle
+  FaExclamationTriangle,
+  FaPlay
 } from 'react-icons/fa';
 import quizService from '../../services/quizService';
 import logger from '../../utils/logger';
@@ -20,6 +21,7 @@ import ConfirmDialog from '../common/ConfirmDialog';
 const QuizPanel = ({ 
   isVisible, 
   onClose, 
+  onReopen,
   textId, 
   textContent, 
   wpm = 0,
@@ -54,7 +56,7 @@ const QuizPanel = ({
   const isTimeUpRef = useRef(false); // Track if time is up to prevent double navigation
 
   // Meme warning messages (30+ funny troll messages)
-  const memeWarnings = [
+  const MEME_WARNINGS = [
     "🌟 Tập trung lại nào, mỗi câu trả lời là một bước tiến tới thành công!",
     "💪 Bạn đang làm rất tốt, đừng để sự phân tâm kéo bạn lại!",
     "🔥 Giữ vững tinh thần! Bạn đã đi được xa rồi, đừng dừng lại lúc này!",
@@ -514,7 +516,18 @@ const QuizPanel = ({
     };
   }, []);
 
-  if (!isVisible) return null;
+  // Handle reopen quiz
+  const handleReopen = () => {
+    if (onReopen) {
+      onReopen();
+    }
+  };
+
+  // Show floating button if quiz exists but panel is hidden and quiz is not completed
+  const shouldShowFloatingButton = quiz && !isVisible && !result && !isLoading;
+
+  // If no quiz and not visible, return null (initial state)
+  if (!isVisible && !quiz) return null;
 
   const currentQuestion = quiz?.questions?.[currentQuestionIndex];
   const progress = quiz ? ((currentQuestionIndex + 1) / quiz.questions.length) * 100 : 0;
@@ -522,16 +535,17 @@ const QuizPanel = ({
   const totalQuestions = quiz?.questions?.length || 0;
 
   return (
-    <AnimatePresence mode="wait">
-      {isVisible && (
-        <motion.div
-          key="quiz-panel-overlay"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-          onClick={onClose}
-        >
+    <>
+      <AnimatePresence mode="wait">
+        {isVisible && (
+          <motion.div
+            key="quiz-panel-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+            onClick={onClose}
+          >
         <motion.div
           initial={{ scale: 0.9, opacity: 0, y: 20 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -940,10 +954,46 @@ const QuizPanel = ({
               </div>
             </motion.div>
           )}
-        </AnimatePresence>
-      </motion.div>
-      )}
-    </AnimatePresence>
+          </AnimatePresence>
+        </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Floating button to resume quiz */}
+      <AnimatePresence>
+        {shouldShowFloatingButton && (
+          <motion.button
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -50 }}
+            transition={{ type: "spring", damping: 20 }}
+            onClick={handleReopen}
+            className="fixed left-4 top-1/2 -translate-y-1/2 z-40 bg-gradient-to-r from-[#1A66CC] to-[#124A9D] text-white p-4 rounded-full shadow-2xl hover:shadow-3xl transition-all hover:scale-110 flex items-center gap-3 group"
+            style={{ boxShadow: '0 10px 30px rgba(26, 102, 204, 0.4)' }}
+          >
+            <motion.div
+              animate={{ scale: [1, 1.1, 1] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+            >
+              <FaPlay className="text-xl" />
+            </motion.div>
+            <div className="hidden md:block">
+              <div className="text-sm font-semibold">Tiếp tục Quiz</div>
+              <div className="text-xs text-blue-100">
+                Câu {currentQuestionIndex + 1}/{totalQuestions}
+              </div>
+            </div>
+            <motion.div
+              className="absolute -right-2 -top-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow-lg"
+              animate={{ scale: [1, 1.2, 1] }}
+              transition={{ duration: 1, repeat: Infinity }}
+            >
+              {totalQuestions - answeredCount}
+            </motion.div>
+          </motion.button>
+        )}
+      </AnimatePresence>
+    </>
   );
 };
 

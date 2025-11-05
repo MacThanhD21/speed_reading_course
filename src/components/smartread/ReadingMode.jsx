@@ -195,6 +195,10 @@ const ReadingMode = React.memo(({ content, onFinishReading }) => {
     setShowQuizPanel(false);
   }, []);
 
+  const handleQuizReopen = useCallback(() => {
+    setShowQuizPanel(true);
+  }, []);
+
   const handleQuizComplete = useCallback(async (quizResult) => {
     
     
@@ -390,6 +394,7 @@ const ReadingMode = React.memo(({ content, onFinishReading }) => {
               <QuizPanel
                 isVisible={showQuizPanel}
                 onClose={handleQuizClose}
+                onReopen={handleQuizReopen}
                 textId={content?.id || content?.title || `text_${Date.now()}`}
                 textContent={content?.content || content || ''}
                 wpm={completionData?.averageWPM || completionData?.finalWPM || 0}
